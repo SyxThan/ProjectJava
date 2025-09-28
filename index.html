@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phòng Trọ 24/7 - Tìm và đăng phòng trọ dễ dàng</title>
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+    <script src="https://unpkg.com/feather-icons"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="src/styles/common.css">
+    <link rel="stylesheet" href="src/styles/index.css">
+</head>
+<body class="bg-gray-50">
+    <!-- Notification Placeholder -->
+    <div id="notification-placeholder"></div>
+
+    <!-- Header Placeholder -->
+    <div id="header-placeholder"></div>
+
+    <!-- Hero Section -->
+    <section class="hero-bg text-white py-20">
+        <div class="container mx-auto px-4 text-center">
+            <h1 class="text-4xl md:text-5xl font-bold mb-6" data-aos="fade-up">Tìm phòng trọ phù hợp với bạn</h1>
+            <p class="text-xl mb-8 max-w-2xl mx-auto" data-aos="fade-up" data-aos-delay="100">Hàng nghìn phòng trọ chất lượng với đầy đủ tiện nghi đang chờ bạn</p>
+            
+            <!-- Quick Search -->
+            <div class="quick-search" data-aos="fade-up" data-aos-delay="200">
+                <form id="search-form" class="flex flex-col md:flex-row gap-4">
+                    <div class="flex-1 relative">
+                        <label class="block text-gray-700 text-sm font-medium mb-1">Địa điểm</label>
+                        <div class="relative">
+                            <i data-feather="map-pin" class="absolute left-3 top-3 text-gray-400"></i>
+                            <input 
+                                type="text" 
+                                id="location-input" 
+                                placeholder="Nhập tỉnh thành, quận huyện..." 
+                                class="form-input pl-10 w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                autocomplete="off"
+                            >
+                            <div id="location-dropdown" class="absolute top-full left-0 right-0 bg-white border border-gray-300 rounded-md mt-1 hidden dropdown-menu shadow-lg z-10">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex-1">
+                        <label class="block text-gray-700 text-sm font-medium mb-1">Giá thuê</label>
+                        <select id="price-select" class="form-input w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="">Tất cả mức giá</option>
+                            <option value="1">Dưới 2 triệu</option>
+                            <option value="2">2 - 4 triệu</option>
+                            <option value="3">4 - 6 triệu</option>
+                            <option value="4">6 - 10 triệu</option>
+                            <option value="5">Trên 10 triệu</option>
+                        </select>
+                    </div>
+                    <div class="flex-1">
+                        <label class="block text-gray-700 text-sm font-medium mb-1">Loại phòng</label>
+                        <select id="room-type-select" class="form-input w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="">Tất cả loại phòng</option>
+                            <option value="single">Phòng đơn</option>
+                            <option value="shared">Phòng ở ghép</option>
+                            <option value="apartment">Chung cư mini</option>
+                            <option value="house">Nhà nguyên căn</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary py-3 px-6 rounded-md transition self-end">
+                        <i data-feather="search" class="inline mr-1 w-4 h-4"></i>
+                        Tìm kiếm
+                    </button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Popular Areas -->
+    <section class="py-16 bg-white">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center mb-12" data-aos="fade-up">Khu vực phổ biến</h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6" id="popular-areas">
+                <!-- Areas will be loaded dynamically -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Featured Rooms -->
+    <section class="py-16 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center mb-4" data-aos="fade-up">Phòng trọ nổi bật</h2>
+            <p class="text-gray-600 text-center mb-12 max-w-2xl mx-auto" data-aos="fade-up" data-aos-delay="100">Những phòng trọ được quan tâm nhiều nhất</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="featured-rooms">
+                <!-- Rooms will be loaded dynamically -->
+            </div>
+
+            <div class="text-center mt-10">
+                <a href="search.html" class="btn btn-outline border-2 border-blue-600 text-blue-600 font-medium rounded-md hover:bg-blue-600 hover:text-white transition">Xem tất cả phòng trọ</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- How it works -->
+    <section class="py-16 bg-white">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center mb-12" data-aos="fade-up">Cách thức hoạt động</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="text-center" data-aos="fade-up" data-aos-delay="100">
+                    <div class="step-circle">
+                        <i data-feather="search" class="text-blue-600 w-8 h-8"></i>
+                    </div>
+                    <h3 class="font-bold text-xl mb-2">1. Tìm kiếm</h3>
+                    <p class="text-gray-600">Tìm phòng trọ phù hợp với nhu cầu của bạn bằng bộ lọc thông minh</p>
+                </div>
+                <div class="text-center" data-aos="fade-up" data-aos-delay="200">
+                    <div class="step-circle">
+                        <i data-feather="phone" class="text-blue-600 w-8 h-8"></i>
+                    </div>
+                    <h3 class="font-bold text-xl mb-2">2. Liên hệ</h3>
+                    <p class="text-gray-600">Liên hệ trực tiếp với chủ phòng để xem phòng và thương lượng</p>
+                </div>
+                <div class="text-center" data-aos="fade-up" data-aos-delay="300">
+                    <div class="step-circle">
+                        <i data-feather="check-circle" class="text-blue-600 w-8 h-8"></i>
+                    </div>
+                    <h3 class="font-bold text-xl mb-2">3. Hoàn tất</h3>
+                    <p class="text-gray-600">Ký hợp đồng và nhận phòng trọ mới của bạn</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="cta-section py-16 text-white">
+        <div class="container mx-auto px-4 text-center">
+            <h2 class="text-3xl font-bold mb-6" data-aos="fade-up">Bạn là chủ phòng trọ?</h2>
+            <p class="text-xl mb-8 max-w-2xl mx-auto" data-aos="fade-up" data-aos-delay="100">Đăng tin miễn phí và tiếp cận hàng nghìn người có nhu cầu thuê phòng</p>
+            <a href="post.html" class="btn bg-white text-blue-600 font-bold rounded-md hover:bg-gray-100 transition" data-aos="fade-up" data-aos-delay="200">Đăng tin ngay</a>
+        </div>
+    </section>
+
+    <!-- Footer Placeholder -->
+    <div id="footer-placeholder"></div>
+
+    <!-- Custom JavaScript -->
+    <script src="src/scripts/common.js"></script>
+    <script src="src/scripts/components.js"></script>
+    <script src="src/scripts/index.js"></script>
+</body>
+</html>
