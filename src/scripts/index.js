@@ -223,25 +223,31 @@ class IndexPage {
         if (!container) return;
         
         container.innerHTML = this.sampleRooms.map((room, index) => `
-            <div class="room-card bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition" 
-                 data-aos="fade-up" data-aos-delay="${index * 100}">
+            <div class="room-card bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition flex flex-col h-full" 
+                data-aos="fade-up" data-aos-delay="${index * 100}">
                 <div class="relative">
                     <img src="${room.image}" alt="${room.title}" class="w-full h-48 object-cover">
                     ${room.featured ? '<div class="featured-badge">Nổi bật</div>' : ''}
                     <div class="absolute top-3 right-3 bg-white p-2 rounded-full shadow-md">
-                        <i data-feather="heart" class="text-gray-400 hover:text-red-500 cursor-pointer heart-icon" 
-                           onclick="indexPage.toggleLike(${room.id}, this)" data-room-id="${room.id}"></i>
+                        <i data-feather="heart" 
+                        class="text-gray-400 hover:text-red-500 cursor-pointer heart-icon" 
+                        onclick="indexPage.toggleLike(${room.id}, this)" 
+                        data-room-id="${room.id}">
+                        </i>
                     </div>
                 </div>
-                <div class="p-4">
+
+                <div class="p-4 flex flex-col flex-grow">
                     <div class="flex justify-between items-start mb-2">
                         <h3 class="font-bold text-xl">${room.title}</h3>
-                        <span class="price-display">${room.price}</span>
+                        <span class="price-display text-blue-600 font-semibold">${room.price}</span>
                     </div>
-                    <p class="text-gray-600 mb-3">
+
+                    <p class="text-gray-600 mb-3 text-sm leading-snug">
                         <i data-feather="map-pin" class="inline mr-1 w-4 h-4"></i> ${room.location}
                     </p>
-                    <div class="amenities-grid mb-4">
+
+                    <div class="flex flex-wrap gap-2 mb-4">
                         ${room.amenities.map(amenity => {
                             const icons = {
                                 'Wifi': 'wifi',
@@ -249,13 +255,16 @@ class IndexPage {
                                 'Điều hòa': 'wind',
                                 'Giường': 'home'
                             };
-                            return `<span class="amenity-tag">
-                                <i data-feather="${icons[amenity] || 'check'}" class="w-4 h-4"></i> ${amenity}
-                            </span>`;
+                            return `
+                                <span class="flex items-center gap-1 text-gray-700 text-sm bg-gray-100 px-2 py-1 rounded-md">
+                                    <i data-feather="${icons[amenity] || 'check'}" class="w-4 h-4"></i> ${amenity}
+                                </span>
+                            `;
                         }).join('')}
                     </div>
+
                     <button onclick="indexPage.viewRoomDetails(${room.id})" 
-                            class="btn btn-primary w-full">
+                            class="btn btn-primary w-full bg-blue-600 hover:bg-blue-800 text-white rounded-md py-2 mt-auto transition">
                         Xem chi tiết
                     </button>
                 </div>

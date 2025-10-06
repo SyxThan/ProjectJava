@@ -478,7 +478,7 @@ function displayListView(rooms) {
         <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition cursor-pointer" onclick="goToDetail(${room.id})">
             <div class="flex">
                 <div class="w-1/3 relative">
-                    <img src="${room.images[0]}" alt="${room.title}" class="w-full h-32 object-cover">
+                    <img src="${room.images[0]}" alt="${room.title}" class="w-full h-full object-cover">
                     ${room.featured ? '<div class="absolute top-2 left-2 bg-blue-600 text-white px-2 py-1 rounded text-xs font-medium">Nổi bật</div>' : ''}
                 </div>
                 <div class="w-2/3 p-4 flex flex-col justify-between">

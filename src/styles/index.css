@@ -287,3 +287,6 @@
         padding: 1rem;
     }
 }
+#search-form option {
+    color: black;
+}
