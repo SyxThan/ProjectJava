@@ -292,7 +292,7 @@ class PhongTroUtils {
 
     // API helpers
     api = {
-        baseURL: 'http://localhost:3000/api',
+        baseURL: 'http://localhost:8080/api',
 
         async request(endpoint, options = {}) {
             const url = `${this.baseURL}${endpoint}`;
