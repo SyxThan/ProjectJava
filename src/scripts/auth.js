@@ -3,7 +3,7 @@
 class AuthPage {
     constructor() {
         this.apiConfig = {
-            baseURL: 'http://localhost:3000/api',
+            baseURL: 'http://localhost:8080/api',
             endpoints: {
                 login: '/auth/login',
                 register: '/auth/register',
