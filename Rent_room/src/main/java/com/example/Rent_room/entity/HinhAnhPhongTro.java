@@ -24,5 +24,5 @@ public class HinhAnhPhongTro {
     private String duong_dan_anh;
 
     @Column(name = "la_anh_bia", nullable = true)
-    private boolean la_anh_bia;
+    private boolean laAnhBia;
 }

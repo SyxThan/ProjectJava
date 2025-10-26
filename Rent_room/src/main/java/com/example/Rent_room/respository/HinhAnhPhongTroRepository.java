@@ -12,5 +12,5 @@ public interface HinhAnhPhongTroRepository extends JpaRepository<HinhAnhPhongTro
     List<HinhAnhPhongTro> findByBaiDangChoThueId(Integer baiDangId);
 
     // Lấy ảnh đại diện (thumbnail) của bài đăng
-    HinhAnhPhongTro findFirstByBaiDangChoThueIdAndLa_anh_biaTrue(Integer baiDangId);
+    HinhAnhPhongTro findFirstByBaiDangChoThueIdAndLaAnhBiaTrue(Integer baiDangId);
 }

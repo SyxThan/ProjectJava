@@ -16,11 +16,11 @@ public class BaiDangDTO {
     private Integer id;
 
     @NotBlank(message = "Tiêu đề không được để trống")
-    @Size(min = 5, max = 255, message = "Tiêu đề phải từ 5 đến 255 ký tự")
+    @Size(min = 5, message = "Tiêu đề phải từ 5 đến 255 ký tự")
     private String tieuDe;
 
     @NotBlank(message = "Mô tả không được để trống")
-    @Size(min = 10, max = 5000, message = "Mô tả phải từ 10 đến 5000 ký tự")
+    @Size(min = 10, message = "Mô tả phải từ 10 đến 5000 ký tự")
     private String moTa;
 
     @NotBlank(message = "Địa chỉ không được để trống")

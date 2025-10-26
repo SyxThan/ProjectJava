@@ -28,7 +28,7 @@ public class HinhAnhPhongTroService {
 
     // Sửa lại tên phương thức cho đúng với tên trong repository
     public HinhAnhPhongTro getThumbnailByBaiDangId(Integer baiDangId){
-        return hinhAnhPhongTroRepository.findFirstByBaiDangChoThueIdAndLa_anh_biaTrue(baiDangId);
+        return hinhAnhPhongTroRepository.findFirstByBaiDangChoThueIdAndLaAnhBiaTrue(baiDangId);
     }
 
     // Lấy ảnh theo ID
