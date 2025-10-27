@@ -36,4 +36,8 @@ public class BaiDangChoThue {
     private LocalDateTime ngay_co_the_vao_o;
     private Timestamp ngay_dang;
     private Timestamp ngay_cap_nhat;
+
+    @OneToMany(mappedBy = "baiDangChoThue", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private java.util.List<HinhAnhPhongTro> HinhAnhPhongTro;
+
 }
