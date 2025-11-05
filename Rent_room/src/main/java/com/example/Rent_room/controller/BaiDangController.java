@@ -27,6 +27,12 @@ public class BaiDangController {
         return baiDangService.getBaiDangById(id);
     }
 
+    @GetMapping("/cost/{costMin}to{costMax}")
+    public List<BaiDangChoThue> getByCostRange(@PathVariable Double costMin, @PathVariable Double costMax) {
+        return baiDangService.getBaiDangByCostRange(costMin, costMax);
+    }
+ 
+
     @PostMapping
     public BaiDangChoThue create(@RequestBody BaiDangChoThue baiDang) {
         return baiDangService.saveBaiDang(baiDang);

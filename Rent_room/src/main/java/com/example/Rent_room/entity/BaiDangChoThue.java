@@ -30,7 +30,10 @@ public class BaiDangChoThue {
     private String tinh_thanhpho;
     private Double vi_do;
     private Double kinh_do;
-    private Double gia_thang;
+
+    @Column(name = "gia_thang")
+    private Double giaThang;
+    
     private Float dien_tich_m2;
     private String trang_thai;
     private LocalDateTime ngay_co_the_vao_o;

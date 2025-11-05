@@ -23,6 +23,10 @@ public class BaiDangService {
         return baiDangRepository.findById(id);
     }
 
+    public List<BaiDangChoThue> getBaiDangByCostRange(Double costMin, Double costMax) {
+        return baiDangRepository.findByGiaThangBetween(costMin, costMax);
+    }
+
     public BaiDangChoThue saveBaiDang(BaiDangChoThue baiDang) {
         return baiDangRepository.save(baiDang);
     }
