@@ -20,11 +20,14 @@ public class BaiDangChoThue {
     // Khóa ngoại trỏ đến bảng users
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "id_nguoi_dang", nullable = false)
-    @JsonIgnore
+//    @JsonIgnore
     private User nguoiDang;
 
     private String tieu_de;
+
+    @Column(columnDefinition = "TEXT")
     private String mo_ta;
+
     private String dia_chi_day_du;
     private String phuong_xa;
     private String tinh_thanhpho;
@@ -35,7 +38,11 @@ public class BaiDangChoThue {
     private Double giaThang;
     
     private Float dien_tich_m2;
-    private String trang_thai;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "trang_thai")
+    private TrangThaiBaiDang trangThai = TrangThaiBaiDang.PENDING;
+
     private LocalDateTime ngay_co_the_vao_o;
     private Timestamp ngay_dang;
     private Timestamp ngay_cap_nhat;
@@ -43,4 +50,9 @@ public class BaiDangChoThue {
     @OneToMany(mappedBy = "baiDangChoThue", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private java.util.List<HinhAnhPhongTro> HinhAnhPhongTro;
 
+    public BaiDangChoThue() {}
+
+    public BaiDangChoThue(Integer id) {
+        this.id = id;
+    }
 }

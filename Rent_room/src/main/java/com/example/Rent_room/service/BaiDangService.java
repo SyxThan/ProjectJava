@@ -1,6 +1,7 @@
 package com.example.Rent_room.service;
 
 import com.example.Rent_room.entity.BaiDangChoThue;
+import com.example.Rent_room.entity.TrangThaiBaiDang;
 import com.example.Rent_room.respository.BaiDangRepository;
 import org.springframework.stereotype.Service;
 import java.util.List;
@@ -33,5 +34,18 @@ public class BaiDangService {
 
     public void deleteBaiDang(Integer id) {
         baiDangRepository.deleteById(id);
+    }
+
+    // Cập nhật trạng thái bài đăng
+    public BaiDangChoThue updateStatus(Integer id, TrangThaiBaiDang status) {
+        BaiDangChoThue post = baiDangRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy bài đăng"));
+        post.setTrangThai(status);
+        return baiDangRepository.save(post);
+    }
+
+    // Lấy danh sách bài đăng theo trạng thái
+    public List<BaiDangChoThue> getByStatus(TrangThaiBaiDang status) {
+        return baiDangRepository.findByTrangThai(status);
     }
 }

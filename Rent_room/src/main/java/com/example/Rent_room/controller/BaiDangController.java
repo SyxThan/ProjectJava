@@ -1,6 +1,7 @@
 package com.example.Rent_room.controller;
 
 import com.example.Rent_room.entity.BaiDangChoThue;
+import com.example.Rent_room.entity.TrangThaiBaiDang;
 import com.example.Rent_room.service.BaiDangService;
 import org.springframework.web.bind.annotation.*;
 
@@ -37,6 +38,26 @@ public class BaiDangController {
     public BaiDangChoThue create(@RequestBody BaiDangChoThue baiDang) {
         return baiDangService.saveBaiDang(baiDang);
     }
+
+    // Admin duyệt bài
+    @PutMapping("/{id}/status")
+    public BaiDangChoThue updateStatus(@PathVariable Integer id,
+                                       @RequestParam TrangThaiBaiDang status,
+                                       @RequestParam String role) {
+
+        if (!role.equals("ADMIN")) {
+            throw new RuntimeException("Bạn không có quyền duyệt bài!");
+        }
+
+        return baiDangService.updateStatus(id, status);
+    }
+
+    // Lấy danh sách bài theo trạng thái
+    @GetMapping("/status/{status}")
+    public List<BaiDangChoThue> getByStatus(@PathVariable TrangThaiBaiDang status) {
+        return baiDangService.getByStatus(status);
+    }
+
 
     @DeleteMapping("/{id}")
     public void delete(@PathVariable Integer id) {

@@ -20,7 +20,7 @@ public class HinhAnhPhongTro {
     @JsonIgnore
     private BaiDangChoThue baiDangChoThue;
 
-    @Column(name = "duong_dan_anh", nullable = true)
+    @Column(name = "duong_dan_anh", columnDefinition = "TEXT")
     private String duong_dan_anh;
 
     @Column(name = "la_anh_bia", nullable = true)
