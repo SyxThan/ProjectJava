@@ -1,98 +1,9 @@
-// Sample room data
-let allRooms = [
-    {
-        id: 1,
-        title: "Phòng trọ cao cấp Quận 1",
-        price: 3500000,
-        area: 25,
-        city: "ho-chi-minh",
-        district: "quan-1",
-        address: "123 Nguyễn Huệ, Quận 1, TP.HCM",
-        type: "room",
-        amenities: ["wifi", "ac", "parking"],
-        images: ["http://static.photos/indoor/640x360/1"],
-        description: "Phòng trọ cao cấp, full nội thất, gần trung tâm",
-        featured: true,
-        posted: new Date("2024-01-15")
-    },
-    {
-        id: 2,
-        title: "Chung cư mini Bình Thạnh",
-        price: 4200000,
-        area: 35,
-        city: "ho-chi-minh",
-        district: "binh-thanh",
-        address: "45 Điện Biên Phủ, Bình Thạnh, TP.HCM",
-        type: "apartment",
-        amenities: ["wifi", "ac", "kitchen", "parking", "laundry"],
-        images: ["http://static.photos/indoor/640x360/2"],
-        description: "Chung cư mini mới xây, đầy đủ tiện nghi",
-        featured: false,
-        posted: new Date("2024-01-18")
-    },
-    {
-        id: 3,
-        title: "Nhà trọ Gò Vấp giá rẻ",
-        price: 2800000,
-        area: 20,
-        city: "ho-chi-minh",
-        district: "go-vap",
-        address: "78 Quang Trung, Gò Vấp, TP.HCM",
-        type: "room",
-        amenities: ["wifi", "parking"],
-        images: ["http://static.photos/indoor/640x360/3"],
-        description: "Phòng trọ sạch sẽ, an ninh tốt",
-        featured: false,
-        posted: new Date("2024-01-19")
-    },
-    {
-        id: 4,
-        title: "Studio cao cấp Quận 7",
-        price: 8000000,
-        area: 30,
-        city: "ho-chi-minh",
-        district: "quan-7",
-        address: "123 Nguyễn Thị Thập, Quận 7, TP.HCM",
-        type: "studio",
-        amenities: ["wifi", "ac", "kitchen", "parking", "security"],
-        images: ["http://static.photos/indoor/640x360/4"],
-        description: "Studio hiện đại, view đẹp",
-        featured: true,
-        posted: new Date("2024-01-16")
-    },
-    {
-        id: 5,
-        title: "Phòng trọ sinh viên Đống Đa",
-        price: 1800000,
-        area: 18,
-        city: "ha-noi",
-        district: "dong-da",
-        address: "56 Thái Thịnh, Đống Đa, Hà Nội",
-        type: "room",
-        amenities: ["wifi"],
-        images: ["http://static.photos/indoor/640x360/5"],
-        description: "Phòng trọ dành cho sinh viên",
-        featured: false,
-        posted: new Date("2024-01-20")
-    },
-    {
-        id: 6,
-        title: "Căn hộ Ba Đình",
-        price: 6500000,
-        area: 45,
-        city: "ha-noi",
-        district: "ba-dinh",
-        address: "89 Đội Cấn, Ba Đình, Hà Nội",
-        type: "apartment",
-        amenities: ["wifi", "ac", "kitchen", "parking", "laundry", "security"],
-        images: ["http://static.photos/indoor/640x360/6"],
-        description: "Căn hộ đẹp, gần trung tâm",
-        featured: true,
-        posted: new Date("2024-01-17")
-    }
-];
+// Backend API base (dev profile runs on 8080)
+const API_BASE = 'http://localhost:8080';
 
-let filteredRooms = [...allRooms];
+// Data stores
+let allRooms = [];
+let filteredRooms = [];
 let currentView = 'list';
 let currentPage = 1;
 const itemsPerPage = 9;
@@ -124,7 +35,7 @@ const cityNames = {
 };
 
 // Initialize page
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
     // Initialize AOS and Feather Icons
     AOS.init({
         duration: 600,
@@ -138,11 +49,109 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialize view buttons state
     initializeViewButtons();
-    
-    // Initial room display
-    displayRooms(allRooms);
-    updateResultsCount(allRooms.length);
+
+    // Load data from backend then render
+    showLoading();
+    try {
+        await loadRoomsFromBackend();
+        filteredRooms = [...allRooms];
+        displayRooms(filteredRooms);
+        updateResultsCount(filteredRooms.length);
+    } catch (e) {
+        console.error('Failed to load listings from backend:', e);
+        filteredRooms = [];
+        displayRooms(filteredRooms);
+        updateResultsCount(0);
+    } finally {
+        hideLoading();
+    }
 });
+
+// Fetch listings from backend and normalize to UI schema
+async function loadRoomsFromBackend() {
+    const resp = await fetch(`${API_BASE}/api/baidang`);
+    if (!resp.ok) {
+        throw new Error(`HTTP ${resp.status}`);
+    }
+    const data = await resp.json();
+    allRooms = (Array.isArray(data) ? data : []).map(normalizeListingFromBackend);
+}
+
+// Convert backend BaiDangChoThue -> UI room object
+function normalizeListingFromBackend(item) {
+    const id = item.id;
+    const title = item.tieu_de || 'Tin cho thuê';
+    const price = typeof item.gia_thang === 'number' ? item.gia_thang : 0;
+    const area = typeof item.dien_tich_m2 === 'number' ? item.dien_tich_m2 : 0;
+    const address = item.dia_chi_day_du || [item.phuong_xa, item.tinh_thanhpho].filter(Boolean).join(', ');
+    const images = extractImageUrls(item.hinhAnhPhongTro || item.HinhAnhPhongTro || []);
+    const posted = item.ngay_dang || item.ngay_cap_nhat || new Date().toISOString();
+    const featured = (item.hinhAnhPhongTro || item.HinhAnhPhongTro || []).some(i => i.laAnhBia);
+
+    return {
+        id,
+        title,
+        price,
+        area,
+        city: slugify(item.tinh_thanhpho),
+        district: slugify(item.phuong_xa),
+        address,
+        type: 'room',
+        amenities: [],
+        images: images.length ? images : [
+            'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360" viewBox="0 0 640 360"><rect width="640" height="360" fill="%23f3f4f6"/><text x="320" y="180" font-family="Arial" font-size="16" fill="%23666" text-anchor="middle">Chưa có hình ảnh</text></svg>'
+        ],
+        description: item.mo_ta || '',
+        featured,
+        posted
+    };
+}
+
+// Extract image URLs from child entities or string field
+function extractImageUrls(arr) {
+    try {
+        const urls = [];
+        (arr || []).forEach(img => {
+            if (!img) return;
+            const raw = img.duong_dan_anh || img.url || img.path || '';
+            if (!raw) return;
+            if (Array.isArray(raw)) {
+                raw.forEach(u => { if (typeof u === 'string') urls.push(u); });
+            } else if (typeof raw === 'string') {
+                const trimmed = raw.trim();
+                if (trimmed.startsWith('[')) {
+                    // JSON-style array string
+                    try {
+                        const parsed = JSON.parse(trimmed);
+                        if (Array.isArray(parsed)) parsed.forEach(u => { if (typeof u === 'string') urls.push(u); });
+                    } catch (_) {
+                        // fall back to comma split
+                        trimmed.split(',').map(s => s.trim()).forEach(u => { if (u) urls.push(u); });
+                    }
+                } else if (trimmed.includes(',')) {
+                    trimmed.split(',').map(s => s.trim()).forEach(u => { if (u) urls.push(u); });
+                } else {
+                    urls.push(trimmed);
+                }
+            }
+        });
+        return urls;
+    } catch (e) {
+        console.warn('extractImageUrls failed:', e);
+        return [];
+    }
+}
+
+function slugify(val) {
+    if (!val || typeof val !== 'string') return '';
+    return val
+        .toLowerCase()
+        .normalize('NFD').replace(/\p{Diacritic}/gu, '')
+        .replace(/[^a-z0-9\s-]/g, '')
+        .trim()
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-');
+}
 
 // Setup event listeners
 function setupEventListeners() {

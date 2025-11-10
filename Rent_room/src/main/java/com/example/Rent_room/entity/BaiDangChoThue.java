@@ -35,7 +35,7 @@ public class BaiDangChoThue {
     private Double kinh_do;
 
     @Column(name = "gia_thang")
-    private Double giaThang;
+    private Double gia_thang;
     
     private Float dien_tich_m2;
 

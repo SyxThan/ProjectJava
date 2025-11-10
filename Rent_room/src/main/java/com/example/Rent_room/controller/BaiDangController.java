@@ -22,7 +22,7 @@ public class BaiDangController {
     public List<BaiDangChoThue> getAll() {
         return baiDangService.getAllBaiDang();
     }
-
+    
     @GetMapping("/{id}")
     public Optional<BaiDangChoThue> getById(@PathVariable Integer id) {
         return baiDangService.getBaiDangById(id);
