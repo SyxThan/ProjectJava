@@ -1,6 +1,6 @@
 package com.example.Rent_room.entity;
 
-import java.security.Timestamp;
+import java.sql.Timestamp;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -27,37 +27,37 @@ import lombok.Setter;
 public class BaiDangTimPhong {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id", nullable = false)
-    private Long userId;
+    private User userId;
 
-    @Column(name = "tieu_de")
+    @Column(name = "tieu_de", nullable = false)
     private String tieuDe;
     
-    @Column(name = "mo_ta")
+    @Column(name = "mo_ta", nullable = false)
     private String moTa;
 
-    @Column(name = "khu_vuc_mong_muon_xa")
+    @Column(name = "khu_vuc_mong_muon_xa", nullable = false)
     private String khuVucMongMuonXa;
 
-    @Column(name = "khu_vuc_mong_muon_thanhpho")
+    @Column(name = "khu_vuc_mong_muon_thanhpho", nullable = false)
     private String khuVucMongMuonThanhpho;
 
-    @Column(name = "gia_thap_nhat")
+    @Column(name = "gia_thap_nhat", nullable = false)
     private Long giaThapNhat;
 
-    @Column(name = "gia_cao_nhat")
+    @Column(name = "gia_cao_nhat", nullable = false)
     private Long giaCaoNhat;
 
-    @Column(name ="dien_tich_toi_thieu")
+    @Column(name ="dien_tich_toi_thieu", nullable = false)
     private Float dienTichToiThieu;
 
     @Column(name = "so_nguoi_o")
     private Integer soNguoiO;
 
-    @Column(name = "trang_thai")
+    @Column(name = "trang_thai", nullable = false)
     @Enumerated(EnumType.STRING)
     private TrangThaiTimPhong trangThai;
 
