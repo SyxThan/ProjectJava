@@ -1,8 +1,11 @@
 package com.example.Rent_room.controller;
 
+import com.example.Rent_room.dto.LoginDTO;
+import com.example.Rent_room.dto.RegisterDTO;
 import com.example.Rent_room.entity.User;
 import com.example.Rent_room.respository.UserRepository;
 import com.example.Rent_room.service.JwtService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
@@ -23,17 +26,27 @@ public class AuthController {
 
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
-    // 🔹 API đăng ký
+    // 🔹 Đăng ký
     @PostMapping("/register")
-    public Map<String, Object> register(@RequestBody User user) {
+    public Map<String, Object> register(@RequestBody @Valid RegisterDTO dto) {
         Map<String, Object> response = new HashMap<>();
 
-        if (userRepository.findByEmail(user.getEmail()) != null) {
+        if (userRepository.findByEmail(dto.getEmail()) != null) {
             response.put("message", "Email đã tồn tại!");
             return response;
         }
 
-        user.setHash_password(passwordEncoder.encode(user.getHash_password()));
+        if (!dto.getPassword().equals(dto.getConfirmPassword())) {
+            response.put("message", "Mật khẩu và xác nhận mật khẩu không khớp!");
+            return response;
+        }
+
+        User user = new User();
+        user.setEmail(dto.getEmail());
+        user.setFullname(dto.getFullname());
+        user.setSo_dien_thoai(dto.getSoDienThoai());
+        user.setHash_password(passwordEncoder.encode(dto.getPassword()));
+        user.setRole(User.Role.valueOf(dto.getRole()));
         user.setNgay_tao(new Timestamp(System.currentTimeMillis()));
         user.setNgay_cap_nhat(new Timestamp(System.currentTimeMillis()));
         userRepository.save(user);
@@ -42,25 +55,22 @@ public class AuthController {
         return response;
     }
 
-    // 🔹 API đăng nhập
+    // 🔹 Đăng nhập
     @PostMapping("/login")
-    public Map<String, Object> login(@RequestBody Map<String, String> request) {
+    public Map<String, Object> login(@RequestBody @Valid LoginDTO dto) {
         Map<String, Object> response = new HashMap<>();
-        String email = request.get("email");
-        String password = request.get("password");
 
-        User user = userRepository.findByEmail(email);
+        User user = userRepository.findByEmail(dto.getEmail());
         if (user == null) {
             response.put("message", "Email không tồn tại!");
             return response;
         }
 
-        if (!passwordEncoder.matches(password, user.getHash_password())) {
+        if (!passwordEncoder.matches(dto.getPassword(), user.getHash_password())) {
             response.put("message", "Sai mật khẩu!");
             return response;
         }
 
-        // ✅ Tạo token JWT
         String token = jwtService.generateToken(user.getEmail());
 
         response.put("message", "Đăng nhập thành công!");
