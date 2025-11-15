@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tìm phòng trọ - Phòng Trọ 24/7</title>
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+    <script src="https://unpkg.com/feather-icons"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Be Vietnam Pro', sans-serif;
+        }
+        .filter-sidebar {
+            transition: transform 0.3s ease;
+        }
+        .filter-sidebar.mobile-hidden {
+            transform: translateX(-100%);
+        }
+        @media (min-width: 1024px) {
+            .filter-sidebar.mobile-hidden {
+                transform: translateX(0);
+            }
+        }
+        .filter-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 40;
+        }
+        .filter-overlay.active {
+            display: block;
+        }
+        .loading-skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s ease-in-out infinite;
+        }
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Header - Navbar will be rendered by navbar.js -->
+    <header class="bg-white shadow-sm sticky top-0 z-50" id="navbar-container">
+        <!-- Navbar content will be injected here -->
+    </header>
+
+    <!-- Breadcrumb -->
+    <nav class="bg-white py-3 border-b">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center space-x-2 text-sm text-gray-600">
+                <a href="index.html" class="hover:text-blue-600">Trang chủ</a>
+                <i data-feather="chevron-right" class="w-4 h-4"></i>
+                <span class="text-blue-600">Tìm phòng</span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mx-auto px-4 py-6">
+        <div class="flex flex-col lg:flex-row gap-6">
+            <!-- Filter Overlay (Mobile) -->
+            <div id="filterOverlay" class="filter-overlay" onclick="closeFilterSidebar()"></div>
+
+            <!-- Sidebar Filters -->
+            <div id="filterSidebar" class="filter-sidebar mobile-hidden lg:transform-none lg:relative lg:w-80 bg-white rounded-lg shadow-md p-6 h-fit fixed lg:static top-0 left-0 z-50 lg:z-auto w-80 h-full lg:h-auto overflow-y-auto">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-bold">Bộ lọc tìm kiếm</h2>
+                    <button class="lg:hidden" onclick="closeFilterSidebar()">
+                        <i data-feather="x" class="w-6 h-6"></i>
+                    </button>
+                </div>
+
+                <!-- Phường/Xã Filter -->
+                <div class="mb-6">
+                    <h3 class="font-medium mb-3">Phường/Xã</h3>
+                    <select id="filterPhuongXa" class="w-full p-2 border border-gray-300 rounded-md">
+                        <option value="">Tất cả phường/xã</option>
+                        <option value="Quận Ba Đình">Quận Ba Đình</option>
+                        <option value="Quận Hoàn Kiếm">Quận Hoàn Kiếm</option>
+                        <option value="Quận Hai Bà Trưng">Quận Hai Bà Trưng</option>
+                        <option value="Quận Đống Đa">Quận Đống Đa</option>
+                        <option value="Quận Tây Hồ">Quận Tây Hồ</option>
+                        <option value="Quận Cầu Giấy">Quận Cầu Giấy</option>
+                        <option value="Quận Thanh Xuân">Quận Thanh Xuân</option>
+                        <option value="Quận Hoàng Mai">Quận Hoàng Mai</option>
+                        <option value="Quận Long Biên">Quận Long Biên</option>
+                        <option value="Quận Nam Từ Liêm">Quận Nam Từ Liêm</option>
+                        <option value="Quận Bắc Từ Liêm">Quận Bắc Từ Liêm</option>
+                        <option value="Quận Hà Đông">Quận Hà Đông</option>
+                        <option value="Huyện Đông Anh">Huyện Đông Anh</option>
+                        <option value="Huyện Gia Lâm">Huyện Gia Lâm</option>
+                        <option value="Huyện Sóc Sơn">Huyện Sóc Sơn</option>
+                        <option value="Huyện Thanh Trì">Huyện Thanh Trì</option>
+                        <option value="Huyện Mê Linh">Huyện Mê Linh</option>
+                        <option value="Huyện Phú Xuyên">Huyện Phú Xuyên</option>
+                        <option value="Huyện Thường Tín">Huyện Thường Tín</option>
+                        <option value="Huyện Phúc Thọ">Huyện Phúc Thọ</option>
+                        <option value="Huyện Đan Phượng">Huyện Đan Phượng</option>
+                        <option value="Huyện Hoài Đức">Huyện Hoài Đức</option>
+                        <option value="Huyện Quốc Oai">Huyện Quốc Oai</option>
+                        <option value="Huyện Thạch Thất">Huyện Thạch Thất</option>
+                        <option value="Huyện Chương Mỹ">Huyện Chương Mỹ</option>
+                        <option value="Huyện Thanh Oai">Huyện Thanh Oai</option>
+                        <option value="Huyện Mỹ Đức">Huyện Mỹ Đức</option>
+                        <option value="Huyện Ứng Hòa">Huyện Ứng Hòa</option>
+                        <option value="Huyện Sơn Tây">Huyện Sơn Tây</option>
+                        <option value="Thị xã Sơn Tây">Thị xã Sơn Tây</option>
+                    </select>
+                    <p class="text-xs text-gray-500 mt-2">Khu vực: Hà Nội</p>
+                </div>
+
+                <!-- Filter Actions -->
+                <div class="space-y-3">
+                    <button onclick="applyFilters()" class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition">
+                        Áp dụng bộ lọc
+                    </button>
+                    <button onclick="clearFilters()" class="w-full border border-gray-300 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-50 transition">
+                        Xóa bộ lọc
+                    </button>
+                </div>
+            </div>
+
+            <!-- Main Content Area -->
+            <div class="flex-1">
+                <!-- Search Results Header -->
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center space-x-4">
+                        <button class="lg:hidden bg-blue-600 text-white px-4 py-2 rounded-md" onclick="openFilterSidebar()">
+                            <i data-feather="sliders" class="w-4 h-4 mr-2 inline"></i>
+                            Bộ lọc
+                        </button>
+                        <div>
+                            <h1 class="text-2xl font-bold">Tìm thấy <span id="resultsCount">0</span> phòng trọ</h1>
+                            <p class="text-gray-600 text-sm" id="searchSummary">Đang tải...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Loading State -->
+                <div id="loadingState" class="hidden">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div class="bg-white rounded-lg overflow-hidden shadow-md">
+                            <div class="loading-skeleton h-48"></div>
+                            <div class="p-4">
+                                <div class="loading-skeleton h-4 mb-2 rounded"></div>
+                                <div class="loading-skeleton h-3 mb-3 w-3/4 rounded"></div>
+                                <div class="loading-skeleton h-3 w-1/2 rounded"></div>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-lg overflow-hidden shadow-md">
+                            <div class="loading-skeleton h-48"></div>
+                            <div class="p-4">
+                                <div class="loading-skeleton h-4 mb-2 rounded"></div>
+                                <div class="loading-skeleton h-3 mb-3 w-3/4 rounded"></div>
+                                <div class="loading-skeleton h-3 w-1/2 rounded"></div>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-lg overflow-hidden shadow-md">
+                            <div class="loading-skeleton h-48"></div>
+                            <div class="p-4">
+                                <div class="loading-skeleton h-4 mb-2 rounded"></div>
+                                <div class="loading-skeleton h-3 mb-3 w-3/4 rounded"></div>
+                                <div class="loading-skeleton h-3 w-1/2 rounded"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Search Results Grid -->
+                <div id="resultsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Results will be populated here -->
+                </div>
+
+                <!-- No Results -->
+                <div id="noResults" class="hidden text-center py-12">
+                    <div class="max-w-md mx-auto">
+                        <i data-feather="search" class="w-16 h-16 text-gray-400 mx-auto mb-4"></i>
+                        <h3 class="text-xl font-medium text-gray-900 mb-2">Không tìm thấy kết quả</h3>
+                        <p class="text-gray-600 mb-6">Hãy thử thay đổi bộ lọc hoặc từ khóa tìm kiếm khác</p>
+                        <button onclick="clearFilters()" class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition">
+                            Xóa bộ lọc
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Pagination -->
+                <div id="pagination" class="mt-12 flex justify-center">
+                    <!-- Pagination will be populated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-12 mt-16">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <h3 class="text-xl font-bold mb-4 flex items-center">
+                        <i data-feather="home" class="mr-2"></i> Phòng Trọ 24/7
+                    </h3>
+                    <p class="text-gray-400">Kết nối người thuê và chủ phòng trọ một cách nhanh chóng, tiện lợi.</p>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-4">Về chúng tôi</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white">Giới thiệu</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Điều khoản</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Chính sách bảo mật</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-4">Hỗ trợ</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white">Câu hỏi thường gặp</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Hướng dẫn sử dụng</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Liên hệ</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-4">Kết nối</h4>
+                    <div class="flex space-x-4">
+                        <a href="#" class="bg-gray-700 p-2 rounded-full hover:bg-blue-600 transition">
+                            <i data-feather="facebook"></i>
+                        </a>
+                        <a href="#" class="bg-gray-700 p-2 rounded-full hover:bg-pink-600 transition">
+                            <i data-feather="instagram"></i>
+                        </a>
+                        <a href="#" class="bg-gray-700 p-2 rounded-full hover:bg-blue-400 transition">
+                            <i data-feather="twitter"></i>
+                        </a>
+                    </div>
+                    <div class="mt-4">
+                        <p class="text-gray-400">Hotline: 1900 1234</p>
+                        <p class="text-gray-400">Email: support@phongtro247.com</p>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
+                <p>© 2024 Phòng Trọ 24/7. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Initialize AOS and Feather Icons
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof AOS !== 'undefined') {
+                AOS.init({
+                    duration: 600,
+                    easing: 'ease-in-out',
+                    once: true
+                });
+            }
+            if (typeof feather !== 'undefined') {
+                feather.replace();
+            }
+        });
+    </script>
+    
+    <script src="js/api.js"></script>
+    <script src="js/navbar.js"></script>
+    <script src="js/search.js"></script>
+</body>
+</html>

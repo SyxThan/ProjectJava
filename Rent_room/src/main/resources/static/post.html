@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng tin cho thuê - Phòng Trọ 24/7</title>
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+    <script src="https://unpkg.com/feather-icons"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/post.css">
+</head>
+<body class="bg-gray-50">
+    <!-- Header - Navbar will be rendered by navbar.js -->
+    <header class="bg-white shadow-sm sticky top-0 z-50" id="navbar-container">
+        <!-- Navbar content will be injected here -->
+    </header>
+
+    <!-- Breadcrumb -->
+    <nav class="bg-white py-3 border-b">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center space-x-2 text-sm text-gray-600">
+                <a href="index.html" class="hover:text-blue-600">Trang chủ</a>
+                <i data-feather="chevron-right" class="w-4 h-4"></i>
+                <span class="text-blue-600">Đăng tin cho thuê</span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="py-8">
+        <div class="container mx-auto px-4 max-w-4xl">
+            <!-- Header Section -->
+            <div class="text-center mb-8" data-aos="fade-up">
+                <h1 class="text-3xl font-bold mb-4">Đăng tin cho thuê phòng trọ</h1>
+                <p class="text-gray-600">Đăng tin miễn phí và tiếp cận hàng nghìn khách hàng tiềm năng</p>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="mb-8" data-aos="fade-up" data-aos-delay="100">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center text-sm">
+                        <div class="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-medium mr-2">1</div>
+                        <span class="text-blue-600 font-medium">Thông tin cơ bản</span>
+                    </div>
+                    <div class="flex items-center text-sm">
+                        <div class="w-8 h-8 bg-gray-300 text-gray-600 rounded-full flex items-center justify-center font-medium mr-2 step-indicator" data-step="2">2</div>
+                        <span class="text-gray-600 step-text" data-step="2">Chi tiết & Hình ảnh</span>
+                    </div>
+                    <div class="flex items-center text-sm">
+                        <div class="w-8 h-8 bg-gray-300 text-gray-600 rounded-full flex items-center justify-center font-medium mr-2 step-indicator" data-step="3">3</div>
+                        <span class="text-gray-600 step-text" data-step="3">Xác nhận & Đăng tin</span>
+                    </div>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2">
+                    <div class="bg-blue-600 h-2 rounded-full progress-bar" style="width: 33.33%"></div>
+                </div>
+            </div>
+
+            <!-- Form Container -->
+            <div class="bg-white rounded-lg shadow-lg p-6 md:p-8" data-aos="fade-up" data-aos-delay="200">
+                <form id="postForm" class="space-y-6">
+                    <!-- Step 1: Basic Information -->
+                    <div class="form-step active" id="step1">
+                        <h2 class="text-xl font-bold mb-6 flex items-center">
+                            <i data-feather="info" class="mr-2 text-blue-600"></i>
+                            Thông tin cơ bản
+                        </h2>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Title -->
+                            <div class="md:col-span-2">
+                                <div class="floating-label">
+                                    <input type="text" id="title" name="title" placeholder=" " class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" required>
+                                    <label for="title">Tiêu đề tin đăng *</label>
+                                </div>
+                                <p class="text-sm text-gray-500 mt-1">VD: Phòng trọ cao cấp, đầy đủ nội thất gần trường ĐH</p>
+                            </div>
+
+                            <!-- Property Type -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Loại hình cho thuê *</label>
+                                <select id="propertyType" name="propertyType" class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                                    <option value="">Chọn loại hình</option>
+                                    <option value="room">Phòng trọ</option>
+                                    <option value="house">Nhà nguyên căn</option>
+                                    <option value="apartment">Chung cư mini</option>
+                                    <option value="shared">Phòng ở ghép</option>
+                                    <option value="studio">Studio</option>
+                                </select>
+                            </div>
+
+                            <!-- Price -->
+                            <div>
+                                <div class="floating-label">
+                                    <input type="number" id="price" name="price" placeholder=" " class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" required>
+                                    <label for="price">Giá thuê (VNĐ/tháng) *</label>
+                                </div>
+                            </div>
+
+                            <!-- Area -->
+                            <div>
+                                <div class="floating-label">
+                                    <input type="number" id="area" name="area" placeholder=" " class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                    <label for="area">Diện tích (m²)</label>
+                                </div>
+                            </div>
+
+                            <!-- Deposit -->
+                            <div>
+                                <div class="floating-label">
+                                    <input type="number" id="deposit" name="deposit" placeholder=" " class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                    <label for="deposit">Tiền cọc (VNĐ)</label>
+                                </div>
+                            </div>
+
+                            <!-- City -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Tỉnh/Thành phố *</label>
+                                <select id="city" name="city" class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-100" required disabled>
+                                    <option value="ha-noi" selected>Hà Nội</option>
+                                </select>
+                                <p class="text-xs text-gray-500 mt-1">Website chỉ hoạt động trên địa bàn Hà Nội</p>
+                            </div>
+
+                            <!-- District -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Quận/Huyện *</label>
+                                <select id="district" name="district" class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                                    <option value="">Chọn quận/huyện</option>
+                                </select>
+                            </div>
+
+                            <!-- Address -->
+                            <div class="md:col-span-2">
+                                <div class="floating-label">
+                                    <input type="text" id="address" name="address" placeholder=" " class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" required>
+                                    <label for="address">Địa chỉ cụ thể *</label>
+                                </div>
+                                <p class="text-sm text-gray-500 mt-1">VD: 123 Nguyễn Văn A, Phường 1</p>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-end mt-8">
+                            <button type="button" onclick="nextStep()" class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition flex items-center">
+                                Tiếp theo
+                                <i data-feather="arrow-right" class="ml-2 w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Details & Images -->
+                    <div class="form-step" id="step2">
+                        <h2 class="text-xl font-bold mb-6 flex items-center">
+                            <i data-feather="image" class="mr-2 text-blue-600"></i>
+                            Chi tiết & Hình ảnh
+                        </h2>
+
+                        <!-- Description -->
+                        <div class="mb-6">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Mô tả chi tiết *</label>
+                            <textarea id="description" name="description" rows="6" placeholder="Mô tả chi tiết về phòng trọ, tiện ích, vị trí, yêu cầu..." class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-vertical" required></textarea>
+                            <p class="text-sm text-gray-500 mt-1">Mô tả càng chi tiết sẽ thu hút được nhiều khách hàn hơn</p>
+                        </div>
+
+                        <!-- Amenities -->
+                        <div class="mb-6">
+                            <label class="block text-sm font-medium text-gray-700 mb-3">Tiện ích có sẵn</label>
+                            <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                                <label class="flex items-center space-x-2 cursor-pointer">
+                                    <input type="checkbox" name="amenities" value="wifi" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                    <i data-feather="wifi" class="w-4 h-4 text-gray-600"></i>
+                                    <span>Wifi miễn phí</span>
+                                </label>
+                                <label class="flex items-center space-x-2 cursor-pointer">
+                                    <input type="checkbox" name="amenities" value="parking" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                    <i data-feather="truck" class="w-4 h-4 text-gray-600"></i>
+                                    <span>Chỗ để xe</span>
+                                </label>
+                                <label class="flex items-center space-x-2 cursor-pointer">
+                                    <input type="checkbox" name="amenities" value="ac" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                    <i data-feather="wind" class="w-4 h-4 text-gray-600"></i>
+                                    <span>Điều hòa</span>
+                                </label>
+                                <label class="flex items-center space-x-2 cursor-pointer">
+                                    <input type="checkbox" name="amenities" value="kitchen" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                    <i data-feather="home" class="w-4 h-4 text-gray-600"></i>
+                                    <span>Bếp riêng</span>
+                                </label>
+                                <label class="flex items-center space-x-2 cursor-pointer">
+                                    <input type="checkbox" name="amenities" value="laundry" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                    <i data-feather="droplet" class="w-4 h-4 text-gray-600"></i>
+                                    <span>Máy giặt</span>
+                                </label>
+                                <label class="flex items-center space-x-2 cursor-pointer">
+                                    <input type="checkbox" name="amenities" value="tv" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                    <i data-feather="tv" class="w-4 h-4 text-gray-600"></i>
+                                    <span>TV</span>
+                                </label>
+                                <label class="flex items-center space-x-2 cursor-pointer">
+                                    <input type="checkbox" name="amenities" value="balcony" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                    <i data-feather="sun" class="w-4 h-4 text-gray-600"></i>
+                                    <span>Ban công</span>
+                                </label>
+                                <label class="flex items-center space-x-2 cursor-pointer">
+                                    <input type="checkbox" name="amenities" value="security" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                    <i data-feather="shield" class="w-4 h-4 text-gray-600"></i>
+                                    <span>An ninh 24/7</span>
+                                </label>
+                                <label class="flex items-center space-x-2 cursor-pointer">
+                                    <input type="checkbox" name="amenities" value="elevator" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                    <i data-feather="arrow-up" class="w-4 h-4 text-gray-600"></i>
+                                    <span>Thang máy</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Images Upload -->
+                        <div class="mb-6">
+                            <label class="block text-sm font-medium text-gray-700 mb-3">Hình ảnh phòng trọ</label>
+                            <div class="drag-drop-area" id="dragDropArea">
+                                <i data-feather="upload-cloud" class="w-12 h-12 text-gray-400 mx-auto mb-4"></i>
+                                <p class="text-lg font-medium text-gray-700 mb-2">Kéo thả hình ảnh vào đây</p>
+                                <p class="text-sm text-gray-500 mb-4">hoặc</p>
+                                <button type="button" onclick="document.getElementById('imageInput').click()" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition">
+                                    Chọn hình ảnh
+                                </button>
+                                <input type="file" id="imageInput" multiple accept="image/*" class="hidden">
+                                <p class="text-xs text-gray-500 mt-2">Hỗ trợ JPG, PNG. Tối đa 10 hình.</p>
+                            </div>
+                            
+                            <!-- Image Preview -->
+                            <div id="imagePreview" class="mt-4 flex flex-wrap"></div>
+                        </div>
+
+                        <!-- Rules -->
+                        <div class="mb-6">
+                            <label class="block text-sm font-medium text-gray-700 mb-3">Quy định khác</label>
+                            <div class="space-y-2">
+                                <label class="flex items-center space-x-2">
+                                    <input type="checkbox" name="rules" value="no-pet" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                    <span>Không nuôi thú cưng</span>
+                                </label>
+                                <label class="flex items-center space-x-2">
+                                    <input type="checkbox" name="rules" value="no-smoking" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                    <span>Không hút thuốc</span>
+                                </label>
+                                <label class="flex items-center space-x-2">
+                                    <input type="checkbox" name="rules" value="no-party" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                    <span>Không tổ chức tiệc tùng</span>
+                                </label>
+                                <label class="flex items-center space-x-2">
+                                    <input type="checkbox" name="rules" value="time-limit" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                    <span>Giờ giấc sinh hoạt</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-between mt-8">
+                            <button type="button" onclick="prevStep()" class="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition flex items-center">
+                                <i data-feather="arrow-left" class="mr-2 w-4 h-4"></i>
+                                Quay lại
+                            </button>
+                            <button type="button" onclick="nextStep()" class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition flex items-center">
+                                Tiếp theo
+                                <i data-feather="arrow-right" class="ml-2 w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Contact & Confirmation -->
+                    <div class="form-step" id="step3">
+                        <h2 class="text-xl font-bold mb-6 flex items-center">
+                            <i data-feather="user" class="mr-2 text-blue-600"></i>
+                            Thông tin liên hệ & Xác nhận
+                        </h2>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                            <!-- Contact Name -->
+                            <div>
+                                <div class="floating-label">
+                                    <input type="text" id="contactName" name="contactName" placeholder=" " class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" required>
+                                    <label for="contactName">Họ và tên *</label>
+                                </div>
+                            </div>
+
+                            <!-- Phone -->
+                            <div>
+                                <div class="floating-label">
+                                    <input type="tel" id="phone" name="phone" placeholder=" " class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" required>
+                                    <label for="phone">Số điện thoại *</label>
+                                </div>
+                            </div>
+
+                            <!-- Email -->
+                            <div>
+                                <div class="floating-label">
+                                    <input type="email" id="email" name="email" placeholder=" " class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                    <label for="email">Email</label>
+                                </div>
+                            </div>
+
+                            <!-- Available Date -->
+                            <div>
+                                <div class="floating-label">
+                                    <input type="date" id="availableDate" name="availableDate" placeholder=" " class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                    <label for="availableDate">Ngày có thể cho thuê</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Post Package -->
+                        <div class="mb-8">
+                            <label class="block text-sm font-medium text-gray-700 mb-4">Gói đăng tin</label>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <!-- Free Package -->
+                                <div class="border border-gray-300 rounded-lg p-4 cursor-pointer hover:border-blue-500 transition package-option" data-package="free">
+                                    <div class="flex items-center mb-3">
+                                        <input type="radio" name="package" value="free" id="packageFree" class="mr-2" checked>
+                                        <label for="packageFree" class="font-medium">Miễn phí</label>
+                                    </div>
+                                    <div class="text-2xl font-bold text-green-600 mb-2">0 VNĐ</div>
+                                    <ul class="text-sm text-gray-600 space-y-1">
+                                        <li>✓ Đăng tin 30 ngày</li>
+                                        <li>✓ Hiển thị cơ bản</li>
+                                        <li>✓ Tối đa 15 hình ảnh</li>
+                                        <li>✓ Đánh dấu VIP</li>
+                                        <li>✓ Ưu tiên tìm kiếm</li>
+                                    </ul>
+                                </div>
+
+                                <!-- Premium Package -->
+                                <div class="border border-yellow-500 rounded-lg p-4 cursor-pointer hover:border-yellow-600 transition package-option" data-package="premium">
+                                    <div class="flex items-center mb-3">
+                                        <input type="radio" name="package" value="premium" id="packagePremium" class="mr-2">
+                                        <label for="packagePremium" class="font-medium">Premium</label>
+                                    </div>
+                                    <div class="text-2xl font-bold text-yellow-600 mb-2">100,000 VNĐ</div>
+                                    <ul class="text-sm text-gray-600 space-y-1">
+                                        <li>✓ Đăng tin 60 ngày</li>
+                                        <li>✓ Hiển thị đầu trang</li>
+                                        <li>✓ Không giới hạn hình ảnh</li>
+                                        <li>✓ Hỗ trợ 24/7</li>
+                                        <li>✓ Thống kê chi tiết</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Terms -->
+                        <div class="mb-8">
+                            <label class="flex items-start space-x-2">
+                                <input type="checkbox" id="agreeTerms" name="agreeTerms" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mt-1" required>
+                                <span class="text-sm text-gray-600">
+                                    Tôi đồng ý với 
+                                    <a href="#" class="text-blue-600 hover:underline">Điều khoản sử dụng</a> 
+                                    và 
+                                    <a href="#" class="text-blue-600 hover:underline">Chính sách bảo mật</a> 
+                                    của Phòng Trọ 24/7
+                                </span>
+                            </label>
+                        </div>
+
+                        <!-- Preview Section -->
+                        <div class="bg-gray-50 rounded-lg p-6 mb-8">
+                            <h3 class="text-lg font-medium mb-4">Xem trước tin đăng</h3>
+                            <div class="bg-white rounded-lg p-4 border">
+                                <div class="flex justify-between items-start mb-3">
+                                    <h4 class="font-bold text-lg" id="previewTitle">Tiêu đề tin đăng sẽ hiển thị ở đây</h4>
+                                    <span class="text-lg font-bold text-blue-600" id="previewPrice">0 VNĐ/tháng</span>
+                                </div>
+                                <p class="text-gray-600 mb-3" id="previewAddress">Địa chỉ sẽ hiển thị ở đây</p>
+                                <div class="flex flex-wrap gap-2 mb-3" id="previewAmenities">
+                                    <!-- Amenities will be populated here -->
+                                </div>
+                                <p class="text-sm text-gray-500" id="previewArea">Diện tích: -- m²</p>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-between mt-8">
+                            <button type="button" onclick="prevStep()" class="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition flex items-center">
+                                <i data-feather="arrow-left" class="mr-2 w-4 h-4"></i>
+                                Quay lại
+                            </button>
+                            <button type="submit" class="px-8 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition flex items-center font-medium">
+                                <i data-feather="send" class="mr-2 w-4 h-4"></i>
+                                Đăng tin ngay
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay hidden">
+        <div class="bg-white rounded-lg p-6 text-center">
+            <div class="spinner mx-auto mb-4"></div>
+            <p class="text-gray-600">Đang xử lý tin đăng của bạn...</p>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div id="successModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg p-8 max-w-md mx-4 text-center">
+            <div class="success-message text-white p-4 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                <i data-feather="check" class="w-8 h-8"></i>
+            </div>
+            <h3 class="text-xl font-bold mb-4">Đăng tin thành công!</h3>
+            <p class="text-gray-600 mb-6">Tin đăng của bạn đã được gửi lên hệ thống và sẽ được duyệt trong vòng 24 giờ.</p>
+            <div class="flex space-x-4">
+                <button onclick="window.location.href='index.html'" class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition">
+                    Về trang chủ
+                </button>
+                <button onclick="window.location.reload()" class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition">
+                    Đăng tin khác
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-12 mt-16">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <h3 class="text-xl font-bold mb-4 flex items-center">
+                        <i data-feather="home" class="mr-2"></i> Phòng Trọ 24/7
+                    </h3>
+                    <p class="text-gray-400">Kết nối người thuê và chủ phòng trọ một cách nhanh chóng, tiện lợi.</p>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-4">Về chúng tôi</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white">Giới thiệu</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Điều khoản</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Chính sách bảo mật</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-4">Hỗ trợ</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white">Câu hỏi thường gặp</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Hướng dẫn sử dụng</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Liên hệ</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-4">Kết nối</h4>
+                    <div class="flex space-x-4">
+                        <a href="#" class="bg-gray-700 p-2 rounded-full hover:bg-blue-600 transition">
+                            <i data-feather="facebook"></i>
+                        </a>
+                        <a href="#" class="bg-gray-700 p-2 rounded-full hover:bg-pink-600 transition">
+                            <i data-feather="instagram"></i>
+                        </a>
+                        <a href="#" class="bg-gray-700 p-2 rounded-full hover:bg-blue-400 transition">
+                            <i data-feather="twitter"></i>
+                        </a>
+                        <a href="#" class="bg-gray-700 p-2 rounded-full hover:bg-red-600 transition">
+                            <i data-feather="youtube"></i>
+                        </a>
+                    </div>
+                    <div class="mt-4">
+                        <p class="text-gray-400">Hotline: 1900 1234</p>
+                        <p class="text-gray-400">Email: support@phongtro247.com</p>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
+                <p>© 2023 Phòng Trọ 24/7. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/api.js"></script>
+    <script src="js/navbar.js"></script>
+    <script src="js/post.js"></script>
+</body>

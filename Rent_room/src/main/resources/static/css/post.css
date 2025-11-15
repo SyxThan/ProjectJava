@@ -1,0 +1,117 @@
+body {
+    font-family: 'Be Vietnam Pro', sans-serif;
+}
+
+.form-step {
+    display: none;
+}
+
+.form-step.active {
+    display: block;
+}
+
+.progress-bar {
+    transition: width 0.3s ease;
+}
+
+.preview-image {
+    position: relative;
+    display: inline-block;
+    margin: 5px;
+}
+
+.preview-image img {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 2px solid #e5e7eb;
+}
+
+.preview-image .remove-btn {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: #ef4444;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    font-size: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.drag-drop-area {
+    border: 2px dashed #d1d5db;
+    border-radius: 8px;
+    padding: 2rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.drag-drop-area.drag-over {
+    border-color: #3b82f6;
+    background-color: #eff6ff;
+}
+
+.success-message {
+    background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid #f3f4f6;
+    border-top: 5px solid #3b82f6;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.floating-label {
+    position: relative;
+}
+
+.floating-label input:focus + label,
+.floating-label input:not(:placeholder-shown) + label,
+.floating-label textarea:focus + label,
+.floating-label textarea:not(:placeholder-shown) + label,
+.floating-label select:focus + label,
+.floating-label select:not([value=""]) + label {
+    transform: translateY(-1.5rem) scale(0.85);
+    color: #3b82f6;
+}
+
+.floating-label label {
+    position: absolute;
+    left: 0.75rem;
+    top: 0.75rem;
+    background: white;
+    padding: 0 0.25rem;
+    transition: all 0.2s ease;
+    pointer-events: none;
+    color: #6b7280;
+}
+

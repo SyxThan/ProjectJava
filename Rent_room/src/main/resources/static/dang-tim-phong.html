@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng bài tìm phòng - Phòng Trọ 24/7</title>
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+    <script src="https://unpkg.com/feather-icons"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Be Vietnam Pro', sans-serif;
+        }
+        .floating-label {
+            position: relative;
+        }
+        .floating-label input:focus + label,
+        .floating-label input:not(:placeholder-shown) + label,
+        .floating-label textarea:focus + label,
+        .floating-label textarea:not(:placeholder-shown) + label {
+            transform: translateY(-1.5rem) scale(0.85);
+            color: #3b82f6;
+        }
+        .floating-label label {
+            position: absolute;
+            left: 0.75rem;
+            top: 0.75rem;
+            background: white;
+            padding: 0 0.25rem;
+            transition: all 0.2s ease;
+            pointer-events: none;
+            color: #6b7280;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Header - Navbar will be rendered by navbar.js -->
+    <header class="bg-white shadow-sm sticky top-0 z-50" id="navbar-container">
+        <!-- Navbar content will be injected here -->
+    </header>
+
+    <!-- Breadcrumb -->
+    <nav class="bg-white py-3 border-b">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center space-x-2 text-sm text-gray-600">
+                <a href="index.html" class="hover:text-blue-600">Trang chủ</a>
+                <i data-feather="chevron-right" class="w-4 h-4"></i>
+                <span class="text-blue-600">Đăng bài tìm phòng</span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="py-8">
+        <div class="container mx-auto px-4 max-w-4xl">
+            <div class="text-center mb-8" data-aos="fade-up">
+                <h1 class="text-3xl font-bold mb-4">Đăng bài tìm phòng trọ</h1>
+                <p class="text-gray-600">Mô tả nhu cầu của bạn để chủ phòng có thể liên hệ</p>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-lg p-6 md:p-8" data-aos="fade-up" data-aos-delay="100">
+                <form id="postForm" class="space-y-6">
+                    <!-- Title -->
+                    <div>
+                        <div class="floating-label">
+                            <input 
+                                type="text" 
+                                id="tieuDe" 
+                                name="tieuDe" 
+                                placeholder=" " 
+                                class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+                                required
+                            >
+                            <label for="tieuDe">Tiêu đề bài đăng *</label>
+                        </div>
+                        <p class="text-sm text-gray-500 mt-1">VD: Tìm phòng trọ gần trường ĐH Bách Khoa, giá rẻ</p>
+                    </div>
+
+                    <!-- Description -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Mô tả chi tiết *</label>
+                        <textarea 
+                            id="moTa" 
+                            name="moTa" 
+                            rows="6" 
+                            placeholder="Mô tả chi tiết về nhu cầu tìm phòng của bạn..." 
+                            class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-vertical" 
+                            required
+                        ></textarea>
+                    </div>
+
+                    <!-- Location -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <div class="floating-label">
+                                <input 
+                                    type="text" 
+                                    id="khuVucMongMuonXa" 
+                                    name="khuVucMongMuonXa" 
+                                    placeholder=" " 
+                                    class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+                                    required
+                                >
+                                <label for="khuVucMongMuonXa">Xã/Phường mong muốn *</label>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="floating-label">
+                                <input 
+                                    type="text" 
+                                    id="khuVucMongMuonThanhPho" 
+                                    name="khuVucMongMuonThanhPho" 
+                                    placeholder=" " 
+                                    value="Hà Nội"
+                                    class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-100" 
+                                    required
+                                    readonly
+                                >
+                                <label for="khuVucMongMuonThanhPho">Thành phố *</label>
+                                <p class="text-xs text-gray-500 mt-1">Website chỉ hoạt động trên địa bàn Hà Nội</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Price Range -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <div class="floating-label">
+                                <input 
+                                    type="number" 
+                                    id="giaThapNhat" 
+                                    name="giaThapNhat" 
+                                    placeholder=" " 
+                                    step="100000" 
+                                    min="0"
+                                    class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+                                    required
+                                >
+                                <label for="giaThapNhat">Giá thấp nhất (VNĐ) *</label>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="floating-label">
+                                <input 
+                                    type="number" 
+                                    id="giaCaoNhat" 
+                                    name="giaCaoNhat" 
+                                    placeholder=" " 
+                                    step="100000" 
+                                    min="0"
+                                    class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+                                    required
+                                >
+                                <label for="giaCaoNhat">Giá cao nhất (VNĐ) *</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Additional Info -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <div class="floating-label">
+                                <input 
+                                    type="number" 
+                                    id="dienTichToiThieu" 
+                                    name="dienTichToiThieu" 
+                                    placeholder=" " 
+                                    step="0.1" 
+                                    min="0"
+                                    class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                >
+                                <label for="dienTichToiThieu">Diện tích tối thiểu (m²)</label>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="floating-label">
+                                <input 
+                                    type="number" 
+                                    id="soNguoiO" 
+                                    name="soNguoiO" 
+                                    placeholder=" " 
+                                    min="1"
+                                    class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                >
+                                <label for="soNguoiO">Số người ở</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- User ID (will be set from token) -->
+                    <input type="hidden" id="userId" name="userId">
+
+                    <!-- Submit Button -->
+                    <div class="flex justify-end space-x-4 pt-6 border-t">
+                        <a href="tim-phong.html" class="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition">
+                            Hủy
+                        </a>
+                        <button type="submit" class="px-8 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition font-medium">
+                            <i data-feather="send" class="inline mr-2 w-4 h-4"></i>
+                            Đăng bài
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <!-- Success Modal -->
+    <div id="successModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg p-8 max-w-md mx-4 text-center">
+            <div class="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i data-feather="check" class="w-8 h-8 text-white"></i>
+            </div>
+            <h3 class="text-xl font-bold mb-4">Đăng bài thành công!</h3>
+            <p class="text-gray-600 mb-6">Bài đăng của bạn đã được đăng lên hệ thống.</p>
+            <div class="flex space-x-4">
+                <button onclick="window.location.href='tim-phong.html'" class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition">
+                    Xem danh sách
+                </button>
+                <button onclick="window.location.reload()" class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition">
+                    Đăng bài khác
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-12 mt-16">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <h3 class="text-xl font-bold mb-4 flex items-center">
+                        <i data-feather="home" class="mr-2"></i> Phòng Trọ 24/7
+                    </h3>
+                    <p class="text-gray-400">Kết nối người thuê và chủ phòng trọ một cách nhanh chóng, tiện lợi.</p>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
+                <p>© 2023 Phòng Trọ 24/7. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:8080/api/baidangtimphong';
+
+        document.addEventListener('DOMContentLoaded', function() {
+            AOS.init({ duration: 600, easing: 'ease-in-out', once: true });
+            feather.replace();
+            
+            // Get user ID from localStorage (if logged in)
+            const token = localStorage.getItem('token');
+            if (token) {
+                // In real app, decode JWT to get user ID
+                // For now, you might need to get it from another API
+                document.getElementById('userId').value = localStorage.getItem('userId') || '';
+            }
+            
+            // Form submission
+            document.getElementById('postForm').addEventListener('submit', handleFormSubmit);
+        });
+
+        async function handleFormSubmit(e) {
+            e.preventDefault();
+            
+            const formData = {
+                tieuDe: document.getElementById('tieuDe').value,
+                moTa: document.getElementById('moTa').value,
+                khuVucMongMuonXa: document.getElementById('khuVucMongMuonXa').value,
+                khuVucMongMuonThanhPho: document.getElementById('khuVucMongMuonThanhPho').value,
+                giaThapNhat: parseFloat(document.getElementById('giaThapNhat').value),
+                giaCaoNhat: parseFloat(document.getElementById('giaCaoNhat').value),
+                dienTichToiThieu: document.getElementById('dienTichToiThieu').value ? 
+                    parseFloat(document.getElementById('dienTichToiThieu').value) : null,
+                soNguoiO: document.getElementById('soNguoiO').value ? 
+                    parseInt(document.getElementById('soNguoiO').value) : null,
+                userId: parseInt(document.getElementById('userId').value) || 1 // Default to 1 if not set
+            };
+
+            // Validation
+            if (formData.giaThapNhat > formData.giaCaoNhat) {
+                alert('Giá thấp nhất không được lớn hơn giá cao nhất');
+                return;
+            }
+
+            try {
+                const token = localStorage.getItem('token');
+                const headers = {
+                    'Content-Type': 'application/json'
+                };
+                
+                if (token) {
+                    headers['Authorization'] = `Bearer ${token}`;
+                }
+
+                const response = await fetch(`${API_BASE_URL}/createpost`, {
+                    method: 'POST',
+                    headers: headers,
+                    body: JSON.stringify(formData)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    document.getElementById('successModal').classList.remove('hidden');
+                } else {
+                    alert('Lỗi: ' + (result.message || 'Không thể đăng bài'));
+                }
+            } catch (error) {
+                console.error('Error submitting form:', error);
+                alert('Lỗi kết nối đến server');
+            }
+        }
+    </script>
+    <script src="js/api.js"></script>
+    <script src="js/navbar.js"></script>
+    <script src="js/dang-tim-phong.js"></script>
+</body>
+</html>

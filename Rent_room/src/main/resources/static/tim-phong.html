@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tìm phòng trọ - Phòng Trọ 24/7</title>
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+    <script src="https://unpkg.com/feather-icons"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Be Vietnam Pro', sans-serif;
+        }
+        .loading-skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s ease-in-out infinite;
+        }
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        .filter-sidebar {
+            transition: transform 0.3s ease;
+        }
+        .filter-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 40;
+        }
+        @media (max-width: 1024px) {
+            .filter-sidebar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                height: 100vh;
+                width: 80%;
+                max-width: 400px;
+                z-index: 50;
+                transform: translateX(-100%);
+                overflow-y: auto;
+            }
+            .filter-sidebar.open {
+                transform: translateX(0);
+            }
+            .filter-overlay.open {
+                display: block;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Header - Navbar will be rendered by navbar.js -->
+    <header class="bg-white shadow-sm sticky top-0 z-50" id="navbar-container">
+        <!-- Navbar content will be injected here -->
+    </header>
+
+    <!-- Breadcrumb -->
+    <nav class="bg-white py-3 border-b">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center space-x-2 text-sm text-gray-600">
+                <a href="index.html" class="hover:text-blue-600">Trang chủ</a>
+                <i data-feather="chevron-right" class="w-4 h-4"></i>
+                <span class="text-blue-600">Tìm người thuê phòng</span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Search Header -->
+    <section class="bg-white py-6 border-b">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row gap-4 items-center">
+                <!-- Search Input -->
+                <div class="flex-1 relative">
+                    <i data-feather="search" class="absolute left-3 top-3 text-gray-400 w-5 h-5"></i>
+                    <input 
+                        type="text" 
+                        id="searchKeyword" 
+                        placeholder="Tìm theo khu vực, thành phố..." 
+                        class="pl-10 w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                </div>
+                
+                <!-- Quick Filters -->
+                <div class="flex gap-3 flex-wrap">
+                    <select id="quickCity" class="p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">Tất cả tỉnh/thành</option>
+                        <option value="Hà Nội">Hà Nội</option>
+                        <option value="TP. Hồ Chí Minh">TP. Hồ Chí Minh</option>
+                        <option value="Đà Nẵng">Đà Nẵng</option>
+                        <option value="Cần Thơ">Cần Thơ</option>
+                        <option value="Hải Phòng">Hải Phòng</option>
+                    </select>
+                    
+                    <input 
+                        type="number" 
+                        id="quickPriceMin" 
+                        placeholder="Giá min (triệu)" 
+                        class="p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-32"
+                    >
+                    <input 
+                        type="number" 
+                        id="quickPriceMax" 
+                        placeholder="Giá max (triệu)" 
+                        class="p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-32"
+                    >
+                    
+                    <button onclick="performSearch()" class="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition flex items-center">
+                        <i data-feather="search" class="mr-2 w-4 h-4"></i>
+                        Tìm kiếm
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <div class="container mx-auto px-4 py-6">
+        <div class="flex flex-col lg:flex-row gap-6">
+            <!-- Filter Sidebar -->
+            <div id="filterSidebar" class="filter-sidebar bg-white rounded-lg shadow-md p-6 h-fit lg:w-80">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-bold">Bộ lọc tìm kiếm</h2>
+                    <button class="lg:hidden" onclick="closeFilterSidebar()">
+                        <i data-feather="x" class="w-6 h-6"></i>
+                    </button>
+                </div>
+
+                <!-- Location Filter -->
+                <div class="mb-6">
+                    <h3 class="font-medium mb-3">Khu vực mong muốn</h3>
+                    <div class="space-y-2">
+                        <input 
+                            type="text" 
+                            id="filterXa" 
+                            placeholder="Xã/Phường" 
+                            class="w-full p-2 border border-gray-300 rounded-md"
+                        >
+                        <input 
+                            type="text" 
+                            id="filterThanhPho" 
+                            placeholder="Thành phố (Hà Nội)"
+                            value="Hà Nội"
+                            class="w-full p-2 border border-gray-300 rounded-md bg-gray-100"
+                            readonly
+                        >
+                    </div>
+                </div>
+
+                <!-- Price Range Filter -->
+                <div class="mb-6">
+                    <h3 class="font-medium mb-3">Khoảng giá mong muốn</h3>
+                    <div class="space-y-3">
+                        <input 
+                            type="number" 
+                            id="filterPriceMin" 
+                            placeholder="Giá thấp nhất (VNĐ)" 
+                            class="w-full p-2 border border-gray-300 rounded-md"
+                        >
+                        <input 
+                            type="number" 
+                            id="filterPriceMax" 
+                            placeholder="Giá cao nhất (VNĐ)" 
+                            class="w-full p-2 border border-gray-300 rounded-md"
+                        >
+                    </div>
+                </div>
+
+                <!-- Filter Actions -->
+                <div class="space-y-3">
+                    <button onclick="applyFilters()" class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition">
+                        Áp dụng bộ lọc
+                    </button>
+                    <button onclick="clearFilters()" class="w-full border border-gray-300 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-50 transition">
+                        Xóa bộ lọc
+                    </button>
+                </div>
+            </div>
+
+            <!-- Main Content Area -->
+            <div class="flex-1">
+                <!-- Search Results Header -->
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center space-x-4">
+                        <button class="lg:hidden bg-blue-600 text-white px-4 py-2 rounded-md" onclick="openFilterSidebar()">
+                            <i data-feather="sliders" class="w-4 h-4 mr-2 inline"></i>
+                            Bộ lọc
+                        </button>
+                        <div>
+                            <h1 class="text-2xl font-bold">Tìm thấy <span id="resultsCount">0</span> bài đăng</h1>
+                            <p class="text-gray-600" id="searchSummary">Tất cả khu vực • Tất cả mức giá</p>
+                        </div>
+                    </div>
+                    
+                    <a href="dang-tim-phong.html" class="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition flex items-center">
+                        <i data-feather="plus" class="mr-2 w-4 h-4"></i>
+                        Đăng bài tìm phòng
+                    </a>
+                </div>
+
+                <!-- Loading State -->
+                <div id="loadingState" class="hidden">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="bg-white rounded-lg overflow-hidden shadow-md">
+                            <div class="loading-skeleton h-48"></div>
+                            <div class="p-4">
+                                <div class="loading-skeleton h-4 mb-2 rounded"></div>
+                                <div class="loading-skeleton h-3 mb-3 w-3/4 rounded"></div>
+                                <div class="loading-skeleton h-3 w-1/2 rounded"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Search Results Grid -->
+                <div id="resultsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Results will be populated here -->
+                </div>
+
+                <!-- No Results -->
+                <div id="noResults" class="hidden text-center py-12">
+                    <div class="max-w-md mx-auto">
+                        <i data-feather="search" class="w-16 h-16 text-gray-400 mx-auto mb-4"></i>
+                        <h3 class="text-xl font-medium text-gray-900 mb-2">Không tìm thấy kết quả</h3>
+                        <p class="text-gray-600 mb-6">Hãy thử thay đổi bộ lọc hoặc từ khóa tìm kiếm khác</p>
+                        <button onclick="clearFilters()" class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition">
+                            Xóa bộ lọc
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-12 mt-16">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <h3 class="text-xl font-bold mb-4 flex items-center">
+                        <i data-feather="home" class="mr-2"></i> Phòng Trọ 24/7
+                    </h3>
+                    <p class="text-gray-400">Kết nối người thuê và chủ phòng trọ một cách nhanh chóng, tiện lợi.</p>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-4">Về chúng tôi</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white">Giới thiệu</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Điều khoản</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Chính sách bảo mật</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-4">Hỗ trợ</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white">Câu hỏi thường gặp</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Hướng dẫn sử dụng</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Liên hệ</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-4">Kết nối</h4>
+                    <div class="flex space-x-4">
+                        <a href="#" class="bg-gray-700 p-2 rounded-full hover:bg-blue-600 transition">
+                            <i data-feather="facebook"></i>
+                        </a>
+                        <a href="#" class="bg-gray-700 p-2 rounded-full hover:bg-pink-600 transition">
+                            <i data-feather="instagram"></i>
+                        </a>
+                        <a href="#" class="bg-gray-700 p-2 rounded-full hover:bg-blue-400 transition">
+                            <i data-feather="twitter"></i>
+                        </a>
+                    </div>
+                    <div class="mt-4">
+                        <p class="text-gray-400">Hotline: 1900 1234</p>
+                        <p class="text-gray-400">Email: support@phongtro247.com</p>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
+                <p>© 2023 Phòng Trọ 24/7. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Filter Overlay (Mobile) -->
+    <div id="filterOverlay" class="filter-overlay" onclick="closeFilterSidebar()"></div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:8080/api/baidangtimphong/';
+        let currentPosts = [];
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            AOS.init({ duration: 600, easing: 'ease-in-out', once: true });
+            feather.replace();
+            
+            // Load all posts on page load
+            loadAllPosts();
+            
+            // Setup event listeners
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            if (mobileMenuButton) {
+                mobileMenuButton.addEventListener('click', function() {
+                    const menu = document.getElementById('mobile-menu');
+                    if (menu) menu.classList.toggle('hidden');
+                });
+            }
+            
+            const searchKeyword = document.getElementById('searchKeyword');
+            if (searchKeyword) {
+                searchKeyword.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        performSearch();
+                    }
+                });
+            }
+        });
+
+        // Load all posts
+        async function loadAllPosts() {
+            showLoading();
+            try {
+                console.log('Loading posts from:', API_BASE_URL);
+                const response = await fetch(API_BASE_URL);
+                
+                console.log('Response status:', response.status);
+                console.log('Response ok:', response.ok);
+                
+                if (response.ok) {
+                    const contentType = response.headers.get('content-type');
+                    console.log('Content-Type:', contentType);
+                    
+                    let posts;
+                    if (contentType && contentType.includes('application/json')) {
+                        posts = await response.json();
+                    } else {
+                        const text = await response.text();
+                        console.log('Response text:', text);
+                        try {
+                            posts = JSON.parse(text);
+                        } catch (e) {
+                            console.error('Failed to parse JSON:', e);
+                            showError('Lỗi định dạng dữ liệu từ server');
+                            hideLoading();
+                            return;
+                        }
+                    }
+                    
+                    console.log('Posts received:', posts);
+                    console.log('Is array:', Array.isArray(posts));
+                    
+                    // Ensure posts is an array
+                    if (!Array.isArray(posts)) {
+                        console.error('Posts is not an array:', typeof posts, posts);
+                        if (typeof posts === 'string') {
+                            showError('Lỗi: ' + posts);
+                        } else {
+                            showError('Dữ liệu không đúng định dạng');
+                        }
+                        hideLoading();
+                        return;
+                    }
+                    
+                    currentPosts = posts;
+                    displayPosts(posts);
+                } else {
+                    const errorText = await response.text();
+                    console.error('Error response:', errorText);
+                    showError('Không thể tải danh sách bài đăng: ' + errorText);
+                }
+            } catch (error) {
+                console.error('Error loading posts:', error);
+                console.error('Error stack:', error.stack);
+                showError('Lỗi kết nối đến server: ' + error.message);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Perform search
+        async function performSearch() {
+            showLoading();
+            const keyword = document.getElementById('searchKeyword').value;
+            const city = document.getElementById('quickCity').value;
+            const priceMin = document.getElementById('quickPriceMin').value;
+            const priceMax = document.getElementById('quickPriceMax').value;
+
+            try {
+                let url = `${API_BASE_URL}search?`;
+                const params = [];
+                
+                if (city) params.push(`thanhPho=${encodeURIComponent(city)}`);
+                if (priceMin) params.push(`costMin=${priceMin * 1000000}`);
+                if (priceMax) params.push(`costMax=${priceMax * 1000000}`);
+                
+                if (params.length > 0) {
+                    url += params.join('&');
+                    console.log('Search URL:', url);
+                    const response = await fetch(url);
+                    if (response.ok) {
+                        const posts = await response.json();
+                        if (Array.isArray(posts)) {
+                            currentPosts = posts;
+                            displayPosts(posts);
+                        } else {
+                            console.error('Search result is not an array:', posts);
+                            showError('Kết quả tìm kiếm không đúng định dạng');
+                        }
+                    } else {
+                        const errorText = await response.text();
+                        showError('Lỗi tìm kiếm: ' + errorText);
+                    }
+                } else {
+                    loadAllPosts();
+                }
+            } catch (error) {
+                console.error('Error searching:', error);
+                showError('Lỗi khi tìm kiếm: ' + error.message);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Apply filters
+        async function applyFilters() {
+            showLoading();
+            const xa = document.getElementById('filterXa').value;
+            const thanhPho = document.getElementById('filterThanhPho').value;
+            const priceMin = document.getElementById('filterPriceMin').value;
+            const priceMax = document.getElementById('filterPriceMax').value;
+
+            try {
+                let url = `${API_BASE_URL}search?`;
+                const params = [];
+                
+                if (xa) params.push(`xa=${encodeURIComponent(xa)}`);
+                if (thanhPho) params.push(`thanhPho=${encodeURIComponent(thanhPho)}`);
+                if (priceMin) params.push(`costMin=${priceMin}`);
+                if (priceMax) params.push(`costMax=${priceMax}`);
+                
+                if (params.length > 0) {
+                    url += params.join('&');
+                    console.log('Filter URL:', url);
+                    const response = await fetch(url);
+                    if (response.ok) {
+                        const posts = await response.json();
+                        if (Array.isArray(posts)) {
+                            currentPosts = posts;
+                            displayPosts(posts);
+                        } else {
+                            console.error('Filter result is not an array:', posts);
+                            showError('Kết quả lọc không đúng định dạng');
+                        }
+                    } else {
+                        const errorText = await response.text();
+                        showError('Lỗi lọc: ' + errorText);
+                    }
+                } else {
+                    loadAllPosts();
+                }
+            } catch (error) {
+                console.error('Error filtering:', error);
+                showError('Lỗi khi lọc kết quả: ' + error.message);
+            } finally {
+                hideLoading();
+                closeFilterSidebar();
+            }
+        }
+
+        // Clear filters
+        function clearFilters() {
+            const searchKeyword = document.getElementById('searchKeyword');
+            const quickCity = document.getElementById('quickCity');
+            const quickPriceMin = document.getElementById('quickPriceMin');
+            const quickPriceMax = document.getElementById('quickPriceMax');
+            const filterXa = document.getElementById('filterXa');
+            const filterThanhPho = document.getElementById('filterThanhPho');
+            const filterPriceMin = document.getElementById('filterPriceMin');
+            const filterPriceMax = document.getElementById('filterPriceMax');
+            
+            if (searchKeyword) searchKeyword.value = '';
+            if (quickCity) quickCity.value = '';
+            if (quickPriceMin) quickPriceMin.value = '';
+            if (quickPriceMax) quickPriceMax.value = '';
+            if (filterXa) filterXa.value = '';
+            if (filterThanhPho) filterThanhPho.value = '';
+            if (filterPriceMin) filterPriceMin.value = '';
+            if (filterPriceMax) filterPriceMax.value = '';
+            loadAllPosts();
+        }
+
+        // Display posts
+        function displayPosts(posts) {
+            console.log('Displaying posts:', posts);
+            const resultsGrid = document.getElementById('resultsGrid');
+            const noResults = document.getElementById('noResults');
+            const resultsCount = document.getElementById('resultsCount');
+            
+            if (!resultsGrid || !noResults || !resultsCount) {
+                console.error('Required DOM elements not found');
+                return;
+            }
+            
+            if (!Array.isArray(posts)) {
+                console.error('Posts is not an array in displayPosts:', posts);
+                return;
+            }
+            
+            resultsCount.textContent = posts.length;
+            
+            if (posts.length === 0) {
+                resultsGrid.classList.add('hidden');
+                noResults.classList.remove('hidden');
+                return;
+            }
+            
+            resultsGrid.classList.remove('hidden');
+            noResults.classList.add('hidden');
+            
+            try {
+                resultsGrid.innerHTML = posts.map(post => {
+                    if (!post) {
+                        console.warn('Null post found:', post);
+                        return '';
+                    }
+                    
+                    return `
+                        <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition" data-aos="fade-up">
+                            <div class="p-6">
+                                <div class="flex justify-between items-start mb-3">
+                                    <h3 class="text-lg font-bold text-gray-900 flex-1">${escapeHtml(post.tieuDe || 'Không có tiêu đề')}</h3>
+                                    <span class="ml-2 px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">Đang tìm</span>
+                                </div>
+                                
+                                <p class="text-gray-600 mb-4 line-clamp-2">${escapeHtml(post.moTa || 'Không có mô tả')}</p>
+                                
+                                <div class="space-y-2 mb-4">
+                                    <div class="flex items-center text-sm text-gray-600">
+                                        <i data-feather="map-pin" class="w-4 h-4 mr-2"></i>
+                                        <span>${escapeHtml(post.khuVucMongMuonXa || '')}, ${escapeHtml(post.khuVucMongMuonThanhPho || '')}</span>
+                                    </div>
+                                    <div class="flex items-center text-sm text-gray-600">
+                                        <i data-feather="dollar-sign" class="w-4 h-4 mr-2"></i>
+                                        <span>${formatPrice(post.giaThapNhat)} - ${formatPrice(post.giaCaoNhat)} VNĐ/tháng</span>
+                                    </div>
+                                    ${post.dienTichToiThieu ? `
+                                    <div class="flex items-center text-sm text-gray-600">
+                                        <i data-feather="maximize-2" class="w-4 h-4 mr-2"></i>
+                                        <span>Tối thiểu ${post.dienTichToiThieu} m²</span>
+                                    </div>
+                                    ` : ''}
+                                    ${post.soNguoiO ? `
+                                    <div class="flex items-center text-sm text-gray-600">
+                                        <i data-feather="users" class="w-4 h-4 mr-2"></i>
+                                        <span>${post.soNguoiO} người</span>
+                                    </div>
+                                    ` : ''}
+                                </div>
+                                
+                                <div class="flex items-center justify-between pt-4 border-t">
+                                    <span class="text-xs text-gray-500">${formatDate(post.ngayDang)}</span>
+                                    <button onclick="viewPostDetail(${post.id})" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition text-sm">
+                                        Xem chi tiết
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).filter(html => html !== '').join('');
+                
+                feather.replace();
+            } catch (error) {
+                console.error('Error rendering posts:', error);
+                showError('Lỗi khi hiển thị bài đăng: ' + error.message);
+            }
+        }
+
+        // View post detail
+        function viewPostDetail(id) {
+            window.location.href = `tim-phong-detail.html?id=${id}`;
+        }
+
+        // Utility functions
+        function formatPrice(price) {
+            if (!price && price !== 0) return '0';
+            return new Intl.NumberFormat('vi-VN').format(price);
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return '';
+            try {
+                const date = new Date(dateString);
+                if (isNaN(date.getTime())) return '';
+                return date.toLocaleDateString('vi-VN');
+            } catch (e) {
+                return '';
+            }
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function showLoading() {
+            const loadingState = document.getElementById('loadingState');
+            const resultsGrid = document.getElementById('resultsGrid');
+            if (loadingState) loadingState.classList.remove('hidden');
+            if (resultsGrid) resultsGrid.classList.add('hidden');
+        }
+
+        function hideLoading() {
+            const loadingState = document.getElementById('loadingState');
+            const resultsGrid = document.getElementById('resultsGrid');
+            if (loadingState) loadingState.classList.add('hidden');
+            if (resultsGrid) resultsGrid.classList.remove('hidden');
+        }
+
+        function showError(message) {
+            console.error('Error:', message);
+            alert(message);
+        }
+
+        // Filter sidebar functions
+        function openFilterSidebar() {
+            const sidebar = document.getElementById('filterSidebar');
+            const overlay = document.getElementById('filterOverlay');
+            if (sidebar) sidebar.classList.add('open');
+            if (overlay) overlay.classList.add('open');
+        }
+
+        function closeFilterSidebar() {
+            const sidebar = document.getElementById('filterSidebar');
+            const overlay = document.getElementById('filterOverlay');
+            if (sidebar) sidebar.classList.remove('open');
+            if (overlay) overlay.classList.remove('open');
+        }
+    </script>
+    <script src="js/api.js"></script>
+    <script src="js/navbar.js"></script>
+    <script src="js/tim-phong.js"></script>
+</body>
+</html>
