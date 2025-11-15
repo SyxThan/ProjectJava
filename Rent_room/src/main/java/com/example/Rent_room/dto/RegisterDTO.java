@@ -30,8 +30,4 @@ public class RegisterDTO {
     @NotBlank(message = "Số điện thoại không được để trống")
     @Pattern(regexp = "^\\d{10,11}$", message = "Số điện thoại phải có 10-11 chữ số")
     private String soDienThoai;
-
-    @NotNull(message = "Role không được để trống")
-    @Pattern(regexp = "^(nguoi_thue|chu_tro)$", message = "Role phải là: nguoi_thue hoặc chu_tro")
-    private String role;
 }
