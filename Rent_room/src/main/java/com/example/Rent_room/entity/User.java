@@ -4,6 +4,10 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import java.sql.Timestamp;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import java.util.Collection;
+import java.util.Collections;
 
 @Entity
 @Table(name = "user")
@@ -32,5 +36,13 @@ public class User {
         nguoi_thue,
         chu_tro,
         quan_tri_vien
+    }
+
+    // Chuyển role sang Spring Security GrantedAuthority
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        if (this.role == null) return Collections.emptyList();
+        return Collections.singletonList(
+            new SimpleGrantedAuthority("ROLE_" + this.role.name().toUpperCase())
+        );
     }
 }
