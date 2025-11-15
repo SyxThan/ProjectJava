@@ -2,11 +2,22 @@
 const API_BASE = 'http://localhost:8080';
 
 // Data stores
-let allRooms = [];
-let filteredRooms = [];
-let currentView = 'list';
-let currentPage = 1;
-const itemsPerPage = 9;
+let currentFilters = {
+    keyword: '',
+    tinhThanhpho: '',
+    phuongXa: '',
+    giaMin: null,
+    giaMax: null,
+    dienTichMin: null,
+    dienTichMax: null,
+    trangThai: '',
+    page: 0,
+    pageSize: 9,
+    sortBy: 'id',
+    sortDirection: 'desc'
+};
+let currentResponse = null;
+let currentView = 'grid';
 
 // District data for cities
 const districtData = {
@@ -50,31 +61,132 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Initialize view buttons state
     initializeViewButtons();
 
-    // Load data from backend then render
+    // Load initial data from backend
     showLoading();
     try {
         await loadRoomsFromBackend();
-        filteredRooms = [...allRooms];
-        displayRooms(filteredRooms);
-        updateResultsCount(filteredRooms.length);
+        updateResultsCount();
     } catch (e) {
         console.error('Failed to load listings from backend:', e);
-        filteredRooms = [];
-        displayRooms(filteredRooms);
-        updateResultsCount(0);
+        displayNoResults();
     } finally {
         hideLoading();
     }
 });
 
-// Fetch listings from backend and normalize to UI schema
+// Fetch listings from backend using new pagination API
 async function loadRoomsFromBackend() {
-    const resp = await fetch(`${API_BASE}/api/baidang`);
+    const params = new URLSearchParams();
+    
+    if (currentFilters.keyword) params.append('keyword', currentFilters.keyword);
+    if (currentFilters.tinhThanhpho) params.append('tinhThanhpho', currentFilters.tinhThanhpho);
+    if (currentFilters.phuongXa) params.append('phuongXa', currentFilters.phuongXa);
+    if (currentFilters.giaMin !== null) params.append('giaMin', currentFilters.giaMin);
+    if (currentFilters.giaMax !== null) params.append('giaMax', currentFilters.giaMax);
+    if (currentFilters.dienTichMin !== null) params.append('dienTichMin', currentFilters.dienTichMin);
+    if (currentFilters.dienTichMax !== null) params.append('dienTichMax', currentFilters.dienTichMax);
+    if (currentFilters.trangThai) params.append('trangThai', currentFilters.trangThai);
+    
+    params.append('page', currentFilters.page);
+    params.append('pageSize', currentFilters.pageSize);
+    params.append('sortBy', currentFilters.sortBy);
+    params.append('sortDirection', currentFilters.sortDirection);
+    
+    const resp = await fetch(`${API_BASE}/api/baidang?${params.toString()}`);
     if (!resp.ok) {
         throw new Error(`HTTP ${resp.status}`);
     }
     const data = await resp.json();
-    allRooms = (Array.isArray(data) ? data : []).map(normalizeListingFromBackend);
+    currentResponse = data;
+    
+    const rooms = (data.content || []).map(normalizeListingFromBackend);
+    displayRooms(rooms);
+    updatePagination(data);
+}
+
+// Update pagination controls based on backend response
+function updatePagination(pageData) {
+    const totalPages = pageData.totalPages || 0;
+    const currentPage = pageData.number || 0;
+    const paginationContainer = document.getElementById('pagination');
+    
+    if (!paginationContainer || totalPages <= 1) {
+        if (paginationContainer) {
+            paginationContainer.innerHTML = '';
+        }
+        return;
+    }
+    
+    let html = '<nav class="flex items-center space-x-1">';
+    
+    // Previous button
+    html += `<button onclick="goToPage(${currentPage - 1})" 
+             ${currentPage === 0 ? 'disabled' : ''} 
+             class="px-3 py-2 ${currentPage === 0 ? 'text-gray-300 cursor-not-allowed' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'} rounded-md">
+                <i data-feather="chevron-left" class="w-4 h-4"></i>
+             </button>`;
+    
+    // Page numbers with ellipsis logic
+    const maxVisible = 5;
+    let startPage = Math.max(0, currentPage - 2);
+    let endPage = Math.min(totalPages - 1, startPage + maxVisible - 1);
+    
+    if (endPage - startPage < maxVisible - 1) {
+        startPage = Math.max(0, endPage - maxVisible + 1);
+    }
+    
+    // First page
+    if (startPage > 0) {
+        html += `<button onclick="goToPage(0)" class="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-md">1</button>`;
+        if (startPage > 1) {
+            html += '<span class="px-3 py-2 text-gray-500">...</span>';
+        }
+    }
+    
+    // Page numbers
+    for (let i = startPage; i <= endPage; i++) {
+        const isActive = i === currentPage;
+        html += `<button onclick="goToPage(${i})" 
+                 class="px-4 py-2 ${isActive ? 'bg-blue-600 text-white' : 'text-gray-700 hover:bg-gray-100'} rounded-md">
+                    ${i + 1}
+                 </button>`;
+    }
+    
+    // Last page
+    if (endPage < totalPages - 1) {
+        if (endPage < totalPages - 2) {
+            html += '<span class="px-3 py-2 text-gray-500">...</span>';
+        }
+        html += `<button onclick="goToPage(${totalPages - 1})" class="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-md">${totalPages}</button>`;
+    }
+    
+    // Next button
+    html += `<button onclick="goToPage(${currentPage + 1})" 
+             ${currentPage >= totalPages - 1 ? 'disabled' : ''} 
+             class="px-3 py-2 ${currentPage >= totalPages - 1 ? 'text-gray-300 cursor-not-allowed' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'} rounded-md">
+                <i data-feather="chevron-right" class="w-4 h-4"></i>
+             </button>`;
+    
+    html += '</nav>';
+    paginationContainer.innerHTML = html;
+    
+    // Re-initialize feather icons for the new buttons
+    feather.replace();
+}
+
+// Navigate to a specific page
+async function goToPage(page) {
+    currentFilters.page = page;
+    showLoading();
+    try {
+        await loadRoomsFromBackend();
+        updateResultsCount();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (e) {
+        console.error('Page navigation failed:', e);
+    } finally {
+        hideLoading();
+    }
 }
 
 // Convert backend BaiDangChoThue -> UI room object
@@ -116,22 +228,22 @@ function extractImageUrls(arr) {
             const raw = img.duong_dan_anh || img.url || img.path || '';
             if (!raw) return;
             if (Array.isArray(raw)) {
-                raw.forEach(u => { if (typeof u === 'string') urls.push(u); });
+                raw.forEach(u => { if (typeof u === 'string') urls.push(processImageUrl(u)); });
             } else if (typeof raw === 'string') {
                 const trimmed = raw.trim();
                 if (trimmed.startsWith('[')) {
                     // JSON-style array string
                     try {
                         const parsed = JSON.parse(trimmed);
-                        if (Array.isArray(parsed)) parsed.forEach(u => { if (typeof u === 'string') urls.push(u); });
+                        if (Array.isArray(parsed)) parsed.forEach(u => { if (typeof u === 'string') urls.push(processImageUrl(u)); });
                     } catch (_) {
                         // fall back to comma split
-                        trimmed.split(',').map(s => s.trim()).forEach(u => { if (u) urls.push(u); });
+                        trimmed.split(',').map(s => s.trim()).forEach(u => { if (u) urls.push(processImageUrl(u)); });
                     }
                 } else if (trimmed.includes(',')) {
-                    trimmed.split(',').map(s => s.trim()).forEach(u => { if (u) urls.push(u); });
+                    trimmed.split(',').map(s => s.trim()).forEach(u => { if (u) urls.push(processImageUrl(u)); });
                 } else {
-                    urls.push(trimmed);
+                    urls.push(processImageUrl(trimmed));
                 }
             }
         });
@@ -140,6 +252,26 @@ function extractImageUrls(arr) {
         console.warn('extractImageUrls failed:', e);
         return [];
     }
+}
+
+// Process image URL to handle relative paths
+function processImageUrl(url) {
+    if (!url) return '';
+    // If it's already a full URL (http/https), return as is
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+        return url;
+    }
+    // If it's a data URI, return as is
+    if (url.startsWith('data:')) {
+        return url;
+    }
+    // If it starts with /uploads, add API_BASE
+    if (url.startsWith('/uploads') || url.startsWith('uploads')) {
+        const cleanUrl = url.startsWith('/') ? url : '/' + url;
+        return `${API_BASE}${cleanUrl}`;
+    }
+    // Otherwise assume it's a relative path and add API_BASE
+    return `${API_BASE}/${url}`;
 }
 
 function slugify(val) {
@@ -241,107 +373,75 @@ function updatePriceDisplay(value) {
 }
 
 // Perform search
-function performSearch() {
-    const keyword = document.getElementById('searchKeyword').value.toLowerCase();
+async function performSearch() {
+    const keyword = document.getElementById('searchKeyword').value.trim();
     const quickCity = document.getElementById('quickCity').value;
     const quickPrice = document.getElementById('quickPrice').value;
 
     // Show loading
     showLoading();
 
-    // Simulate API delay
-    setTimeout(() => {
-        let results = [...allRooms];
+    // Update filters
+    currentFilters.keyword = keyword || '';
+    currentFilters.tinhThanhpho = quickCity || '';
+    currentFilters.page = 0; // Reset to first page
+    
+    // Parse price range
+    if (quickPrice) {
+        const [min, max] = quickPrice.split('-').map(p => p === '+' ? null : parseInt(p) * 1000000);
+        currentFilters.giaMin = min;
+        currentFilters.giaMax = max || null;
+    } else {
+        currentFilters.giaMin = null;
+        currentFilters.giaMax = null;
+    }
 
-        // Filter by keyword
-        if (keyword) {
-            results = results.filter(room => 
-                room.title.toLowerCase().includes(keyword) ||
-                room.address.toLowerCase().includes(keyword) ||
-                room.description.toLowerCase().includes(keyword)
-            );
-        }
-
-        // Filter by quick city
-        if (quickCity) {
-            results = results.filter(room => room.city === quickCity);
-        }
-
-        // Filter by quick price
-        if (quickPrice) {
-            results = filterByPriceRange(results, quickPrice);
-        }
-
-        filteredRooms = results;
-        displayRooms(filteredRooms);
-        updateResultsCount(filteredRooms.length);
+    try {
+        await loadRoomsFromBackend();
+        updateResultsCount();
         updateSearchSummary(keyword, quickCity, quickPrice);
+    } catch (e) {
+        console.error('Search failed:', e);
+        displayNoResults();
+    } finally {
         hideLoading();
-    }, 800);
+    }
 }
 
 // Apply filters
-function applyFilters() {
+async function applyFilters() {
     showLoading();
 
-    setTimeout(() => {
-        let results = [...allRooms];
+    // Gather all filter values
+    const keyword = document.getElementById('searchKeyword').value.trim();
+    const city = document.getElementById('filterCity').value;
+    const district = document.getElementById('filterDistrict').value;
+    const priceRange = parseFloat(document.getElementById('priceRange').value);
 
-        // Apply all filters
-        const keyword = document.getElementById('searchKeyword').value.toLowerCase();
-        const city = document.getElementById('filterCity').value;
-        const district = document.getElementById('filterDistrict').value;
-        const priceRange = document.getElementById('priceRange').value;
-        const roomTypes = Array.from(document.querySelectorAll('input[name="roomType"]:checked')).map(cb => cb.value);
-        const area = document.querySelector('input[name="area"]:checked')?.value;
-        const amenities = Array.from(document.querySelectorAll('input[name="amenities"]:checked')).map(cb => cb.value);
+    // Update currentFilters
+    currentFilters.keyword = keyword || '';
+    currentFilters.tinhThanhpho = city || '';
+    currentFilters.phuongXa = district || '';
+    currentFilters.page = 0; // Reset to first page
+    
+    // Price filter (priceRange slider is in millions)
+    if (priceRange < 20) {
+        currentFilters.giaMin = null;
+        currentFilters.giaMax = priceRange * 1000000;
+    } else {
+        currentFilters.giaMin = null;
+        currentFilters.giaMax = null;
+    }
 
-        // Filter by keyword
-        if (keyword) {
-            results = results.filter(room => 
-                room.title.toLowerCase().includes(keyword) ||
-                room.address.toLowerCase().includes(keyword) ||
-                room.description.toLowerCase().includes(keyword)
-            );
-        }
-
-        // Filter by city
-        if (city) {
-            results = results.filter(room => room.city === city);
-        }
-
-        // Filter by district
-        if (district) {
-            results = results.filter(room => room.district === district);
-        }
-
-        // Filter by price
-        if (priceRange < 20) {
-            results = results.filter(room => room.price <= priceRange * 1000000);
-        }
-
-        // Filter by room type
-        if (roomTypes.length > 0) {
-            results = results.filter(room => roomTypes.includes(room.type));
-        }
-
-        // Filter by area
-        if (area) {
-            results = filterByArea(results, area);
-        }
-
-        // Filter by amenities
-        if (amenities.length > 0) {
-            results = results.filter(room => 
-                amenities.every(amenity => room.amenities.includes(amenity))
-            );
-        }
-
-        filteredRooms = results;
-        displayRooms(filteredRooms);
-        updateResultsCount(filteredRooms.length);
+    try {
+        await loadRoomsFromBackend();
+        updateResultsCount();
+    } catch (e) {
+        console.error('Apply filters failed:', e);
+        displayNoResults();
+    } finally {
         hideLoading();
-    }, 500);
+    }
 }
 
 // Filter by price range
@@ -414,12 +514,8 @@ function displayGridView(rooms) {
     noResults.classList.add('hidden');
     grid.classList.remove('hidden');
 
-    // Pagination
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
-    const paginatedRooms = rooms.slice(startIndex, endIndex);
-
-    grid.innerHTML = paginatedRooms.map(room => `
+    // No client-side pagination - backend handles it
+    grid.innerHTML = rooms.map(room => `
         <div class="room-card bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition cursor-pointer flex flex-col h-full" onclick="goToDetail(${room.id})">
             <div class="relative">
                 <img src="${room.images[0]}" alt="${room.title}" class="w-full h-48 object-cover">
@@ -478,12 +574,8 @@ function displayListView(rooms) {
     noResults.classList.add('hidden');
     list.classList.remove('hidden');
 
-    // Pagination
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
-    const paginatedRooms = rooms.slice(startIndex, endIndex);
-
-    list.innerHTML = paginatedRooms.map(room => `
+    // No client-side pagination - backend handles it
+    list.innerHTML = rooms.map(room => `
         <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition cursor-pointer" onclick="goToDetail(${room.id})">
             <div class="flex">
                 <div class="w-1/3 relative">
@@ -529,29 +621,58 @@ function displayListView(rooms) {
     feather.replace();
 }
 
-// Sort results
-function sortResults() {
+// Sort results - updates sorting and reloads from backend
+async function sortResults() {
     const sortBy = document.getElementById('sortBy').value;
     
     switch(sortBy) {
         case 'newest':
-            filteredRooms.sort((a, b) => new Date(b.posted) - new Date(a.posted));
+            currentFilters.sortBy = 'id';
+            currentFilters.sortDirection = 'desc';
             break;
         case 'price-asc':
-            filteredRooms.sort((a, b) => a.price - b.price);
+            currentFilters.sortBy = 'gia_thang';
+            currentFilters.sortDirection = 'asc';
             break;
         case 'price-desc':
-            filteredRooms.sort((a, b) => b.price - a.price);
+            currentFilters.sortBy = 'gia_thang';
+            currentFilters.sortDirection = 'desc';
             break;
         case 'area-desc':
-            filteredRooms.sort((a, b) => b.area - a.area);
+            currentFilters.sortBy = 'dien_tich_m2';
+            currentFilters.sortDirection = 'desc';
             break;
         case 'popular':
-            filteredRooms.sort((a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0));
+            // Backend doesn't have a popularity field, fallback to newest
+            currentFilters.sortBy = 'id';
+            currentFilters.sortDirection = 'desc';
             break;
     }
     
-    displayRooms(filteredRooms);
+    currentFilters.page = 0; // Reset to first page
+    showLoading();
+    try {
+        await loadRoomsFromBackend();
+        updateResultsCount();
+    } catch (e) {
+        console.error('Sort failed:', e);
+    } finally {
+        hideLoading();
+    }
+}
+
+// Display no results message
+function displayNoResults() {
+    const container = document.getElementById('roomsContainer');
+    container.innerHTML = `
+        <div class="col-span-full text-center py-12">
+            <i data-feather="search" class="w-16 h-16 mx-auto text-gray-400 mb-4"></i>
+            <h3 class="text-xl font-semibold text-gray-700 mb-2">Không tìm thấy kết quả</h3>
+            <p class="text-gray-500">Vui lòng thử lại với bộ lọc khác</p>
+        </div>
+    `;
+    feather.replace();
+    updateResultsCount();
 }
 
 // Change view
@@ -599,7 +720,8 @@ function hideLoading() {
 }
 
 // Update results count
-function updateResultsCount(count) {
+function updateResultsCount() {
+    const count = currentResponse?.totalElements || 0;
     document.getElementById('resultsCount').textContent = count.toLocaleString();
 }
 
