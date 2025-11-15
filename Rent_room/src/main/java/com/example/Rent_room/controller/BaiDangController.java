@@ -1,5 +1,7 @@
 package com.example.Rent_room.controller;
 
+import com.example.Rent_room.dto.BaiDangOutputDTO;
+import com.example.Rent_room.dto.PaginationResponseDTO;
 import com.example.Rent_room.entity.BaiDangChoThue;
 import com.example.Rent_room.entity.TrangThaiBaiDang;
 import com.example.Rent_room.service.BaiDangService;
@@ -18,9 +20,29 @@ public class BaiDangController {
         this.baiDangService = baiDangService;
     }
 
-    @GetMapping
+    // Endpoint cũ - lấy tất cả không phân trang
+    @GetMapping("/all")
     public List<BaiDangChoThue> getAll() {
         return baiDangService.getAllBaiDang();
+    }
+    
+    // Endpoint mới - lấy với phân trang và filter
+    @GetMapping
+    public PaginationResponseDTO<BaiDangOutputDTO> getAllWithPagination(
+            @RequestParam(defaultValue = "0") int page,           // Trang hiện tại (bắt đầu từ 0)
+            @RequestParam(defaultValue = "10") int size,          // Số items mỗi trang
+            @RequestParam(required = false) String tinhThanh,     // Filter theo tỉnh/thành phố
+            @RequestParam(required = false) String phuongXa,      // Filter theo phường/xã
+            @RequestParam(required = false) Double giaMin,        // Giá tối thiểu
+            @RequestParam(required = false) Double giaMax,        // Giá tối đa
+            @RequestParam(required = false) Float dienTichMin,    // Diện tích tối thiểu
+            @RequestParam(required = false) Float dienTichMax,    // Diện tích tối đa
+            @RequestParam(required = false) TrangThaiBaiDang trangThai  // Trạng thái bài đăng
+    ) {
+        return baiDangService.getAllBaiDangWithPagination(
+            page, size, tinhThanh, phuongXa, giaMin, giaMax, 
+            dienTichMin, dienTichMax, trangThai
+        );
     }
     
     @GetMapping("/{id}")
