@@ -1,9 +1,10 @@
 // Backend API base (dev profile runs on 8080)
 const API_BASE = 'http://localhost:8080';
+const ITEMS_PER_PAGE = 20;
 
 // Data stores
 let currentFilters = {
-    tinhThanh: '',
+    tinhThanh: 'Hà Nội',
     phuongXa: '',
     giaMin: null,
     giaMax: null,
@@ -11,36 +12,11 @@ let currentFilters = {
     dienTichMax: null,
     trangThai: '',
     page: 0,
-    size: 9
+    size: ITEMS_PER_PAGE
 };
 let currentResponse = null;
 let currentView = 'grid';
-
-// District data for cities
-const districtData = {
-    'ho-chi-minh': [
-        'quan-1', 'quan-2', 'quan-3', 'quan-4', 'quan-5', 'quan-6', 'quan-7', 'quan-8', 'quan-9', 'quan-10',
-        'quan-11', 'quan-12', 'binh-thanh', 'go-vap', 'phu-nhuan', 'tan-binh', 'tan-phu', 'thu-duc',
-        'binh-chanh', 'can-gio', 'cu-chi', 'hoc-mon', 'nha-be'
-    ],
-    'ha-noi': [
-        'ba-dinh', 'hoan-kiem', 'hai-ba-trung', 'dong-da', 'tay-ho', 'cau-giay',
-        'thanh-xuan', 'hoang-mai', 'long-bien', 'nam-tu-liem', 'bac-tu-liem', 'ha-dong'
-    ],
-    'da-nang': [
-        'hai-chau', 'thanh-khe', 'son-tra', 'ngu-hanh-son', 'lien-chieu', 'cam-le'
-    ]
-    // Add more districts as needed
-};
-
-// City names mapping
-const cityNames = {
-    'ho-chi-minh': 'TP. Hồ Chí Minh',
-    'ha-noi': 'Hà Nội',
-    'da-nang': 'Đà Nẵng',
-    'can-tho': 'Cần Thơ',
-    'hai-phong': 'Hải Phòng'
-};
+let currentPage = 1;
 
 // Initialize page
 document.addEventListener('DOMContentLoaded', async function() {
@@ -257,30 +233,11 @@ function setupEventListeners() {
         menu.classList.toggle('hidden');
     });
 
-    // City change listener
-    document.getElementById('filterCity').addEventListener('change', function() {
-        updateDistricts(this.value);
-    });
-
-    // Search input listener
-    document.getElementById('searchKeyword').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            performSearch();
-        }
-    });
-
-    // Quick filter listeners
-    document.getElementById('quickCity').addEventListener('change', performSearch);
-    document.getElementById('quickPrice').addEventListener('change', performSearch);
-
-    // Filter change listeners
-    const filterInputs = document.querySelectorAll('#filterSidebar input, #filterSidebar select');
+    // Filter change listeners - auto apply when changing filters
+    const filterInputs = document.querySelectorAll('#filterDistrict, #priceFilter, #areaFilter');
     filterInputs.forEach(input => {
         input.addEventListener('change', function() {
-            // Don't auto-apply, user needs to click "Áp dụng bộ lọc" button
-            if (this.id === 'priceRange') {
-                updatePriceDisplay(this.value);
-            }
+            applyFilters();
         });
     });
 }
@@ -301,30 +258,6 @@ function initializeViewButtons() {
         listBtn.classList.remove('bg-blue-600', 'text-white');
         listBtn.classList.add('text-gray-600');
     }
-}
-
-// Update districts based on selected city
-function updateDistricts(cityCode) {
-    const districtSelect = document.getElementById('filterDistrict');
-    districtSelect.innerHTML = '<option value="">Chọn quận/huyện</option>';
-    districtSelect.disabled = !cityCode;
-
-    if (cityCode && districtData[cityCode]) {
-        districtData[cityCode].forEach(districtCode => {
-            const option = document.createElement('option');
-            option.value = districtCode;
-            option.textContent = formatDistrictName(districtCode);
-            districtSelect.appendChild(option);
-        });
-        districtSelect.disabled = false;
-    }
-}
-
-// Format district name
-function formatDistrictName(districtCode) {
-    return districtCode.split('-').map(word => 
-        word.charAt(0).toUpperCase() + word.slice(1)
-    ).join(' ');
 }
 
 // Update price display
@@ -376,27 +309,39 @@ async function applyFilters() {
     showLoading();
 
     // Gather all filter values
-    const city = document.getElementById('filterCity').value;
     const district = document.getElementById('filterDistrict').value;
-    const priceRange = parseFloat(document.getElementById('priceRange').value);
+    const priceFilter = document.getElementById('priceFilter').value;
+    const areaFilter = document.getElementById('areaFilter').value;
 
     // Update currentFilters
-    currentFilters.tinhThanh = city || '';
+    currentFilters.tinhThanh = 'Hà Nội';
     currentFilters.phuongXa = district || '';
     currentFilters.page = 0; // Reset to first page
     
-    // Price filter (priceRange slider is in millions)
-    if (priceRange < 20) {
-        currentFilters.giaMin = null;
-        currentFilters.giaMax = priceRange * 1000000;
+    // Price filter
+    if (priceFilter) {
+        const [min, max] = priceFilter.split('-');
+        currentFilters.giaMin = min ? parseFloat(min) : null;
+        currentFilters.giaMax = max ? parseFloat(max) : null;
     } else {
         currentFilters.giaMin = null;
         currentFilters.giaMax = null;
+    }
+    
+    // Area filter
+    if (areaFilter) {
+        const [min, max] = areaFilter.split('-');
+        currentFilters.dienTichMin = min ? parseFloat(min) : null;
+        currentFilters.dienTichMax = max ? parseFloat(max) : null;
+    } else {
+        currentFilters.dienTichMin = null;
+        currentFilters.dienTichMax = null;
     }
 
     try {
         await loadRoomsFromBackend();
         updateResultsCount();
+        updateSearchSummary(district, priceFilter);
     } catch (e) {
         console.error('Apply filters failed:', e);
         displayNoResults();
@@ -408,22 +353,13 @@ async function applyFilters() {
 // Clear filters
 function clearFilters() {
     // Clear all form inputs
-    document.getElementById('searchKeyword').value = '';
-    document.getElementById('quickCity').value = '';
-    document.getElementById('quickPrice').value = '';
-    document.getElementById('filterCity').value = '';
     document.getElementById('filterDistrict').value = '';
-    document.getElementById('filterDistrict').disabled = true;
-    document.getElementById('priceRange').value = 20;
-    document.getElementById('priceDisplay').textContent = 'Tất cả mức giá';
-
-    // Clear checkboxes and radio buttons
-    document.querySelectorAll('#filterSidebar input[type="checkbox"]').forEach(cb => cb.checked = false);
-    document.querySelectorAll('#filterSidebar input[type="radio"]').forEach(rb => rb.checked = false);
+    document.getElementById('priceFilter').value = '';
+    document.getElementById('areaFilter').value = '';
 
     // Reset filters
     currentFilters = {
-        tinhThanh: '',
+        tinhThanh: 'Hà Nội',
         phuongXa: '',
         giaMin: null,
         giaMax: null,
@@ -431,7 +367,7 @@ function clearFilters() {
         dienTichMax: null,
         trangThai: '',
         page: 0,
-        size: 9
+        size: ITEMS_PER_PAGE
     };
     
     // Reload data
@@ -481,7 +417,7 @@ function displayGridView(rooms) {
     grid.innerHTML = rooms.map(room => `
         <div class="room-card bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition cursor-pointer flex flex-col h-full" onclick="goToDetail(${room.id})">
             <div class="relative">
-                <img src="${room.images[0]}" alt="${room.title}" class="w-full h-48 object-cover">
+                <img src="${room.images[0]}" alt="${room.title}" class="w-full h-56 object-cover">
                 ${room.featured ? '<div class="absolute top-3 left-3 bg-blue-600 text-white px-2 py-1 rounded text-sm font-medium">Nổi bật</div>' : ''}
                 <div class="absolute top-3 right-3 bg-white p-2 rounded-full shadow-md">
                     <i data-feather="heart" class="text-gray-400 hover:text-red-500 w-4 h-4 cursor-pointer"></i>
@@ -641,17 +577,6 @@ function changeView(view) {
     }
 }
 
-// Filter sidebar functions
-function openFilterSidebar() {
-    document.getElementById('filterSidebar').classList.remove('mobile-hidden');
-    document.getElementById('filterOverlay').classList.add('active');
-}
-
-function closeFilterSidebar() {
-    document.getElementById('filterSidebar').classList.add('mobile-hidden');
-    document.getElementById('filterOverlay').classList.remove('active');
-}
-
 // Loading state
 function showLoading() {
     document.getElementById('loadingState').classList.remove('hidden');
@@ -671,22 +596,30 @@ function updateResultsCount() {
 }
 
 // Update search summary
-function updateSearchSummary(city, price) {
+function updateSearchSummary(district, price) {
     let summary = [];
     
-    if (city) summary.push(cityNames[city] || city);
+    summary.push('Hà Nội');
+    if (district) summary.push(district);
     if (price) {
-        const priceLabel = price === '10+' ? 'Trên 10 triệu' : 
-                            price.includes('-') ? `${price.split('-').join(' - ')} triệu` : 
-                            `Dưới ${price} triệu`;
+        const priceLabel = getPriceLabel(price);
         summary.push(priceLabel);
     }
     
-    if (summary.length === 0) {
-        summary = ['Tất cả khu vực', 'Tất cả mức giá'];
-    }
-    
     document.getElementById('searchSummary').textContent = summary.join(' • ');
+}
+
+// Get price label from filter value
+function getPriceLabel(priceValue) {
+    const labels = {
+        '0-2000000': 'Dưới 2 triệu',
+        '2000000-3000000': '2 - 3 triệu',
+        '3000000-5000000': '3 - 5 triệu',
+        '5000000-7000000': '5 - 7 triệu',
+        '7000000-10000000': '7 - 10 triệu',
+        '10000000-': 'Trên 10 triệu'
+    };
+    return labels[priceValue] || 'Tất cả mức giá';
 }
 
 // Go to detail page
@@ -860,11 +793,6 @@ function shareSearch() {
 
 // Keyboard shortcuts
 document.addEventListener('keydown', function(e) {
-    // Escape key to close filter sidebar on mobile
-    if (e.key === 'Escape') {
-        closeFilterSidebar();
-    }
-    
     // Ctrl/Cmd + K to focus search
     if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
         e.preventDefault();
@@ -913,11 +841,7 @@ function measureSearchPerformance() {
 
 // Responsive design helper
 function handleResize() {
-    const isMobile = window.innerWidth < 1024;
-    if (!isMobile) {
-        // Automatically close mobile filter sidebar on desktop
-        closeFilterSidebar();
-    }
+    // Handle responsive layout changes if needed
 }
 
 window.addEventListener('resize', handleResize);

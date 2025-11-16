@@ -70,7 +70,16 @@
 
     <!-- Main Content -->
     <div class="container mx-auto px-4 py-8">
-        <div class="flex flex-col lg:flex-row gap-8">
+        <!-- Loading State -->
+        <div id="loadingState" class="flex justify-center items-center py-20">
+            <div class="text-center">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                <p class="text-gray-600">Đang tải thông tin phòng...</p>
+            </div>
+        </div>
+
+        <!-- Room Content -->
+        <div id="roomContent" class="hidden flex flex-col lg:flex-row gap-8">
             <!-- Room Details -->
             <div class="lg:w-2/3">
                 <!-- Breadcrumb -->
@@ -99,7 +108,7 @@
 
                 <!-- Room Title -->
                 <div class="flex justify-between items-start mb-4">
-                    <h1 class="text-2xl md:text-3xl font-bold">Phòng trọ đẹp Q.1 - Full nội thất, gần trung tâm</h1>
+                    <h1 id="roomTitle" class="text-2xl md:text-3xl font-bold">Đang tải...</h1>
                     <div class="flex items-center space-x-2">
                         <button class="p-2 bg-white rounded-full shadow-md hover:bg-gray-100 transition">
                             <i data-feather="share-2" class="text-gray-600"></i>
@@ -111,48 +120,24 @@
                 </div>
 
                 <!-- Room Location -->
-                <div class="flex items-center text-gray-600 mb-4">
+                <div id="roomLocation" class="flex items-center text-gray-600 mb-4">
                     <i data-feather="map-pin" class="w-5 h-5 mr-1"></i>
-                    <span>123 Nguyễn Huệ, Phường Bến Nghé, Quận 1, TP.HCM</span>
+                    <span>Đang tải...</span>
                 </div>
 
                 <!-- Room Highlights -->
-                <div class="flex flex-wrap gap-3 mb-6">
-                    <div class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium flex items-center">
-                        <i data-feather="star" class="w-4 h-4 mr-1"></i> Nổi bật
-                    </div>
-                    <div class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
-                        Còn phòng
-                    </div>
-                    <div class="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-medium">
-                        Mới xây
-                    </div>
+                <div id="statusBadges" class="flex flex-wrap gap-3 mb-6">
                 </div>
 
                 <!-- Room Gallery -->
                 <div class="mb-6">
-                    <div class="relative rounded-xl overflow-hidden mb-2" style="height: 400px;">
-                        <img src="http://static.photos/indoor/1200x630/1" alt="Phòng trọ" class="w-full h-full object-cover">
+                    <div class="relative rounded-xl overflow-hidden mb-2" style="height: 500px;">
+                        <img id="mainImage" src="" alt="Phòng trọ" class="w-full h-full object-cover">
                         <div class="absolute bottom-4 right-4 bg-white px-3 py-1 rounded-full shadow-md text-sm">
-                            1/8
+                            <span id="imageCount">0/0</span>
                         </div>
                     </div>
-                    <div class="room-gallery flex space-x-2 overflow-x-auto py-2">
-                        <div class="flex-shrink-0 w-24 h-16 rounded-md overflow-hidden cursor-pointer border-2 border-blue-500">
-                            <img src="http://static.photos/indoor/320x240/1" alt="Phòng trọ" class="w-full h-full object-cover">
-                        </div>
-                        <div class="flex-shrink-0 w-24 h-16 rounded-md overflow-hidden cursor-pointer hover:border-2 hover:border-blue-500">
-                            <img src="http://static.photos/indoor/320x240/2" alt="Phòng trọ" class="w-full h-full object-cover">
-                        </div>
-                        <div class="flex-shrink-0 w-24 h-16 rounded-md overflow-hidden cursor-pointer hover:border-2 hover:border-blue-500">
-                            <img src="http://static.photos/indoor/320x240/3" alt="Phòng trọ" class="w-full h-full object-cover">
-                        </div>
-                        <div class="flex-shrink-0 w-24 h-16 rounded-md overflow-hidden cursor-pointer hover:border-2 hover:border-blue-500">
-                            <img src="http://static.photos/indoor/320x240/4" alt="Phòng trọ" class="w-full h-full object-cover">
-                        </div>
-                        <div class="flex-shrink-0 w-24 h-16 rounded-md overflow-hidden cursor-pointer hover:border-2 hover:border-blue-500">
-                            <img src="http://static.photos/indoor/320x240/5" alt="Phòng trọ" class="w-full h-full object-cover">
-                        </div>
+                    <div id="thumbnails" class="room-gallery flex space-x-2 overflow-x-auto py-2">
                     </div>
                 </div>
 
@@ -166,7 +151,7 @@
                             </div>
                             <div>
                                 <p class="text-gray-500 text-sm">Giá thuê</p>
-                                <p class="font-bold text-lg text-blue-600">3.500.000đ/tháng</p>
+                                <p id="roomPrice" class="font-bold text-lg text-blue-600">Đang tải...</p>
                             </div>
                         </div>
                         <div class="flex items-center">
@@ -175,7 +160,7 @@
                             </div>
                             <div>
                                 <p class="text-gray-500 text-sm">Diện tích</p>
-                                <p class="font-bold text-lg">25m²</p>
+                                <p id="roomArea" class="font-bold text-lg">Đang tải...</p>
                             </div>
                         </div>
                         <div class="flex items-center">
@@ -184,7 +169,7 @@
                             </div>
                             <div>
                                 <p class="text-gray-500 text-sm">Loại phòng</p>
-                                <p class="font-bold text-lg">Phòng trọ</p>
+                                <p id="roomType" class="font-bold text-lg">Đang tải...</p>
                             </div>
                         </div>
                         <div class="flex items-center">
@@ -193,7 +178,7 @@
                             </div>
                             <div>
                                 <p class="text-gray-500 text-sm">Số người ở</p>
-                                <p class="font-bold text-lg">1-2 người</p>
+                                <p id="roomCapacity" class="font-bold text-lg">Đang tải...</p>
                             </div>
                         </div>
                     </div>
@@ -202,25 +187,63 @@
                 <!-- Room Description -->
                 <div class="bg-white rounded-xl shadow-md p-6 mb-6">
                     <h2 class="text-xl font-bold mb-4">Mô tả phòng</h2>
-                    <div class="prose max-w-none">
-                        <p>Phòng trọ mới xây dựng, sạch sẽ, thoáng mát, đầy đủ tiện nghi, an ninh tốt, gần trung tâm thành phố, thuận tiện đi lại làm việc và học tập.</p>
-                        <p>Vị trí: Ngay mặt tiền đường Nguyễn Huệ, cách trung tâm thành phố 5 phút đi bộ, gần chợ Bến Thành, các trường đại học, bệnh viện và trung tâm thương mại.</p>
-                        <p>Tiện ích:</p>
-                        <ul>
-                            <li>Điều hòa, nóng lạnh, wifi tốc độ cao</li>
-                            <li>Giường, tủ quần áo, bàn làm việc</li>
-                            <li>Khu vực bếp chung, có tủ lạnh, máy giặt</li>
-                            <li>Nhà vệ sinh riêng trong phòng</li>
-                            <li>Camera an ninh 24/24, bảo vệ trực</li>
-                            <li>Chỗ để xe rộng rãi</li>
-                        </ul>
-                        <p>Giá thuê: 3.500.000đ/tháng (đã bao gồm điện nước, wifi, rác)</p>
-                        <p>Liên hệ: Chị Lan - 0909123456 để xem phòng và thương lượng.</p>
+                    <div id="roomDescription" class="prose max-w-none">
+                        <p>Đang tải...</p>
                     </div>
                 </div>
 
                 <!-- Amenities -->
                 <div class="bg-white rounded-xl shadow-md p-6 mb-6">
-                    <h2 class="text-xl font-bold mb-4
+                    <h2 class="text-xl font-bold mb-4">Tiện nghi</h2>
+                    <div id="amenitiesGrid" class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="lg:w-1/3">
+                <!-- Contact Card -->
+                <div class="bg-white rounded-xl shadow-md p-6 mb-6 sticky top-24">
+                    <h2 class="text-xl font-bold mb-4">Thông tin liên hệ</h2>
+                    <div class="flex items-center mb-4">
+                        <div class="bg-blue-100 p-3 rounded-full mr-3">
+                            <i data-feather="user" class="text-blue-600 w-6 h-6"></i>
+                        </div>
+                        <div>
+                            <p class="font-bold" id="ownerName">Đang tải...</p>
+                            <p class="text-sm text-gray-500">Người đăng tin</p>
+                        </div>
+                    </div>
+                    <div class="space-y-3">
+                        <a id="ownerPhone" href="tel:" class="flex items-center w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                            <i data-feather="phone" class="w-5 h-5 mr-2"></i>
+                            <span>Đang tải...</span>
+                        </a>
+                        <div id="ownerEmailContainer" class="hidden">
+                            <a id="ownerEmail" href="mailto:" class="flex items-center w-full px-4 py-3 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition">
+                                <i data-feather="mail" class="w-5 h-5 mr-2"></i>
+                                <span>Email</span>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="mt-4 pt-4 border-t">
+                        <p class="text-sm text-gray-500 flex items-center">
+                            <i data-feather="clock" class="w-4 h-4 mr-1"></i>
+                            Đăng ngày: <span id="postedDate" class="ml-1 font-medium">Đang tải...</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-8 mt-12">
+        <div class="container mx-auto px-4 text-center">
+            <p>&copy; 2024 Phòng Trọ 24/7. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="src/scripts/detail.js"></script>
 </body>
 </html>
