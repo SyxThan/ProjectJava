@@ -11,39 +11,12 @@
     <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
     <script src="https://unpkg.com/feather-icons"></script>
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link href="src/styles/search.css" rel="stylesheet">
-
+    <link rel="stylesheet" href="css/search.css">
 </head>
 <body class="bg-gray-50">
-    <!-- Header -->
-    <header class="bg-white shadow-sm sticky top-0 z-50">
-        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
-            <a href="index.html" class="flex items-center">
-                <i data-feather="home" class="text-blue-600 mr-2"></i>
-                <span class="text-xl font-bold text-blue-600">Phòng Trọ 24/7</span>
-            </a>
-            <nav class="hidden md:flex space-x-8">
-                <a href="index.html" class="text-gray-600 hover:text-blue-600">Trang chủ</a>
-                <a href="search.html" class="text-blue-600 font-medium">Tìm phòng</a>
-                <a href="post.html" class="text-gray-600 hover:text-blue-600">Đăng tin</a>
-                <a href="account.html" class="text-gray-600 hover:text-blue-600">Tài khoản</a>
-            </nav>
-            <div class="flex items-center space-x-4">
-                <a href="auth.html" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition">Đăng nhập</a>
-                <button class="md:hidden" id="mobile-menu-button">
-                    <i data-feather="menu"></i>
-                </button>
-            </div>
-        </div>
-        <!-- Mobile menu -->
-        <div class="md:hidden hidden bg-white shadow-lg" id="mobile-menu">
-            <div class="px-4 py-3 flex flex-col space-y-3">
-                <a href="index.html" class="text-gray-600 hover:text-blue-600">Trang chủ</a>
-                <a href="search.html" class="text-blue-600 font-medium">Tìm phòng</a>
-                <a href="post.html" class="text-gray-600 hover:text-blue-600">Đăng tin</a>
-                <a href="account.html" class="text-gray-600 hover:text-blue-600">Tài khoản</a>
-            </div>
-        </div>
+    <!-- Header - Navbar will be rendered by navbar.js -->
+    <header class="bg-white shadow-sm sticky top-0 z-50" id="navbar-container">
+        <!-- Navbar content will be injected here -->
     </header>
 
     <!-- Breadcrumb -->
@@ -270,11 +243,14 @@
                 </div>
             </div>
             <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
-                <p>© 2023 Phòng Trọ 24/7. All rights reserved.</p>
+                <p>© 2024 Phòng Trọ 24/7. All rights reserved.</p>
             </div>
         </div>
     </footer>
 
-    <script src = "src/scripts/search.js"></script>
+    <!-- Custom JavaScript -->
+    <script src="js/api.js"></script>
+    <script src="js/navbar.js"></script>
+    <script src="js/search.js"></script>
 </body>
 </html>

@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phòng Trọ 24/7 - Tìm và đăng phòng trọ dễ dàng</title>
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather-icons.min.js"></script>
+    <script src="https://unpkg.com/feather-icons"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Be Vietnam Pro', sans-serif;
+        }
+        .hero-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .step-circle {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: #e0e7ff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+        }
+        .cta-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .btn {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        .btn-primary {
+            background-color: #2563eb;
+            color: white;
+        }
+        .btn-primary:hover {
+            background-color: #1d4ed8;
+        }
+        .btn-outline {
+            background-color: transparent;
+            border: 2px solid #2563eb;
+            color: #2563eb;
+        }
+        .btn-outline:hover {
+            background-color: #2563eb;
+            color: white;
+        }
+        .form-input {
+            background-color: white;
+        }
+        .popular-area-card {
+            background: white;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .popular-area-card:hover {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            transform: translateY(-4px);
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Header - Navbar will be rendered by navbar.js -->
+    <header class="bg-white shadow-sm sticky top-0 z-50" id="navbar-container">
+        <!-- Navbar content will be injected here -->
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero-bg text-white py-20">
+        <div class="container mx-auto px-4 text-center">
+            <h1 class="text-4xl md:text-5xl font-bold mb-6" data-aos="fade-up">Tìm phòng trọ phù hợp với bạn</h1>
+            <p class="text-xl mb-8 max-w-2xl mx-auto" data-aos="fade-up" data-aos-delay="100">Hàng nghìn phòng trọ chất lượng với đầy đủ tiện nghi đang chờ bạn</p>
+            
+            <!-- Quick Search -->
+            <div class="max-w-5xl mx-auto" data-aos="fade-up" data-aos-delay="200">
+                <form id="search-form" class="bg-white rounded-lg p-6 shadow-lg flex flex-col md:flex-row gap-4">
+                    <div class="flex-1 relative">
+                        <label class="block text-gray-700 text-sm font-medium mb-1">Địa điểm</label>
+                        <div class="relative">
+                            <i data-feather="map-pin" class="absolute left-3 top-3 text-gray-400 w-5 h-5"></i>
+                            <input 
+                                type="text" 
+                                id="location-input" 
+                                placeholder="Nhập tỉnh thành, quận huyện..." 
+                                class="form-input pl-10 w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                                autocomplete="off"
+                            >
+                        </div>
+                    </div>
+                    <div class="flex-1">
+                        <label class="block text-gray-700 text-sm font-medium mb-1">Giá thuê</label>
+                        <select id="price-select" class="form-input w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900">
+                            <option value="">Tất cả mức giá</option>
+                            <option value="0-2000000">Dưới 2 triệu</option>
+                            <option value="2000000-4000000">2 - 4 triệu</option>
+                            <option value="4000000-6000000">4 - 6 triệu</option>
+                            <option value="6000000-10000000">6 - 10 triệu</option>
+                            <option value="10000000-999999999">Trên 10 triệu</option>
+                        </select>
+                    </div>
+                    <div class="flex items-end">
+                        <button type="submit" class="btn btn-primary py-3 px-6 rounded-md transition w-full md:w-auto">
+                            <i data-feather="search" class="inline mr-1 w-4 h-4"></i>
+                            Tìm kiếm
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Popular Areas -->
+    <section class="py-16 bg-white">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center mb-12" data-aos="fade-up">Khu vực phổ biến</h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6" id="popular-areas">
+                <div class="popular-area-card" data-aos="fade-up" data-aos-delay="100">
+                    <i data-feather="map-pin" class="w-8 h-8 text-blue-600 mx-auto mb-2"></i>
+                    <h3 class="font-bold text-lg mb-1">Quận Cầu Giấy</h3>
+                    <p class="text-gray-600 text-sm">Hà Nội</p>
+                </div>
+                <div class="popular-area-card" data-aos="fade-up" data-aos-delay="200">
+                    <i data-feather="map-pin" class="w-8 h-8 text-blue-600 mx-auto mb-2"></i>
+                    <h3 class="font-bold text-lg mb-1">Quận Đống Đa</h3>
+                    <p class="text-gray-600 text-sm">Hà Nội</p>
+                </div>
+                <div class="popular-area-card" data-aos="fade-up" data-aos-delay="300">
+                    <i data-feather="map-pin" class="w-8 h-8 text-blue-600 mx-auto mb-2"></i>
+                    <h3 class="font-bold text-lg mb-1">Quận Thanh Xuân</h3>
+                    <p class="text-gray-600 text-sm">Hà Nội</p>
+                </div>
+                <div class="popular-area-card" data-aos="fade-up" data-aos-delay="400">
+                    <i data-feather="map-pin" class="w-8 h-8 text-blue-600 mx-auto mb-2"></i>
+                    <h3 class="font-bold text-lg mb-1">Quận Ba Đình</h3>
+                    <p class="text-gray-600 text-sm">Hà Nội</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Featured Rooms -->
+    <section class="py-16 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center mb-4" data-aos="fade-up">Phòng trọ nổi bật</h2>
+            <p class="text-gray-600 text-center mb-12 max-w-2xl mx-auto" data-aos="fade-up" data-aos-delay="100">Những phòng trọ được quan tâm nhiều nhất</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="featured-rooms">
+                <!-- Loading placeholder -->
+                <div class="col-span-full text-center py-12">
+                    <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                    <p class="mt-4 text-gray-600">Đang tải...</p>
+                </div>
+            </div>
+
+            <div class="text-center mt-10">
+                <a href="search.html" class="btn btn-outline border-2 border-blue-600 text-blue-600 font-medium rounded-md hover:bg-blue-600 hover:text-white transition px-6 py-3">
+                    Xem tất cả phòng trọ
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- How it works -->
+    <section class="py-16 bg-white">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center mb-12" data-aos="fade-up">Cách thức hoạt động</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="text-center" data-aos="fade-up" data-aos-delay="100">
+                    <div class="step-circle">
+                        <i data-feather="search" class="text-blue-600 w-8 h-8"></i>
+                    </div>
+                    <h3 class="font-bold text-xl mb-2">1. Tìm kiếm</h3>
+                    <p class="text-gray-600">Tìm phòng trọ phù hợp với nhu cầu của bạn bằng bộ lọc thông minh</p>
+                </div>
+                <div class="text-center" data-aos="fade-up" data-aos-delay="200">
+                    <div class="step-circle">
+                        <i data-feather="phone" class="text-blue-600 w-8 h-8"></i>
+                    </div>
+                    <h3 class="font-bold text-xl mb-2">2. Liên hệ</h3>
+                    <p class="text-gray-600">Liên hệ trực tiếp với chủ phòng để xem phòng và thương lượng</p>
+                </div>
+                <div class="text-center" data-aos="fade-up" data-aos-delay="300">
+                    <div class="step-circle">
+                        <i data-feather="check-circle" class="text-blue-600 w-8 h-8"></i>
+                    </div>
+                    <h3 class="font-bold text-xl mb-2">3. Hoàn tất</h3>
+                    <p class="text-gray-600">Ký hợp đồng và nhận phòng trọ mới của bạn</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="cta-section py-16 text-white">
+        <div class="container mx-auto px-4 text-center">
+            <h2 class="text-3xl font-bold mb-6" data-aos="fade-up">Bạn là chủ phòng trọ?</h2>
+            <p class="text-xl mb-8 max-w-2xl mx-auto" data-aos="fade-up" data-aos-delay="100">Đăng tin miễn phí và tiếp cận hàng nghìn người có nhu cầu thuê phòng</p>
+            <a href="post.html" class="btn bg-white text-blue-600 font-bold rounded-md hover:bg-gray-100 transition px-6 py-3 inline-block" data-aos="fade-up" data-aos-delay="200">
+                Đăng tin ngay
+            </a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <h3 class="text-xl font-bold mb-4">Phòng Trọ 24/7</h3>
+                    <p class="text-gray-400 text-sm">Nền tảng tìm kiếm và đăng tin phòng trọ hàng đầu Việt Nam</p>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-4">Về chúng tôi</h4>
+                    <ul class="space-y-2 text-sm text-gray-400">
+                        <li><a href="#" class="hover:text-white">Giới thiệu</a></li>
+                        <li><a href="#" class="hover:text-white">Điều khoản</a></li>
+                        <li><a href="#" class="hover:text-white">Chính sách bảo mật</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-4">Hỗ trợ</h4>
+                    <ul class="space-y-2 text-sm text-gray-400">
+                        <li><a href="#" class="hover:text-white">Câu hỏi thường gặp</a></li>
+                        <li><a href="#" class="hover:text-white">Hướng dẫn sử dụng</a></li>
+                        <li><a href="#" class="hover:text-white">Liên hệ</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-4">Kết nối</h4>
+                    <div class="flex space-x-4 mb-4">
+                        <a href="#" class="bg-gray-700 p-2 rounded-full hover:bg-blue-600 transition">
+                            <i data-feather="facebook" class="w-5 h-5"></i>
+                        </a>
+                        <a href="#" class="bg-gray-700 p-2 rounded-full hover:bg-pink-600 transition">
+                            <i data-feather="instagram" class="w-5 h-5"></i>
+                        </a>
+                        <a href="#" class="bg-gray-700 p-2 rounded-full hover:bg-blue-400 transition">
+                            <i data-feather="twitter" class="w-5 h-5"></i>
+                        </a>
+                    </div>
+                    <p class="text-gray-400 text-sm">Hotline: 1900 1234</p>
+                    <p class="text-gray-400 text-sm">Email: support@phongtro247.com</p>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
+                <p>© 2024 Phòng Trọ 24/7. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Custom JavaScript -->
+    <script src="js/api.js"></script>
+    <script src="js/navbar.js"></script>
+    <script src="js/index.js"></script>
+    
+    <script>
+        // Handle search form submission
+        document.getElementById('search-form')?.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const location = document.getElementById('location-input').value;
+            const price = document.getElementById('price-select').value;
+            
+            // Build search URL - luôn thêm Hà Nội vào filter
+            let searchUrl = 'search.html?';
+            searchUrl += 'tinhThanh=' + encodeURIComponent('Hà Nội') + '&'; // Luôn filter theo Hà Nội
+            if (location) {
+                searchUrl += 'phuongXa=' + encodeURIComponent(location) + '&';
+            }
+            if (price) {
+                const [min, max] = price.split('-');
+                if (min) searchUrl += 'giaMin=' + min + '&';
+                if (max) searchUrl += 'giaMax=' + max + '&';
+            }
+            
+            window.location.href = searchUrl.slice(0, -1); // Remove last &
+        });
+        
+        // Mobile menu toggle
+        document.getElementById('mobile-menu-button')?.addEventListener('click', function() {
+            const mobileMenu = document.getElementById('mobile-menu');
+            if (mobileMenu) {
+                mobileMenu.classList.toggle('hidden');
+            }
+        });
+        
+        // Initialize feather icons after page load
+        if (typeof feather !== 'undefined') {
+            feather.replace();
+        }
+    </script>
+</body>
+</html>
