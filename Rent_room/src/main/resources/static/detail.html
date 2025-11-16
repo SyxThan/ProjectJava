@@ -10,8 +10,18 @@
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
     <script src="https://unpkg.com/feather-icons"></script>
+    
+    <!-- LeafletJS Map CSS and JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" 
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" 
+          crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+            crossorigin=""></script>
+    
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        /* Định nghĩa class của bạn */
         body {
             font-family: 'Be Vietnam Pro', sans-serif;
         }
@@ -33,6 +43,643 @@
             width: 24px;
             height: 24px;
             stroke-width: 2;
+        }
+
+        /* Comment Section Styles */
+        .comment-section {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            border-radius: 1rem;
+            padding: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            backdrop-filter: blur(8px);
+        }
+
+        .comment-section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .comment-section-title::before {
+            content: "";
+            width: 4px;
+            height: 1.5rem;
+            background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+            border-radius: 2px;
+        }
+
+        /* Comment Form Styles */
+        .comment-form-container {
+            background: #ffffff;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+            border: 1px solid #e2e8f0;
+            transition: all 0.3s ease;
+        }
+
+        .comment-form-container:hover {
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+            transform: translateY(-2px);
+        }
+
+        .comment-form-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .user-avatar-large {
+            width: 3rem;
+            height: 3rem;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 1rem;
+            flex-shrink: 0;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+            border: 3px solid #ffffff;
+        }
+
+        .user-info {
+            flex: 1;
+        }
+
+        .user-name {
+            font-weight: 600;
+            color: #0f172a;
+            font-size: 1rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .user-subtitle {
+            font-size: 0.875rem;
+            color: #64748b;
+        }
+
+        .comment-textarea {
+            width: 100%;
+            min-height: 120px;
+            padding: 1rem 1.25rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 0.75rem;
+            font-family: inherit;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            resize: vertical;
+            transition: all 0.3s ease;
+            background: #fafbfc;
+        }
+
+        .comment-textarea:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+            background: #ffffff;
+        }
+
+        .comment-textarea::placeholder {
+            color: #94a3b8;
+        }
+
+        .comment-form-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1rem;
+        }
+
+        .character-count {
+            font-size: 0.75rem;
+            color: #94a3b8;
+        }
+
+        .submit-comment-btn {
+            background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+            color: white;
+            border: none;
+            border-radius: 0.75rem;
+            padding: 0.75rem 2rem;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        .submit-comment-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
+        }
+
+        .submit-comment-btn:active {
+            transform: translateY(0);
+        }
+
+        .submit-comment-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Comment Item Styles */
+        .comment-item {
+            background: #ffffff;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+            border: 1px solid #f1f5f9;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .comment-item:hover {
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+            transform: translateY(-1px);
+        }
+
+        .comment-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .comment-main {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .comment-avatar {
+            width: 2.75rem;
+            height: 2.75rem;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 0.95rem;
+            flex-shrink: 0;
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
+            border: 2px solid #ffffff;
+        }
+
+        .comment-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .comment-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .comment-author {
+            font-weight: 700;
+            color: #0f172a;
+            font-size: 1rem;
+        }
+
+        .comment-badge {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.375rem;
+        }
+
+        .comment-date {
+            font-size: 0.8rem;
+            color: #94a3b8;
+            margin-left: auto;
+        }
+
+        .comment-rating {
+            display: flex;
+            gap: 0.125rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .star {
+            font-size: 1rem;
+            color: #fbbf24;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .comment-text {
+            color: #374151;
+            line-height: 1.7;
+            font-size: 0.95rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Comment Actions */
+        .comment-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #f1f5f9;
+        }
+
+        .action-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            color: #64748b;
+            background: transparent;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 500;
+        }
+
+        .action-btn:hover {
+            color: #3b82f6;
+            background: #f8fafc;
+            border-color: #cbd5e1;
+            transform: translateY(-1px);
+        }
+
+        .action-btn.active {
+            color: #3b82f6;
+            background: #eff6ff;
+            border-color: #3b82f6;
+        }
+
+        /* Reply Form */
+        .reply-form {
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 2px solid #f1f5f9;
+            display: none;
+        }
+
+        .reply-form.active {
+            display: block;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .reply-form-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .reply-avatar {
+            width: 2.25rem;
+            height: 2.25rem;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 0.8rem;
+            flex-shrink: 0;
+            box-shadow: 0 3px 8px rgba(139, 92, 246, 0.3);
+        }
+
+        .reply-textarea {
+            width: 100%;
+            min-height: 80px;
+            padding: 0.875rem 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 0.5rem;
+            font-family: inherit;
+            font-size: 0.875rem;
+            line-height: 1.5;
+            resize: vertical;
+            transition: all 0.2s ease;
+        }
+
+        .reply-textarea:focus {
+            outline: none;
+            border-color: #8b5cf6;
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+        }
+
+        .reply-form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.75rem;
+            margin-top: 1rem;
+        }
+
+        .reply-btn {
+            padding: 0.5rem 1.25rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+        }
+
+        .reply-btn-cancel {
+            background: transparent;
+            color: #64748b;
+            border: 1px solid #e2e8f0;
+        }
+
+        .reply-btn-cancel:hover {
+            background: #f8fafc;
+            color: #374151;
+        }
+
+        .reply-btn-submit {
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+            color: white;
+            box-shadow: 0 2px 8px rgba(139, 92, 246, 0.3);
+        }
+
+        .reply-btn-submit:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+        }
+
+        /* Replies Section */
+        .replies-section {
+            margin-top: 1.5rem;
+            position: relative;
+        }
+
+        .replies-section::before {
+            content: "";
+            position: absolute;
+            left: 1.375rem;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(to bottom, #e2e8f0, transparent);
+        }
+
+        .replies-list {
+            margin-left: 2.75rem;
+            padding-top: 1rem;
+        }
+
+        .reply-item {
+            background: #fafbfc;
+            border: 1px solid #f1f5f9;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            position: relative;
+            transition: all 0.2s ease;
+        }
+
+        .reply-item:hover {
+            background: #f8fafc;
+            border-color: #e2e8f0;
+        }
+
+        .reply-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .reply-main {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .reply-avatar-small {
+            width: 2rem;
+            height: 2rem;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 0.75rem;
+            flex-shrink: 0;
+            box-shadow: 0 2px 6px rgba(6, 182, 212, 0.3);
+        }
+
+        .reply-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .reply-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .reply-author {
+            font-weight: 600;
+            font-size: 0.875rem;
+            color: #0f172a;
+        }
+
+        .reply-date {
+            font-size: 0.75rem;
+            color: #94a3b8;
+        }
+
+        .reply-text {
+            color: #374151;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Loading and Status */
+        .loading-spinner {
+            display: inline-block;
+            width: 1rem;
+            height: 1rem;
+            border: 2px solid #f1f5f9;
+            border-top-color: #3b82f6;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .status-message {
+            padding: 1rem 1.25rem;
+            border-radius: 0.75rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin: 1rem 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .status-message.error {
+            background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+            color: #dc2626;
+            border: 1px solid #fecaca;
+        }
+
+        .status-message.success {
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            color: #16a34a;
+            border: 1px solid #bbf7d0;
+        }
+
+        /* Empty State */
+        .comments-empty {
+            text-align: center;
+            padding: 3rem 2rem;
+            color: #64748b;
+        }
+
+        .empty-icon {
+            width: 4rem;
+            height: 4rem;
+            margin: 0 auto 1rem;
+            opacity: 0.5;
+        }
+
+        .empty-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 0.5rem;
+        }
+
+        .empty-text {
+            font-size: 0.875rem;
+            color: #64748b;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 640px) {
+            .comment-section {
+                padding: 1.5rem;
+                border-radius: 0.75rem;
+            }
+
+            .comment-form-container {
+                padding: 1rem;
+            }
+
+            .user-avatar-large {
+                width: 2.5rem;
+                height: 2.5rem;
+                font-size: 0.875rem;
+            }
+
+            .comment-item {
+                padding: 1rem;
+            }
+
+            .comment-avatar {
+                width: 2.25rem;
+                height: 2.25rem;
+                font-size: 0.875rem;
+            }
+
+            .replies-list {
+                margin-left: 2rem;
+            }
+
+            .comment-form-footer {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: stretch;
+            }
+
+            .submit-comment-btn {
+                width: 100%;
+            }
+        }
+
+        /* Map Styles */
+        #map {
+            width: 100%;
+            height: 300px;
+            margin-bottom: 20px;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e2e8f0;
+            background: #f8fafc;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Map Loading State */
+        .map-loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 300px;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            border-radius: 0.75rem;
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        .map-error {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 300px;
+            background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+            border-radius: 0.75rem;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+        }
+
+        .map-no-location {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 300px;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border-radius: 0.75rem;
+            color: #0369a1;
+            border: 1px solid #bae6fd;
+        }
+
+        /* Loading spinner for map */
+        .map-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #e2e8f0;
+            border-top-color: #3b82f6;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-right: 8px;
         }
     </style>
 </head>
@@ -87,8 +734,8 @@
                         <button class="p-2 bg-white rounded-full shadow-md hover:bg-gray-100 transition">
                             <i data-feather="share-2" class="text-gray-600"></i>
                         </button>
-                        <button class="p-2 bg-white rounded-full shadow-md hover:bg-gray-100 transition">
-                            <i data-feather="heart" class="text-gray-400 hover:text-red-500"></i>
+                        <button class="p-2 bg-white rounded-full shadow-md hover:bg-gray-100 transition" id = "love">
+                            <i data-feather="heart" class="hover:text-red-500"></i>
                         </button>
                     </div>
                 </div>
@@ -170,6 +817,82 @@
                 <div class="bg-white rounded-xl shadow-md p-6 mb-6">
                     <h2 class="text-xl font-bold mb-4">Tiện nghi</h2>
                     <div id="amenitiesGrid" class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    </div>
+                </div>
+
+                <!-- Map Section -->
+                <div class="bg-white rounded-xl shadow-md p-6 mb-6">
+                    <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+                        <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        </svg>
+                        Vị trí trên bản đồ
+                    </h2>
+                    <div id="map"></div>
+                </div>
+
+                <!-- Comments Section -->
+                <div class="comment-section mb-6">
+                    <h2 class="comment-section-title">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                        </svg>
+                        Bình luận & Đánh giá
+                    </h2>
+                    
+                    <!-- Comment Form -->
+                    <div class="comment-form-container">
+                        <div class="comment-form-header">
+                            <div id="currentUserAvatar" class="user-avatar-large">
+                                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/>
+                                </svg>
+                            </div>
+                            <div class="user-info">
+                                <div id="currentUserName" class="user-name">Đăng nhập để bình luận</div>
+                                <div class="user-subtitle">Chia sẻ trải nghiệm của bạn về phòng trọ này</div>
+                            </div>
+                        </div>
+                        
+                        <textarea id="commentInput" 
+                            class="comment-textarea"
+                            placeholder="Chia sẻ kinh nghiệm của bạn về phòng trọ này... Bạn có thể viết về vị trí, tiện ích, giá cả, chất lượng dịch vụ..."
+                            maxlength="5000"></textarea>
+                        
+                        <div class="comment-form-footer">
+                            <div class="character-count">
+                                <span id="charCount">0</span>/5000 ký tự
+                            </div>
+                            <button id="submitCommentBtn" class="submit-comment-btn">
+                                <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+                                </svg>
+                                Đăng bình luận
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Comments List -->
+                    <div id="commentsList">
+                        <!-- Comments will be rendered here -->
+                    </div>
+
+                    <!-- Loading indicator for comments -->
+                    <div id="commentsLoading" class="text-center py-8">
+                        <div class="loading-spinner mx-auto mb-4"></div>
+                        <p class="text-gray-500 font-medium">Đang tải bình luận...</p>
+                    </div>
+
+                    <!-- Empty state -->
+                    <div id="commentsEmpty" class="comments-empty" style="display: none;">
+                        <div class="empty-icon">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                            </svg>
+                        </div>
+                        <h3 class="empty-title">Chưa có bình luận nào</h3>
+                        <p class="empty-text">Hãy là người đầu tiên chia sẻ trải nghiệm về phòng trọ này!</p>
                     </div>
                 </div>
             </div>
@@ -262,5 +985,329 @@
     <script src="js/api.js"></script>
     <script src="js/navbar.js"></script>
     <script src="js/detail.js"></script>
+
+    <!-- Map Initialization Script -->
+    <script>
+// Enhanced map initialization with better timing
+function initializeMap() {
+    console.log('[MAP] Initializing map system...');
+    
+    // Check if map container exists
+    const mapContainer = document.getElementById('map');
+    if (!mapContainer) {
+        console.error('[MAP] Map container not found');
+        return;
+    }
+    
+    // Get post ID from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const postId = urlParams.get("id");
+    
+    if (!postId) {
+        console.error('[MAP] No post ID found in URL');
+        showMapError('Không tìm thấy ID bài đăng');
+        return;
+    }
+    
+    console.log('[MAP] Post ID:', postId);
+    console.log('[MAP] Map container found:', mapContainer);
+    
+    // Show loading state
+    showMapLoading();
+    
+    // Wait for Leaflet to be available, then load map
+    waitForLeafletAndLoad(postId);
+}
+
+function waitForLeafletAndLoad(postId) {
+    console.log('[MAP] Checking for Leaflet availability...');
+    
+    if (typeof L !== 'undefined') {
+        console.log('[MAP] Leaflet is available, loading map...');
+        loadMapWithRetry(postId, 3);
+    } else {
+        console.log('[MAP] Leaflet not ready yet, waiting...');
+        setTimeout(() => waitForLeafletAndLoad(postId), 200);
+    }
+}
+
+// Initialize when both DOM and Leaflet are ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeMap);
+} else {
+    // DOM already loaded
+    setTimeout(initializeMap, 100);
+}
+
+function showMapLoading() {
+    const mapContainer = document.getElementById('map');
+    if (!mapContainer) return;
+    
+    mapContainer.innerHTML = `
+        <div style="display: flex; align-items: center; justify-content: center; height: 300px; background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); border-radius: 0.75rem; color: #64748b; font-weight: 500;">
+            <div style="text-align: center;">
+                <div style="display: inline-block; width: 20px; height: 20px; border: 2px solid #e2e8f0; border-top-color: #3b82f6; border-radius: 50%; animation: spin 0.8s linear infinite; margin-right: 8px;"></div>
+                <p style="margin: 0;">Đang tải bản đồ...</p>
+            </div>
+        </div>
+    `;
+}
+
+function showMapError(message, showRetry = false) {
+    const mapContainer = document.getElementById('map');
+    if (!mapContainer) return;
+    
+    const retryButton = showRetry ? `
+        <button onclick="retryMapLoad()" 
+                style="margin-top: 8px; padding: 8px 16px; background: #dc2626; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">
+            🔄 Thử lại
+        </button>
+    ` : '';
+    
+    mapContainer.innerHTML = `
+        <div style="display: flex; align-items: center; justify-content: center; height: 300px; background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%); border-radius: 0.75rem; color: #dc2626; border: 1px solid #fecaca;">
+            <div style="text-align: center;">
+                <div style="font-size: 48px; margin-bottom: 12px;">⚠️</div>
+                <p style="margin: 0; font-weight: 600; font-size: 16px;">${message}</p>
+                <small style="opacity: 0.8; display: block; margin-top: 4px;">Kiểm tra Console để xem chi tiết lỗi</small>
+                ${retryButton}
+            </div>
+        </div>
+    `;
+}
+
+function showMapNoLocation() {
+    const mapContainer = document.getElementById('map');
+    if (!mapContainer) return;
+    
+    mapContainer.innerHTML = `
+        <div style="display: flex; align-items: center; justify-content: center; height: 300px; background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border-radius: 0.75rem; color: #0369a1; border: 1px solid #bae6fd;">
+            <div style="text-align: center;">
+                <div style="font-size: 48px; margin-bottom: 12px;">📍</div>
+                <p style="margin: 0; font-weight: 600; font-size: 16px;">Vị trí chưa được xác định</p>
+                <small style="opacity: 0.8;">Phòng trọ này chưa có thông tin vị trí</small>
+            </div>
+        </div>
+    `;
+}
+
+async function loadMapWithRetry(postId, maxRetries) {
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+            console.log(`[MAP] Attempt ${attempt}/${maxRetries}`);
+            await loadMap(postId);
+            return; // Success
+        } catch (error) {
+            console.error(`[MAP] Attempt ${attempt} failed:`, error.message);
+            
+            if (attempt === maxRetries) {
+                console.error('[MAP] All attempts failed');
+                showMapError('Không thể tải bản đồ sau nhiều lần thử', false);
+            } else {
+                // Wait before retry
+                await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+            }
+        }
+    }
+}
+
+async function loadMap(postId) {
+    // Try multiple endpoints
+    const endpoints = [
+        `http://localhost:8080/api/baidang/${postId}/geocode`,
+        `${window.location.origin}/api/baidang/${postId}/geocode`
+    ];
+    
+    let geocodeData = null;
+    let lastError = null;
+    
+    for (const endpoint of endpoints) {
+        try {
+            console.log('[MAP] Trying endpoint:', endpoint);
+            
+            const response = await fetch(endpoint, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                mode: 'cors',
+                timeout: 10000
+            });
+            
+            console.log('[MAP] Response status:', response.status);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+            const responseText = await response.text();
+            console.log('[MAP] Response text:', responseText);
+            
+            if (!responseText.trim()) {
+                throw new Error('Empty response from server');
+            }
+            
+            geocodeData = JSON.parse(responseText);
+            console.log('[MAP] Parsed data:', geocodeData);
+            break;
+            
+        } catch (error) {
+            console.warn(`[MAP] Endpoint ${endpoint} failed:`, error.message);
+            lastError = error;
+            continue;
+        }
+    }
+    
+    if (!geocodeData) {
+        throw lastError || new Error('All API endpoints failed');
+    }
+    
+    // Extract coordinates
+    const latitude = parseFloat(geocodeData.latitude || geocodeData.lat || 0);
+    const longitude = parseFloat(geocodeData.longitude || geocodeData.lng || geocodeData.lon || 0);
+    const address = geocodeData.address || geocodeData.diaChi || null;
+    
+    console.log('[MAP] Coordinates:', { latitude, longitude, address });
+    
+    // Validate coordinates
+    if (!isValidCoordinate(latitude, longitude)) {
+        console.warn('[MAP] Invalid coordinates received');
+        showMapNoLocation();
+        return;
+    }
+    
+    // Leaflet should be available at this point, create the map
+    await createLeafletMap(latitude, longitude, address);
+}
+
+function isValidCoordinate(lat, lng) {
+    if (typeof lat !== 'number' || typeof lng !== 'number') return false;
+    if (isNaN(lat) || isNaN(lng)) return false;
+    if (lat < -90 || lat > 90 || lng < -180 || lng > 180) return false;
+    if (lat === 0 && lng === 0) return false; // Likely invalid
+    return true;
+}
+
+
+
+async function createLeafletMap(latitude, longitude, address) {
+    try {
+        console.log('[MAP] Creating Leaflet map...');
+        
+        const mapContainer = document.getElementById('map');
+        if (!mapContainer) {
+            throw new Error('Map container not found');
+        }
+        
+        // Clear container
+        mapContainer.innerHTML = '';
+        
+        // Create map
+        const map = L.map('map', {
+            center: [latitude, longitude],
+            zoom: 15,
+            zoomControl: true,
+            scrollWheelZoom: true,
+            doubleClickZoom: true,
+            dragging: true
+        });
+        
+        console.log('[MAP] Map object created');
+        
+        // Add tile layer
+        const tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        });
+        
+        tileLayer.on('tileerror', function(e) {
+            console.warn('[MAP] Tile error:', e);
+        });
+        
+        tileLayer.addTo(map);
+        console.log('[MAP] Tile layer added');
+        
+        // Create custom marker
+        const markerIcon = L.divIcon({
+            html: `
+                <div style="
+                    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+                    width: 32px;
+                    height: 32px;
+                    border-radius: 50% 50% 50% 0;
+                    transform: rotate(-45deg);
+                    border: 3px solid white;
+                    box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                ">
+                    <div style="
+                        transform: rotate(45deg);
+                        color: white;
+                        font-size: 16px;
+                        font-weight: bold;
+                    ">🏠</div>
+                </div>
+            `,
+            className: '',
+            iconSize: [32, 32],
+            iconAnchor: [16, 32],
+            popupAnchor: [0, -32]
+        });
+        
+        // Add marker (no popup)
+        const marker = L.marker([latitude, longitude], { icon: markerIcon }).addTo(map);
+        console.log('[MAP] Marker added');
+        
+        // Map events
+        map.on('load', () => {
+            console.log('[MAP] Map fully loaded');
+        });
+        
+        map.on('error', (e) => {
+            console.error('[MAP] Map error:', e);
+        });
+        
+        console.log('[MAP] Map initialization completed successfully');
+        
+    } catch (error) {
+        console.error('[MAP] Error creating map:', error);
+        throw new Error('Failed to create map: ' + error.message);
+    }
+}
+
+// Global retry function
+function retryMapLoad() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const postId = urlParams.get("id");
+    
+    if (postId) {
+        console.log('[MAP] Manual retry triggered');
+        showMapLoading();
+        loadMapWithRetry(postId, 2);
+    }
+}
+
+// Add CSS for spinner animation
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+    
+    .custom-popup .leaflet-popup-content-wrapper {
+        border-radius: 12px;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+        border: 1px solid rgba(0,0,0,0.1);
+    }
+    
+    .custom-popup .leaflet-popup-tip {
+        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+`;
+document.head.appendChild(style);
+    </script>
 </body>
 </html>

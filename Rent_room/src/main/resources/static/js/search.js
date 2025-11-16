@@ -419,9 +419,6 @@ function displayGridView(rooms) {
             <div class="relative">
                 <img src="${room.images[0]}" alt="${room.title}" class="w-full h-56 object-cover">
                 ${room.featured ? '<div class="absolute top-3 left-3 bg-blue-600 text-white px-2 py-1 rounded text-sm font-medium">Nổi bật</div>' : ''}
-                <div class="absolute top-3 right-3 bg-white p-2 rounded-full shadow-md">
-                    <i data-feather="heart" class="text-gray-400 hover:text-red-500 w-4 h-4 cursor-pointer"></i>
-                </div>
             </div>
             <div class="p-4 flex flex-col flex-grow">
                 <h3 class="font-bold text-lg mb-2">${room.title}</h3>

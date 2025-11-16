@@ -1,15 +1,11 @@
 package com.example.Rent_room.dto;
-
-import com.example.Rent_room.respository.HinhAnhPhongTroRepository;
 import com.example.Rent_room.entity.BaiDangChoThue;
-import com.example.Rent_room.entity.HinhAnhPhongTro;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.stream.Collectors;
+
 
 @Getter
 @Setter
