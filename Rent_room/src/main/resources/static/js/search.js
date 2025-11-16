@@ -1,502 +1,882 @@
-/**
- * Search Page - Kết nối với backend API
- * Module: Tìm phòng trọ (BaiDangChoThue)
- * Endpoint: GET /api/baidang
- * Parameters: page, size, tinhThanh, phuongXa, giaMin, giaMax, dienTichMin, dienTichMax, trangThai
- */
+// Backend API base (dev profile runs on 8080)
+const API_BASE = 'http://localhost:8080';
+const ITEMS_PER_PAGE = 20;
 
-const API_BASE = 'http://localhost:8080/api/baidang';
+// Data stores
+let currentFilters = {
+    tinhThanh: 'Hà Nội',
+    phuongXa: '',
+    giaMin: null,
+    giaMax: null,
+    dienTichMin: null,
+    dienTichMax: null,
+    trangThai: '',
+    page: 0,
+    size: ITEMS_PER_PAGE
+};
+let currentResponse = null;
+let currentView = 'grid';
+let currentPage = 1;
 
-let currentPage = 0;
-const pageSize = 12;
-let currentFilters = {};
-let currentSort = 'ngayDang-desc';
-
-// Initialize on page load
-document.addEventListener('DOMContentLoaded', function() {
-    initializeSearch();
-});
-
-function initializeSearch() {
+// Initialize page
+document.addEventListener('DOMContentLoaded', async function() {
     // Initialize AOS and Feather Icons
-    if (typeof AOS !== 'undefined') {
-        AOS.init({
-            duration: 600,
-            easing: 'ease-in-out',
-            once: true
-        });
-    }
-    if (typeof feather !== 'undefined') {
-        feather.replace();
-    }
-    
+    AOS.init({
+        duration: 600,
+        easing: 'ease-in-out',
+        once: true
+    });
+    feather.replace();
+
     // Setup event listeners
     setupEventListeners();
     
-    // Load initial data from URL params
-    loadFiltersFromURL();
-    loadPosts();
-}
+    // Initialize view buttons state
+    initializeViewButtons();
 
-function setupEventListeners() {
-    // Filter phường/xã change event
-    const filterPhuongXa = document.getElementById('filterPhuongXa');
-    if (filterPhuongXa) {
-        filterPhuongXa.addEventListener('change', function() {
-            applyFilters();
-        });
+    // Load initial data from backend
+    showLoading();
+    try {
+        await loadRoomsFromBackend();
+        updateResultsCount();
+    } catch (e) {
+        console.error('Failed to load listings from backend:', e);
+        displayNoResults();
+    } finally {
+        hideLoading();
     }
-    
-    // Mobile menu toggle
-    const mobileMenuButton = document.getElementById('mobile-menu-button');
-    if (mobileMenuButton) {
-        mobileMenuButton.addEventListener('click', function() {
-            const mobileMenu = document.getElementById('mobile-menu');
-            if (mobileMenu) {
-                mobileMenu.classList.toggle('hidden');
-            }
-        });
-    }
-}
+});
 
-function loadFiltersFromURL() {
-    const urlParams = new URLSearchParams(window.location.search);
-    
-    // Load filters from URL
-    const phuongXa = urlParams.get('phuongXa');
-    const page = urlParams.get('page');
-    
-    // Set filter values
-    if (phuongXa) {
-        const filterPhuongXa = document.getElementById('filterPhuongXa');
-        if (filterPhuongXa) filterPhuongXa.value = phuongXa;
-    }
-    
-    if (page) {
-        currentPage = parseInt(page) || 0;
-    }
-}
-
-async function performSearch() {
-    currentPage = 0;
-    currentFilters = buildFilters();
-    updateURL();
-    await loadPosts();
-}
-
-function buildFilters() {
-    const filters = {};
-    
-    // Tỉnh/Thành phố - Luôn mặc định là Hà Nội
-    filters.tinhThanh = 'Hà Nội';
-    
-    // Phường/Xã - Backend parameter: phuongXa
-    const filterPhuongXa = document.getElementById('filterPhuongXa');
-    if (filterPhuongXa && filterPhuongXa.value) {
-        filters.phuongXa = filterPhuongXa.value;
-    }
-    
-    // Trạng thái - Mặc định chỉ hiển thị bài đã duyệt
-    filters.trangThai = 'APPROVED';
-    
-    return filters;
-}
-
-function updateURL() {
+// Fetch listings from backend using new pagination API
+async function loadRoomsFromBackend() {
     const params = new URLSearchParams();
     
-    // Only add phuongXa to URL if it's set (tinhThanh is always Hà Nội, no need to add)
-    if (currentFilters.phuongXa) params.set('phuongXa', currentFilters.phuongXa);
-    if (currentPage > 0) params.set('page', currentPage);
+    if (currentFilters.tinhThanh) params.append('tinhThanh', currentFilters.tinhThanh);
+    if (currentFilters.phuongXa) params.append('phuongXa', currentFilters.phuongXa);
+    if (currentFilters.giaMin !== null) params.append('giaMin', currentFilters.giaMin);
+    if (currentFilters.giaMax !== null) params.append('giaMax', currentFilters.giaMax);
+    if (currentFilters.dienTichMin !== null) params.append('dienTichMin', currentFilters.dienTichMin);
+    if (currentFilters.dienTichMax !== null) params.append('dienTichMax', currentFilters.dienTichMax);
+    if (currentFilters.trangThai) params.append('trangThai', currentFilters.trangThai);
     
-    const newURL = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
-    window.history.pushState({}, '', newURL);
-}
-
-async function loadPosts() {
-    const resultsGrid = document.getElementById('resultsGrid');
-    const resultsCount = document.getElementById('resultsCount');
-    const searchSummary = document.getElementById('searchSummary');
-    const loadingState = document.getElementById('loadingState');
-    const noResults = document.getElementById('noResults');
+    params.append('page', currentFilters.page);
+    params.append('size', currentFilters.size);
     
-    // Show loading
-    if (loadingState) loadingState.classList.remove('hidden');
-    if (resultsGrid) resultsGrid.innerHTML = '';
-    if (noResults) noResults.classList.add('hidden');
-    
-    try {
-        // Build query parameters matching backend exactly
-        const params = {
-            page: currentPage,
-            size: pageSize
-        };
-        
-        // Add filters if they exist
-        if (currentFilters.tinhThanh) params.tinhThanh = currentFilters.tinhThanh;
-        if (currentFilters.phuongXa) params.phuongXa = currentFilters.phuongXa;
-        if (currentFilters.trangThai) params.trangThai = currentFilters.trangThai;
-        
-        const data = await apiGet(API_BASE, params);
-        
-        if (loadingState) loadingState.classList.add('hidden');
-        
-        // Handle PaginationResponseDTO format: { success, message, data: [...], pagination: {...} }
-        let posts = [];
-        let totalCount = 0;
-        let paginationInfo = null;
-        
-        if (data && data.data && Array.isArray(data.data)) {
-            // PaginationResponseDTO format
-            posts = data.data;
-            if (data.pagination) {
-                totalCount = data.pagination.totalItems || 0;
-                paginationInfo = {
-                    number: data.pagination.currentPage || 0,
-                    totalPages: data.pagination.totalPages || 0,
-                    totalElements: data.pagination.totalItems || 0
-                };
-            } else {
-                totalCount = posts.length;
-            }
-        } else if (data && data.content && Array.isArray(data.content)) {
-            // Spring Page format (fallback)
-            posts = data.content;
-            totalCount = data.totalElements || 0;
-            paginationInfo = {
-                number: data.number || 0,
-                totalPages: data.totalPages || 0,
-                totalElements: data.totalElements || 0
-            };
-        } else if (Array.isArray(data)) {
-            // Simple array response (fallback)
-            posts = data;
-            totalCount = data.length;
-        } else {
-            console.error('Invalid response format:', data);
-            throw new Error('Dữ liệu không hợp lệ');
-        }
-        
-        if (posts && posts.length > 0) {
-            displayPosts(posts);
-            updateResultsCount(totalCount);
-            updateSearchSummary(currentFilters);
-            if (paginationInfo) {
-                updatePagination(paginationInfo);
-            }
-        } else {
-            showNoResults();
-        }
-    } catch (error) {
-        if (loadingState) loadingState.classList.add('hidden');
-        handleApiError(error);
-        showNoResults();
+    const resp = await fetch(`${API_BASE}/api/baidang?${params.toString()}`);
+    if (!resp.ok) {
+        throw new Error(`HTTP ${resp.status}`);
     }
+    const data = await resp.json();
+    
+    if (!data.success) {
+        throw new Error(data.message || 'Có lỗi xảy ra');
+    }
+    
+    currentResponse = data;
+    
+    const rooms = (data.data || []).map(normalizeListingFromBackend);
+    displayRooms(rooms);
+    updatePagination(data.pagination);
 }
 
-function displayPosts(posts) {
-    const resultsGrid = document.getElementById('resultsGrid');
-    const noResults = document.getElementById('noResults');
-    if (!resultsGrid) return;
+// Update pagination controls based on backend response
+function updatePagination(pagination) {
+    const totalPages = pagination?.totalPages || 0;
+    const currentPage = pagination?.currentPage || 0;
+    const hasNext = pagination?.hasNext || false;
+    const hasPrevious = pagination?.hasPrevious || false;
     
-    if (!posts || posts.length === 0) {
-        showNoResults();
+    const paginationContainer = document.getElementById('pagination');
+    
+    if (!paginationContainer || totalPages <= 1) {
+        if (paginationContainer) {
+            paginationContainer.innerHTML = '';
+        }
         return;
     }
     
-    if (noResults) noResults.classList.add('hidden');
-    
-    resultsGrid.innerHTML = posts.map(post => createPostCard(post)).join('');
-    
-    if (typeof feather !== 'undefined') {
-        feather.replace();
-    }
-    
-    if (typeof AOS !== 'undefined') {
-        AOS.refresh();
-    }
-}
-
-function createPostCard(post) {
-    // Support both Entity (snake_case) and DTO (camelCase) formats
-    const price = post.gia_thang || post.giaThang || 0;
-    const area = post.dien_tich_m2 || post.dienTichM2 || 0;
-    const title = post.tieu_de || post.tieuDe || 'Không có tiêu đề';
-    const phuongXa = post.phuong_xa || post.phuongXa || '';
-    const tinhThanh = post.tinh_thanhpho || post.tinhThanhpho || '';
-    const id = post.id;
-    
-    // Get image URL - try multiple sources
-    let image = '';
-    
-    // 1. Try anhBia field (DTO format)
-    if (post.anhBia) {
-        image = post.anhBia;
-    }
-    // 2. Try hinhAnhPhongTro array - find image with laAnhBia = true
-    else if (post.hinhAnhPhongTro && Array.isArray(post.hinhAnhPhongTro)) {
-        const anhBia = post.hinhAnhPhongTro.find(img => img.laAnhBia === true);
-        if (anhBia && anhBia.duong_dan_anh) {
-            image = anhBia.duong_dan_anh;
-        } else if (post.hinhAnhPhongTro.length > 0 && post.hinhAnhPhongTro[0].duong_dan_anh) {
-            // Fallback to first image
-            image = post.hinhAnhPhongTro[0].duong_dan_anh;
-        }
-    }
-    // 3. Try HinhAnhPhongTro (capital H)
-    else if (post.HinhAnhPhongTro && Array.isArray(post.HinhAnhPhongTro)) {
-        const anhBia = post.HinhAnhPhongTro.find(img => img.laAnhBia === true);
-        if (anhBia && anhBia.duong_dan_anh) {
-            image = anhBia.duong_dan_anh;
-        } else if (post.HinhAnhPhongTro.length > 0 && post.HinhAnhPhongTro[0].duong_dan_anh) {
-            image = post.HinhAnhPhongTro[0].duong_dan_anh;
-        }
-    }
-    
-    // Parse image URL if it's a JSON string or needs parsing
-    if (image && typeof parseImageUrl !== 'undefined') {
-        image = parseImageUrl(image);
-    }
-    
-    // Format address
-    const address = [phuongXa, tinhThanh].filter(Boolean).join(', ');
-    
-    return `
-        <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition" data-aos="fade-up">
-            <a href="detail.html?id=${id}">
-                <div class="relative h-48 ${image ? '' : 'bg-gradient-to-br from-blue-400 to-blue-600'}">
-                    ${image ? `<img src="${image}" alt="${title}" class="w-full h-full object-cover" loading="lazy" onerror="this.onerror=null; this.style.display='none'; this.parentElement.classList.add('bg-gradient-to-br', 'from-blue-400', 'to-blue-600'); this.parentElement.innerHTML='<div class=\\'w-full h-full flex items-center justify-center\\'><i data-feather=\\'image\\' class=\\'w-16 h-16 text-white opacity-50\\'></i></div>'; if(typeof feather !== 'undefined') feather.replace();">` : '<div class="w-full h-full flex items-center justify-center"><i data-feather="image" class="w-16 h-16 text-white opacity-50"></i></div>'}
-                    <div class="absolute top-4 right-4 bg-white px-3 py-1 rounded-full shadow-md text-sm font-medium text-blue-600">
-                        Mới đăng
-                    </div>
-                    <div class="absolute bottom-4 left-4 text-white drop-shadow-lg">
-                        <span class="text-2xl font-bold">${formatPrice(price)}</span>
-                        <span class="text-sm">/tháng</span>
-                    </div>
-                </div>
-                <div class="p-6">
-                    <h3 class="text-lg font-bold text-gray-900 mb-2 line-clamp-2">${title}</h3>
-                    <div class="flex items-center text-sm text-gray-600 mb-3">
-                        <i data-feather="map-pin" class="w-4 h-4 mr-1"></i>
-                        <span class="line-clamp-1">${address || 'Chưa có địa chỉ'}</span>
-                    </div>
-                    <div class="flex items-center justify-between text-sm text-gray-500 mb-4">
-                        <div class="flex items-center">
-                            <i data-feather="maximize-2" class="w-4 h-4 mr-1"></i>
-                            <span>${area} m²</span>
-                        </div>
-                        <div class="flex items-center">
-                            <i data-feather="calendar" class="w-4 h-4 mr-1"></i>
-                            <span>${formatDate(post.ngay_dang || post.ngayDang)}</span>
-                        </div>
-                    </div>
-                    <a href="detail.html?id=${id}" class="block w-full text-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition">
-                        Xem chi tiết
-                    </a>
-                </div>
-            </a>
-        </div>
-    `;
-}
-
-function formatDate(dateValue) {
-    if (!dateValue) return 'Chưa có ngày';
-    try {
-        // Handle both string and LocalDateTime format from backend
-        let date;
-        if (typeof dateValue === 'string') {
-            // Backend sends LocalDateTime as ISO string (e.g., "2024-01-15T10:30:00")
-            date = new Date(dateValue);
-        } else if (dateValue instanceof Date) {
-            date = dateValue;
-        } else {
-            return 'Chưa có ngày';
-        }
-        
-        // Check if date is valid
-        if (isNaN(date.getTime())) {
-            return 'Chưa có ngày';
-        }
-        
-        const now = new Date();
-        const diff = now - date;
-        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-        
-        if (days === 0) return 'Hôm nay';
-        if (days === 1) return 'Hôm qua';
-        if (days < 7) return `${days} ngày trước`;
-        if (days < 30) return `${Math.floor(days / 7)} tuần trước`;
-        return date.toLocaleDateString('vi-VN');
-    } catch (e) {
-        return 'Chưa có ngày';
-    }
-}
-
-function updateResultsCount(count) {
-    const resultsCount = document.getElementById('resultsCount');
-    if (resultsCount) {
-        resultsCount.textContent = count;
-    }
-}
-
-function updateSearchSummary(filters) {
-    const searchSummary = document.getElementById('searchSummary');
-    if (!searchSummary) return;
-    
-    const parts = [];
-    
-    if (filters.tinhThanh) {
-        parts.push(filters.tinhThanh);
-    }
-    if (filters.phuongXa) {
-        parts.push(filters.phuongXa);
-    }
-    
-    searchSummary.textContent = parts.length > 0 ? parts.join(' • ') : 'Hà Nội • Tất cả phường/xã';
-}
-
-function updatePagination(data) {
-    const pagination = document.getElementById('pagination');
-    if (!pagination || !data) return;
-    
-    const totalPages = data.totalPages || 0;
-    const currentPageNum = data.number || 0;
-    
-    if (totalPages <= 1) {
-        pagination.innerHTML = '';
-        return;
-    }
-    
-    let paginationHTML = '<nav class="flex items-center justify-center space-x-1">';
+    let html = '<nav class="flex items-center space-x-1">';
     
     // Previous button
-    paginationHTML += `
-        <button onclick="changePage(${currentPageNum - 1})" 
-                ${currentPageNum === 0 ? 'disabled' : ''}
-                class="px-3 py-2 rounded-md ${currentPageNum === 0 ? 'opacity-50 cursor-not-allowed text-gray-400' : 'text-gray-700 hover:bg-gray-100'}">
-            <i data-feather="chevron-left" class="w-4 h-4"></i>
-        </button>
-    `;
+    html += `<button onclick="goToPage(${currentPage - 1})" 
+             ${!hasPrevious ? 'disabled' : ''} 
+             class="px-3 py-2 ${!hasPrevious ? 'text-gray-300 cursor-not-allowed' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'} rounded-md">
+                <i data-feather="chevron-left" class="w-4 h-4"></i>
+             </button>`;
     
-    // Page numbers
+    // Page numbers with ellipsis logic
     const maxVisible = 5;
-    let startPage = Math.max(0, currentPageNum - Math.floor(maxVisible / 2));
+    let startPage = Math.max(0, currentPage - 2);
     let endPage = Math.min(totalPages - 1, startPage + maxVisible - 1);
     
     if (endPage - startPage < maxVisible - 1) {
         startPage = Math.max(0, endPage - maxVisible + 1);
     }
     
+    // First page
     if (startPage > 0) {
-        paginationHTML += `
-            <button onclick="changePage(0)" class="px-4 py-2 rounded-md text-gray-700 hover:bg-gray-100">1</button>
-        `;
+        html += `<button onclick="goToPage(0)" class="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-md">1</button>`;
         if (startPage > 1) {
-            paginationHTML += '<span class="px-2 text-gray-500">...</span>';
+            html += '<span class="px-3 py-2 text-gray-500">...</span>';
         }
     }
     
+    // Page numbers
     for (let i = startPage; i <= endPage; i++) {
-        paginationHTML += `
-            <button onclick="changePage(${i})" 
-                    class="px-4 py-2 rounded-md ${i === currentPageNum ? 'bg-blue-600 text-white' : 'text-gray-700 hover:bg-gray-100'}">
-                ${i + 1}
-            </button>
-        `;
+        const isActive = i === currentPage;
+        html += `<button onclick="goToPage(${i})" 
+                 class="px-4 py-2 ${isActive ? 'bg-blue-600 text-white' : 'text-gray-700 hover:bg-gray-100'} rounded-md">
+                    ${i + 1}
+                 </button>`;
     }
     
+    // Last page
     if (endPage < totalPages - 1) {
         if (endPage < totalPages - 2) {
-            paginationHTML += '<span class="px-2 text-gray-500">...</span>';
+            html += '<span class="px-3 py-2 text-gray-500">...</span>';
         }
-        paginationHTML += `
-            <button onclick="changePage(${totalPages - 1})" class="px-4 py-2 rounded-md text-gray-700 hover:bg-gray-100">${totalPages}</button>
-        `;
+        html += `<button onclick="goToPage(${totalPages - 1})" class="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-md">${totalPages}</button>`;
     }
     
     // Next button
-    paginationHTML += `
-        <button onclick="changePage(${currentPageNum + 1})" 
-                ${currentPageNum >= totalPages - 1 ? 'disabled' : ''}
-                class="px-3 py-2 rounded-md ${currentPageNum >= totalPages - 1 ? 'opacity-50 cursor-not-allowed text-gray-400' : 'text-gray-700 hover:bg-gray-100'}">
-            <i data-feather="chevron-right" class="w-4 h-4"></i>
-        </button>
-    `;
+    html += `<button onclick="goToPage(${currentPage + 1})" 
+             ${!hasNext ? 'disabled' : ''} 
+             class="px-3 py-2 ${!hasNext ? 'text-gray-300 cursor-not-allowed' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'} rounded-md">
+                <i data-feather="chevron-right" class="w-4 h-4"></i>
+             </button>`;
     
-    paginationHTML += '</nav>';
-    pagination.innerHTML = paginationHTML;
+    html += '</nav>';
+    paginationContainer.innerHTML = html;
     
-    if (typeof feather !== 'undefined') {
-        feather.replace();
+    // Re-initialize feather icons for the new buttons
+    feather.replace();
+}
+
+// Navigate to a specific page
+async function goToPage(page) {
+    currentFilters.page = page;
+    showLoading();
+    try {
+        await loadRoomsFromBackend();
+        updateResultsCount();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (e) {
+        console.error('Page navigation failed:', e);
+    } finally {
+        hideLoading();
     }
 }
 
-function changePage(page) {
-    if (page < 0) return;
-    currentPage = page;
-    updateURL();
-    loadPosts();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+// Convert backend BaiDangOutputDTO -> UI room object
+function normalizeListingFromBackend(item) {
+    const id = item.id;
+    const title = item.tieuDe || 'Tin cho thuê';
+    const price = typeof item.giaThang === 'number' ? item.giaThang : 0;
+    const area = typeof item.dienTichM2 === 'number' ? item.dienTichM2 : 0;
+    const address = item.diaChiDayDu || [item.phuongXa, item.tinhThanhpho].filter(Boolean).join(', ');
+    const image = item.anhBia || 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360" viewBox="0 0 640 360"><rect width="640" height="360" fill="%23f3f4f6"/><text x="320" y="180" font-family="Arial" font-size="16" fill="%23666" text-anchor="middle">Chưa có hình ảnh</text></svg>';
+    const posted = item.ngayDang || new Date().toISOString();
+
+    return {
+        id,
+        title,
+        price,
+        area,
+        city: slugify(item.tinhThanhpho),
+        district: slugify(item.phuongXa),
+        address,
+        type: 'room',
+        amenities: [],
+        images: [processImageUrl(image)],
+        description: '',
+        featured: false,
+        posted
+    };
 }
 
-function sortResults() {
-    // Sort functionality removed - not needed with simplified filters
+// Process image URL to handle relative paths
+function processImageUrl(url) {
+    if (!url) return '';
+    // If it's already a full URL (http/https), return as is
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+        return url;
+    }
+    // If it's a data URI, return as is
+    if (url.startsWith('data:')) {
+        return url;
+    }
+    // If it starts with /uploads, add API_BASE
+    if (url.startsWith('/uploads') || url.startsWith('uploads')) {
+        const cleanUrl = url.startsWith('/') ? url : '/' + url;
+        return `${API_BASE}${cleanUrl}`;
+    }
+    // Otherwise assume it's a relative path and add API_BASE
+    return `${API_BASE}/${url}`;
 }
 
-function applyFilters() {
-    currentPage = 0;
-    currentFilters = buildFilters();
-    updateURL();
-    loadPosts();
+function slugify(val) {
+    if (!val || typeof val !== 'string') return '';
+    return val
+        .toLowerCase()
+        .normalize('NFD').replace(/\p{Diacritic}/gu, '')
+        .replace(/[^a-z0-9\s-]/g, '')
+        .trim()
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-');
+}
+
+// Setup event listeners
+function setupEventListeners() {
+    // Mobile menu toggle
+    document.getElementById('mobile-menu-button').addEventListener('click', function() {
+        const menu = document.getElementById('mobile-menu');
+        menu.classList.toggle('hidden');
+    });
+
+    // Filter change listeners - auto apply when changing filters
+    const filterInputs = document.querySelectorAll('#filterDistrict, #priceFilter, #areaFilter');
+    filterInputs.forEach(input => {
+        input.addEventListener('change', function() {
+            applyFilters();
+        });
+    });
+}
+
+// Initialize view buttons state
+function initializeViewButtons() {
+    const gridBtn = document.getElementById('gridView');
+    const listBtn = document.getElementById('listView');
     
-    // Close sidebar on mobile
-    closeFilterSidebar();
+    if (currentView === 'list') {
+        listBtn.classList.add('bg-blue-600', 'text-white');
+        listBtn.classList.remove('text-gray-600');
+        gridBtn.classList.remove('bg-blue-600', 'text-white');
+        gridBtn.classList.add('text-gray-600');
+    } else {
+        gridBtn.classList.add('bg-blue-600', 'text-white');
+        gridBtn.classList.remove('text-gray-600');
+        listBtn.classList.remove('bg-blue-600', 'text-white');
+        listBtn.classList.add('text-gray-600');
+    }
 }
 
+// Update price display
+function updatePriceDisplay(value) {
+    const priceDisplay = document.getElementById('priceDisplay');
+    if (value >= 20) {
+        priceDisplay.textContent = 'Tất cả mức giá';
+    } else {
+        priceDisplay.textContent = `Dưới ${value} triệu`;
+    }
+}
+
+// Perform search
+async function performSearch() {
+    const quickCity = document.getElementById('quickCity').value;
+    const quickPrice = document.getElementById('quickPrice').value;
+
+    // Show loading
+    showLoading();
+
+    // Update filters
+    currentFilters.tinhThanh = quickCity || '';
+    currentFilters.page = 0; // Reset to first page
+    
+    // Parse price range
+    if (quickPrice) {
+        const [min, max] = quickPrice.split('-').map(p => p === '+' ? null : parseInt(p) * 1000000);
+        currentFilters.giaMin = min;
+        currentFilters.giaMax = max || null;
+    } else {
+        currentFilters.giaMin = null;
+        currentFilters.giaMax = null;
+    }
+
+    try {
+        await loadRoomsFromBackend();
+        updateResultsCount();
+        updateSearchSummary(quickCity, quickPrice);
+    } catch (e) {
+        console.error('Search failed:', e);
+        displayNoResults();
+    } finally {
+        hideLoading();
+    }
+}
+
+// Apply filters
+async function applyFilters() {
+    showLoading();
+
+    // Gather all filter values
+    const district = document.getElementById('filterDistrict').value;
+    const priceFilter = document.getElementById('priceFilter').value;
+    const areaFilter = document.getElementById('areaFilter').value;
+
+    // Update currentFilters
+    currentFilters.tinhThanh = 'Hà Nội';
+    currentFilters.phuongXa = district || '';
+    currentFilters.page = 0; // Reset to first page
+    
+    // Price filter
+    if (priceFilter) {
+        const [min, max] = priceFilter.split('-');
+        currentFilters.giaMin = min ? parseFloat(min) : null;
+        currentFilters.giaMax = max ? parseFloat(max) : null;
+    } else {
+        currentFilters.giaMin = null;
+        currentFilters.giaMax = null;
+    }
+    
+    // Area filter
+    if (areaFilter) {
+        const [min, max] = areaFilter.split('-');
+        currentFilters.dienTichMin = min ? parseFloat(min) : null;
+        currentFilters.dienTichMax = max ? parseFloat(max) : null;
+    } else {
+        currentFilters.dienTichMin = null;
+        currentFilters.dienTichMax = null;
+    }
+
+    try {
+        await loadRoomsFromBackend();
+        updateResultsCount();
+        updateSearchSummary(district, priceFilter);
+    } catch (e) {
+        console.error('Apply filters failed:', e);
+        displayNoResults();
+    } finally {
+        hideLoading();
+    }
+}
+
+// Clear filters
 function clearFilters() {
-    // Reset filter input
-    const filterPhuongXa = document.getElementById('filterPhuongXa');
-    if (filterPhuongXa) filterPhuongXa.value = '';
+    // Clear all form inputs
+    document.getElementById('filterDistrict').value = '';
+    document.getElementById('priceFilter').value = '';
+    document.getElementById('areaFilter').value = '';
+
+    // Reset filters
+    currentFilters = {
+        tinhThanh: 'Hà Nội',
+        phuongXa: '',
+        giaMin: null,
+        giaMax: null,
+        dienTichMin: null,
+        dienTichMax: null,
+        trangThai: '',
+        page: 0,
+        size: ITEMS_PER_PAGE
+    };
     
-    // Apply cleared filters
-    currentPage = 0;
-    currentFilters = buildFilters();
-    updateURL();
-    loadPosts();
+    // Reload data
+    showLoading();
+    loadRoomsFromBackend().then(() => {
+        updateResultsCount();
+        updateSearchSummary('', '');
+        hideLoading();
+    }).catch(e => {
+        console.error('Clear filters failed:', e);
+        hideLoading();
+    });
+}
+
+// Display rooms
+function displayRooms(rooms) {
+    if (rooms.length === 0) {
+        displayNoResults();
+        return;
+    }
     
-    // Close sidebar on mobile
-    closeFilterSidebar();
-}
-
-function openFilterSidebar() {
-    const filterSidebar = document.getElementById('filterSidebar');
-    const filterOverlay = document.getElementById('filterOverlay');
-    if (filterSidebar) filterSidebar.classList.remove('mobile-hidden');
-    if (filterOverlay) filterOverlay.classList.add('active');
-}
-
-function closeFilterSidebar() {
-    const filterSidebar = document.getElementById('filterSidebar');
-    const filterOverlay = document.getElementById('filterOverlay');
-    if (filterSidebar) filterSidebar.classList.add('mobile-hidden');
-    if (filterOverlay) filterOverlay.classList.remove('active');
-}
-
-function showNoResults() {
-    const resultsGrid = document.getElementById('resultsGrid');
-    const noResults = document.getElementById('noResults');
-    if (resultsGrid) resultsGrid.innerHTML = '';
-    if (noResults) {
-        noResults.classList.remove('hidden');
-        if (typeof feather !== 'undefined') feather.replace();
+    if (currentView === 'grid') {
+        displayGridView(rooms);
+    } else {
+        displayListView(rooms);
     }
 }
 
-// Make functions available globally
-window.performSearch = performSearch;
-window.changePage = changePage;
-window.applyFilters = applyFilters;
-window.clearFilters = clearFilters;
-window.openFilterSidebar = openFilterSidebar;
-window.closeFilterSidebar = closeFilterSidebar;
-window.sortResults = sortResults;
+// Display grid view
+function displayGridView(rooms) {
+    const grid = document.getElementById('resultsGrid');
+    const list = document.getElementById('resultsList');
+    const noResults = document.getElementById('noResults');
+
+    list.classList.add('hidden');
+    
+    if (rooms.length === 0) {
+        grid.innerHTML = '';
+        noResults.classList.remove('hidden');
+        return;
+    }
+
+    noResults.classList.add('hidden');
+    grid.classList.remove('hidden');
+
+    // No client-side pagination - backend handles it
+    grid.innerHTML = rooms.map(room => `
+        <div class="room-card bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition cursor-pointer flex flex-col h-full" onclick="goToDetail(${room.id})">
+            <div class="relative">
+                <img src="${room.images[0]}" alt="${room.title}" class="w-full h-56 object-cover">
+                ${room.featured ? '<div class="absolute top-3 left-3 bg-blue-600 text-white px-2 py-1 rounded text-sm font-medium">Nổi bật</div>' : ''}
+                <div class="absolute top-3 right-3 bg-white p-2 rounded-full shadow-md">
+                    <i data-feather="heart" class="text-gray-400 hover:text-red-500 w-4 h-4 cursor-pointer"></i>
+                </div>
+            </div>
+            <div class="p-4 flex flex-col flex-grow">
+                <h3 class="font-bold text-lg mb-2">${room.title}</h3>
+                <div class="text-lg font-bold text-blue-600 mb-2">${formatPrice(room.price)}/tháng</div>
+                <p class="text-gray-600 mb-3 flex items-center">
+                    <i data-feather="map-pin" class="w-4 h-4 mr-1"></i>
+                    ${room.address}
+                </p>
+                <div class="flex items-center mb-3 text-sm text-gray-600">
+                    <span class="flex items-center mr-4">
+                        <i data-feather="maximize" class="w-4 h-4 mr-1"></i>
+                        ${room.area}m²
+                    </span>
+                    <span class="flex items-center">
+                        <i data-feather="home" class="w-4 h-4 mr-1"></i>
+                        ${getTypeLabel(room.type)}
+                    </span>
+                </div>
+                <div class="flex flex-wrap gap-2 mb-4">
+                    ${room.amenities.slice(0, 3).map(amenity => `
+                        <span class="bg-gray-100 px-2 py-1 rounded text-sm flex items-center">
+                            <i data-feather="${getAmenityIcon(amenity)}" class="w-4 h-4 mr-1"></i>
+                            ${getAmenityLabel(amenity)}
+                        </span>
+                    `).join('')}
+                    ${room.amenities.length > 3 ? `<span class="bg-gray-100 px-2 py-1 rounded text-sm">+${room.amenities.length - 3}</span>` : ''}
+                </div>
+            </div>
+        </div>
+    `).join('');
+
+    feather.replace();
+}
+
+// Display list view
+function displayListView(rooms) {
+    const grid = document.getElementById('resultsGrid');
+    const list = document.getElementById('resultsList');
+    const noResults = document.getElementById('noResults');
+
+    grid.classList.add('hidden');
+    
+    if (rooms.length === 0) {
+        list.innerHTML = '';
+        noResults.classList.remove('hidden');
+        return;
+    }
+
+    noResults.classList.add('hidden');
+    list.classList.remove('hidden');
+
+    // No client-side pagination - backend handles it
+    list.innerHTML = rooms.map(room => `
+        <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition cursor-pointer" onclick="goToDetail(${room.id})">
+            <div class="flex">
+                <div class="w-1/3 relative">
+                    <img src="${room.images[0]}" alt="${room.title}" class="w-full h-full object-cover">
+                    ${room.featured ? '<div class="absolute top-2 left-2 bg-blue-600 text-white px-2 py-1 rounded text-xs font-medium">Nổi bật</div>' : ''}
+                </div>
+                <div class="w-2/3 p-4 flex flex-col justify-between">
+                    <div>
+                        <h3 class="font-bold text-lg mb-2">${room.title}</h3>
+                        <div class="text-lg font-bold text-blue-600 mb-2">${formatPrice(room.price)}/tháng</div>
+                        <p class="text-gray-600 mb-2 flex items-center">
+                            <i data-feather="map-pin" class="w-4 h-4 mr-1"></i>
+                            ${room.address}
+                        </p>
+                        <div class="flex items-center mb-2 text-sm text-gray-600">
+                            <span class="flex items-center mr-4">
+                                <i data-feather="maximize" class="w-4 h-4 mr-1"></i>
+                                ${room.area}m²
+                            </span>
+                            <span class="flex items-center">
+                                <i data-feather="home" class="w-4 h-4 mr-1"></i>
+                                ${getTypeLabel(room.type)}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <div class="flex flex-wrap gap-1">
+                            ${room.amenities.slice(0, 4).map(amenity => `
+                                <span class="bg-gray-100 px-2 py-1 rounded text-xs">
+                                    ${getAmenityLabel(amenity)}
+                                </span>
+                            `).join('')}
+                        </div>
+                        <button class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-1 px-3 rounded text-sm transition">
+                            Xem chi tiết
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `).join('');
+
+    feather.replace();
+}
+
+// Sort results - backend doesn't support sorting yet, so just reload
+async function sortResults() {
+    const sortBy = document.getElementById('sortBy').value;
+    
+    // Note: Backend needs to add sorting support
+    console.log('Sorting by:', sortBy);
+    
+    currentFilters.page = 0; // Reset to first page
+    showLoading();
+    try {
+        await loadRoomsFromBackend();
+        updateResultsCount();
+    } catch (e) {
+        console.error('Sort failed:', e);
+    } finally {
+        hideLoading();
+    }
+}
+
+// Display no results message
+function displayNoResults() {
+    const grid = document.getElementById('resultsGrid');
+    const list = document.getElementById('resultsList');
+    const noResults = document.getElementById('noResults');
+    
+    grid.classList.add('hidden');
+    list.classList.add('hidden');
+    noResults.classList.remove('hidden');
+    
+    updateResultsCount();
+}
+
+// Change view
+function changeView(view) {
+    currentView = view;
+    const gridBtn = document.getElementById('gridView');
+    const listBtn = document.getElementById('listView');
+    
+    if (view === 'grid') {
+        gridBtn.classList.add('bg-blue-600', 'text-white');
+        gridBtn.classList.remove('text-gray-600');
+        listBtn.classList.remove('bg-blue-600', 'text-white');
+        listBtn.classList.add('text-gray-600');
+    } else {
+        listBtn.classList.add('bg-blue-600', 'text-white');
+        listBtn.classList.remove('text-gray-600');
+        gridBtn.classList.remove('bg-blue-600', 'text-white');
+        gridBtn.classList.add('text-gray-600');
+    }
+    
+    // Re-render current rooms with new view
+    if (currentResponse && currentResponse.data) {
+        const rooms = currentResponse.data.map(normalizeListingFromBackend);
+        displayRooms(rooms);
+    }
+}
+
+// Loading state
+function showLoading() {
+    document.getElementById('loadingState').classList.remove('hidden');
+    document.getElementById('resultsGrid').classList.add('hidden');
+    document.getElementById('resultsList').classList.add('hidden');
+    document.getElementById('noResults').classList.add('hidden');
+}
+
+function hideLoading() {
+    document.getElementById('loadingState').classList.add('hidden');
+}
+
+// Update results count
+function updateResultsCount() {
+    const count = currentResponse?.pagination?.totalItems || 0;
+    document.getElementById('resultsCount').textContent = count.toLocaleString();
+}
+
+// Update search summary
+function updateSearchSummary(district, price) {
+    let summary = [];
+    
+    summary.push('Hà Nội');
+    if (district) summary.push(district);
+    if (price) {
+        const priceLabel = getPriceLabel(price);
+        summary.push(priceLabel);
+    }
+    
+    document.getElementById('searchSummary').textContent = summary.join(' • ');
+}
+
+// Get price label from filter value
+function getPriceLabel(priceValue) {
+    const labels = {
+        '0-2000000': 'Dưới 2 triệu',
+        '2000000-3000000': '2 - 3 triệu',
+        '3000000-5000000': '3 - 5 triệu',
+        '5000000-7000000': '5 - 7 triệu',
+        '7000000-10000000': '7 - 10 triệu',
+        '10000000-': 'Trên 10 triệu'
+    };
+    return labels[priceValue] || 'Tất cả mức giá';
+}
+
+// Go to detail page
+function goToDetail(roomId) {
+    window.location.href = `detail.html?id=${roomId}`;
+}
+
+// Utility functions
+function formatPrice(price) {
+    if (price >= 1000000) {
+        return (price / 1000000).toFixed(1).replace('.0', '') + ' tr';
+    }
+    return new Intl.NumberFormat('vi-VN').format(price) + 'đ';
+}
+
+function getTypeLabel(type) {
+    const types = {
+        'room': 'Phòng trọ',
+        'apartment': 'Chung cư mini',
+        'house': 'Nhà nguyên căn',
+        'shared': 'Ở ghép',
+        'studio': 'Studio'
+    };
+    return types[type] || type;
+}
+
+function getAmenityLabel(amenity) {
+    const amenities = {
+        'wifi': 'WiFi',
+        'ac': 'Điều hòa',
+        'parking': 'Chỗ xe',
+        'kitchen': 'Bếp',
+        'laundry': 'Máy giặt',
+        'security': 'An ninh'
+    };
+    return amenities[amenity] || amenity;
+}
+
+function getAmenityIcon(amenity) {
+    const icons = {
+        'wifi': 'wifi',
+        'ac': 'wind',
+        'parking': 'truck',
+        'kitchen': 'home',
+        'laundry': 'droplet',
+        'security': 'shield'
+    };
+    return icons[amenity] || 'check';
+}
+
+// Handle URL parameters (for direct links from homepage)
+function handleUrlParameters() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const location = urlParams.get('location');
+    const price = urlParams.get('price');
+    const keyword = urlParams.get('q');
+
+    if (keyword) {
+        document.getElementById('searchKeyword').value = keyword;
+    }
+    if (location) {
+        document.getElementById('quickCity').value = location;
+    }
+    if (price) {
+        document.getElementById('quickPrice').value = price;
+    }
+
+    if (keyword || location || price) {
+        performSearch();
+    }
+}
+
+// Initialize URL parameters on page load
+document.addEventListener('DOMContentLoaded', function() {
+    handleUrlParameters();
+});
+
+// Smooth scroll for navigation
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+            target.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+        }
+    });
+});
+
+// Save search to localStorage (for user preferences)
+function saveSearchPreferences() {
+    const preferences = {
+        city: document.getElementById('filterCity').value,
+        priceRange: document.getElementById('priceRange').value,
+        roomTypes: Array.from(document.querySelectorAll('input[name="roomType"]:checked')).map(cb => cb.value),
+        amenities: Array.from(document.querySelectorAll('input[name="amenities"]:checked')).map(cb => cb.value)
+    };
+    localStorage.setItem('searchPreferences', JSON.stringify(preferences));
+}
+
+// Load search preferences
+function loadSearchPreferences() {
+    try {
+        const preferences = JSON.parse(localStorage.getItem('searchPreferences') || '{}');
+        
+        if (preferences.city) {
+            document.getElementById('filterCity').value = preferences.city;
+            updateDistricts(preferences.city);
+        }
+        
+        if (preferences.priceRange) {
+            document.getElementById('priceRange').value = preferences.priceRange;
+            updatePriceDisplay(preferences.priceRange);
+        }
+        
+        if (preferences.roomTypes) {
+            preferences.roomTypes.forEach(type => {
+                const checkbox = document.querySelector(`input[name="roomType"][value="${type}"]`);
+                if (checkbox) checkbox.checked = true;
+            });
+        }
+        
+        if (preferences.amenities) {
+            preferences.amenities.forEach(amenity => {
+                const checkbox = document.querySelector(`input[name="amenities"][value="${amenity}"]`);
+                if (checkbox) checkbox.checked = true;
+            });
+        }
+    } catch (e) {
+        console.log('Error loading preferences:', e);
+    }
+}
+
+// Auto-save preferences when filters change
+document.addEventListener('change', function(e) {
+    if (e.target.closest('#filterSidebar')) {
+        setTimeout(saveSearchPreferences, 500); // Debounce
+    }
+});
+
+// Load preferences on page load
+document.addEventListener('DOMContentLoaded', function() {
+    loadSearchPreferences();
+});
+
+// Share functionality
+function shareSearch() {
+    const url = new URL(window.location);
+    const keyword = document.getElementById('searchKeyword').value;
+    const city = document.getElementById('quickCity').value;
+    const price = document.getElementById('quickPrice').value;
+
+    if (keyword) url.searchParams.set('q', keyword);
+    if (city) url.searchParams.set('location', city);
+    if (price) url.searchParams.set('price', price);
+
+    if (navigator.share) {
+        navigator.share({
+            title: 'Tìm phòng trọ - Phòng Trọ 24/7',
+            url: url.toString()
+        });
+    } else {
+        // Fallback: copy to clipboard
+        navigator.clipboard.writeText(url.toString()).then(() => {
+            alert('Đã copy link tìm kiếm vào clipboard');
+        });
+    }
+}
+
+// Keyboard shortcuts
+document.addEventListener('keydown', function(e) {
+    // Ctrl/Cmd + K to focus search
+    if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        document.getElementById('searchKeyword').focus();
+    }
+});
+
+// Lazy loading for images (if implementing infinite scroll)
+function lazyLoadImages() {
+    const images = document.querySelectorAll('img[data-src]');
+    const imageObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const img = entry.target;
+                img.src = img.dataset.src;
+                img.classList.remove('lazy');
+                observer.unobserve(img);
+            }
+        });
+    });
+    
+    images.forEach(img => imageObserver.observe(img));
+}
+
+// Error handling for failed image loads
+document.addEventListener('error', function(e) {
+    if (e.target.tagName === 'IMG') {
+        e.target.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200" viewBox="0 0 300 200"><rect width="300" height="200" fill="%23f3f4f6"/><text x="150" y="100" font-family="Arial" font-size="14" fill="%23666" text-anchor="middle">Hình ảnh không khả dụng</text></svg>';
+    }
+}, true);
+
+// Analytics tracking (placeholder)
+function trackSearch(keyword, filters) {
+    // Here you would typically send analytics data
+    console.log('Search tracked:', { keyword, filters });
+}
+
+// Performance monitoring
+function measureSearchPerformance() {
+    const start = performance.now();
+    return function() {
+        const end = performance.now();
+        console.log(`Search took ${end - start} milliseconds`);
+    };
+}
+
+// Responsive design helper
+function handleResize() {
+    // Handle responsive layout changes if needed
+}
+
+window.addEventListener('resize', handleResize);
+
+// Service Worker registration (for offline functionality)
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function() {
+        navigator.serviceWorker.register('/sw.js')
+            .then(function(registration) {
+                console.log('SW registered: ', registration);
+            })
+            .catch(function(registrationError) {
+                console.log('SW registration failed: ', registrationError);
+            });
+    });
+}
+
+// PWA install prompt
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    // Show install button or banner
+});
+
+// Geolocation for nearby search (optional feature)
+function searchNearby() {
+    if ('geolocation' in navigator) {
+        navigator.geolocation.getCurrentPosition(function(position) {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+            // Use coordinates to find nearby rooms
+            console.log('User location:', { lat, lng });
+        }, function(error) {
+            console.log('Geolocation error:', error);
+        });
+    }
+}
