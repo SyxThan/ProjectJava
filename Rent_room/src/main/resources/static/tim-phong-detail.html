@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chi tiết tin tìm phòng - Phòng Trọ 24/7</title>
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+    <script src="https://unpkg.com/feather-icons"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/search.css">
+    <style>
+        body {
+            font-family: 'Be Vietnam Pro', sans-serif;
+        }
+        .amenity-icon {
+            width: 24px;
+            height: 24px;
+            stroke-width: 2;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Header - Navbar will be rendered by navbar.js -->
+    <header class="bg-white shadow-sm sticky top-0 z-50" id="navbar-container">
+        <!-- Navbar content will be injected here -->
+    </header>
+
+    <!-- Main Content -->
+    <div class="container mx-auto px-4 py-8">
+        <!-- Loading State -->
+        <div id="loadingState" class="flex justify-center items-center py-20">
+            <div class="text-center">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                <p class="text-gray-600">Đang tải thông tin bài đăng...</p>
+            </div>
+        </div>
+
+        <!-- Post Content -->
+        <div id="postContent" class="hidden flex flex-col lg:flex-row gap-8">
+            <!-- Post Details -->
+            <div class="lg:w-2/3">
+                <!-- Breadcrumb -->
+                <nav class="flex mb-6" aria-label="Breadcrumb">
+                    <ol class="inline-flex items-center space-x-1 md:space-x-3">
+                        <li class="inline-flex items-center">
+                            <a href="index.html" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-blue-600">
+                                <i data-feather="home" class="w-4 h-4 mr-2"></i>
+                                Trang chủ
+                            </a>
+                        </li>
+                        <li>
+                            <div class="flex items-center">
+                                <i data-feather="chevron-right" class="w-4 h-4 text-gray-400"></i>
+                                <a href="tim-phong.html" class="ml-1 text-sm font-medium text-gray-700 hover:text-blue-600 md:ml-2">Tin tìm phòng</a>
+                            </div>
+                        </li>
+                        <li aria-current="page">
+                            <div class="flex items-center">
+                                <i data-feather="chevron-right" class="w-4 h-4 text-gray-400"></i>
+                                <span class="ml-1 text-sm font-medium text-gray-500 md:ml-2">Chi tiết tin</span>
+                            </div>
+                        </li>
+                    </ol>
+                </nav>
+
+                <!-- Post Title -->
+                <div class="flex justify-between items-start mb-4">
+                    <h1 id="postTitle" class="text-2xl md:text-3xl font-bold">Đang tải...</h1>
+                </div>
+
+                <!-- Post Location -->
+                <div id="postLocation" class="flex items-center text-gray-600 mb-4">
+                    <i data-feather="map-pin" class="w-5 h-5 mr-1"></i>
+                    <span>Đang tải...</span>
+                </div>
+
+                <!-- Post Status Badge -->
+                <div id="statusBadges" class="flex flex-wrap gap-3 mb-6">
+                </div>
+
+                <!-- Post Info -->
+                <div class="bg-white rounded-xl shadow-md p-6 mb-6">
+                    <h2 class="text-xl font-bold mb-4">Thông tin yêu cầu</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="flex items-center">
+                            <div class="bg-blue-100 p-3 rounded-full mr-4">
+                                <i data-feather="dollar-sign" class="text-blue-600 amenity-icon"></i>
+                            </div>
+                            <div>
+                                <p class="text-gray-500 text-sm">Khoảng giá mong muốn</p>
+                                <p id="postPriceRange" class="font-bold text-lg text-blue-600">Đang tải...</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="bg-blue-100 p-3 rounded-full mr-4">
+                                <i data-feather="maximize" class="text-blue-600 amenity-icon"></i>
+                            </div>
+                            <div>
+                                <p class="text-gray-500 text-sm">Diện tích tối thiểu</p>
+                                <p id="postArea" class="font-bold text-lg">Đang tải...</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="bg-blue-100 p-3 rounded-full mr-4">
+                                <i data-feather="users" class="text-blue-600 amenity-icon"></i>
+                            </div>
+                            <div>
+                                <p class="text-gray-500 text-sm">Số người ở</p>
+                                <p id="postPeople" class="font-bold text-lg">Đang tải...</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="bg-blue-100 p-3 rounded-full mr-4">
+                                <i data-feather="map-pin" class="text-blue-600 amenity-icon"></i>
+                            </div>
+                            <div>
+                                <p class="text-gray-500 text-sm">Khu vực mong muốn</p>
+                                <p id="postDesiredArea" class="font-bold text-lg">Đang tải...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Post Description -->
+                <div class="bg-white rounded-xl shadow-md p-6 mb-6">
+                    <h2 class="text-xl font-bold mb-4">Mô tả</h2>
+                    <div id="postDescription" class="prose max-w-none">
+                        <p>Đang tải...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="lg:w-1/3">
+                <!-- Contact Card -->
+                <div class="bg-white rounded-xl shadow-md p-6 mb-6 sticky top-24">
+                    <h2 class="text-xl font-bold mb-4">Thông tin người đăng</h2>
+                    <div class="flex items-center mb-4">
+                        <div class="bg-blue-100 p-3 rounded-full mr-3">
+                            <i data-feather="user" class="text-blue-600 w-6 h-6"></i>
+                        </div>
+                        <div>
+                            <p class="font-bold" id="posterName">Đang tải...</p>
+                            <p class="text-sm text-gray-500">Người đăng tin</p>
+                        </div>
+                    </div>
+                    <div class="space-y-3">
+                        <a id="posterPhone" href="tel:" class="flex items-center w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                            <i data-feather="phone" class="w-5 h-5 mr-2"></i>
+                            <span>Đang tải...</span>
+                        </a>
+                        <div id="posterEmailContainer" class="hidden">
+                            <a id="posterEmail" href="mailto:" class="flex items-center w-full px-4 py-3 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition">
+                                <i data-feather="mail" class="w-5 h-5 mr-2"></i>
+                                <span>Email</span>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="mt-4 pt-4 border-t">
+                        <p class="text-sm text-gray-500 flex items-center">
+                            <i data-feather="clock" class="w-4 h-4 mr-1"></i>
+                            Đăng ngày: <span id="postedDate" class="ml-1 font-medium">Đang tải...</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-12 mt-12">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <h3 class="text-xl font-bold mb-4">Phòng Trọ 24/7</h3>
+                    <p class="text-gray-400 text-sm">Nền tảng tìm kiếm và đăng tin phòng trọ hàng đầu Việt Nam</p>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-4">Về chúng tôi</h4>
+                    <ul class="space-y-2 text-sm text-gray-400">
+                        <li><a href="#" class="hover:text-white">Giới thiệu</a></li>
+                        <li><a href="#" class="hover:text-white">Điều khoản</a></li>
+                        <li><a href="#" class="hover:text-white">Chính sách bảo mật</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-4">Hỗ trợ</h4>
+                    <ul class="space-y-2 text-sm text-gray-400">
+                        <li><a href="#" class="hover:text-white">Câu hỏi thường gặp</a></li>
+                        <li><a href="#" class="hover:text-white">Hướng dẫn sử dụng</a></li>
+                        <li><a href="#" class="hover:text-white">Liên hệ</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-4">Kết nối</h4>
+                    <div class="flex space-x-4 mb-4">
+                        <a href="#" class="bg-gray-700 p-2 rounded-full hover:bg-blue-600 transition">
+                            <i data-feather="facebook" class="w-5 h-5"></i>
+                        </a>
+                        <a href="#" class="bg-gray-700 p-2 rounded-full hover:bg-pink-600 transition">
+                            <i data-feather="instagram" class="w-5 h-5"></i>
+                        </a>
+                        <a href="#" class="bg-gray-700 p-2 rounded-full hover:bg-blue-400 transition">
+                            <i data-feather="twitter" class="w-5 h-5"></i>
+                        </a>
+                    </div>
+                    <p class="text-gray-400 text-sm">Hotline: 1900 1234</p>
+                    <p class="text-gray-400 text-sm">Email: support@phongtro247.com</p>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
+                <p>© 2024 Phòng Trọ 24/7. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Custom JavaScript -->
+    <script src="js/api.js"></script>
+    <script src="js/navbar.js"></script>
+    <script src="js/tim-phong-detail.js"></script>
+</body>
+</html>
+

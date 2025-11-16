@@ -3,7 +3,13 @@
  * Common functions for making API requests with authentication
  */
 
-const API_BASE_URL = 'http://localhost:8080/api';
+// Only declare API_BASE_URL if it doesn't already exist
+// Use window object to avoid const/let conflicts
+if (typeof window.API_BASE_URL === 'undefined') {
+    window.API_BASE_URL = 'http://localhost:8080/api';
+}
+// Create a local reference for convenience
+const API_BASE_URL = window.API_BASE_URL;
 
 /**
  * Get authentication token from storage

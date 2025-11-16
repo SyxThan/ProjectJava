@@ -1,11 +1,14 @@
 package com.example.Rent_room.controller;
 
 import com.example.Rent_room.dto.BaiDangTimPhongDTO;
+import com.example.Rent_room.dto.PaginationResponseDTO;
+import com.example.Rent_room.entity.TrangThaiTimPhong;
 import com.example.Rent_room.service.BaiDangTimPhongService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
@@ -20,11 +23,33 @@ import java.util.Optional;
 public class BaiDangTimPhongController {
     private final BaiDangTimPhongService baiDangTimPhongService;
 
+    // Endpoint với phân trang và filter
     @GetMapping
-    public ResponseEntity<?> findAllPost() {
+    public ResponseEntity<?> getAllWithPagination(
+            @RequestParam(defaultValue = "0") int page, // Trang hiện tại (bắt đầu từ 0)
+            @RequestParam(defaultValue = "20") int size, // Số items mỗi trang
+            @RequestParam(required = false) String thanhPho, // Filter theo tỉnh/thành phố
+            @RequestParam(required = false) String xa, // Filter theo phường/xã
+            @RequestParam(required = false) BigDecimal giaMin, // Giá tối thiểu
+            @RequestParam(required = false) BigDecimal giaMax, // Giá tối đa
+            @RequestParam(required = false) Float dienTichMin, // Diện tích tối thiểu
+            @RequestParam(required = false) Float dienTichMax, // Diện tích tối đa
+            @RequestParam(required = false) TrangThaiTimPhong trangThai // Trạng thái bài đăng
+    ) {
         try {
-            List<BaiDangTimPhongDTO> posts = baiDangTimPhongService.findAll();
-            return ResponseEntity.ok(posts);
+            // Convert empty strings to null
+            if (thanhPho != null && thanhPho.trim().isEmpty()) {
+                thanhPho = null;
+            }
+            if (xa != null && xa.trim().isEmpty()) {
+                xa = null;
+            }
+
+            PaginationResponseDTO<BaiDangTimPhongDTO> response = baiDangTimPhongService
+                    .getAllBaiDangTimPhongWithPagination(
+                            page, size, thanhPho, xa, giaMin, giaMax,
+                            dienTichMin, dienTichMax, trangThai);
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Lỗi khi lấy danh sách bài đăng: " + e.getMessage());
@@ -32,14 +57,20 @@ public class BaiDangTimPhongController {
     }
 
     @GetMapping("{id}")
-    public ResponseEntity<?> findByPostId(@PathVariable Integer id){
+    public ResponseEntity<?> findByPostId(@PathVariable Integer id) {
         try {
             if (id == null || id <= 0) {
                 return ResponseEntity.badRequest().body("ID bài đăng không hợp lệ");
             }
             Optional<BaiDangTimPhongDTO> post = baiDangTimPhongService.findById(id);
             if (post.isPresent()) {
-                return ResponseEntity.ok(post.get());
+                BaiDangTimPhongDTO dto = post.get();
+                // Debug log
+                System.out.println("Controller - Returning DTO:");
+                System.out.println("  DTO userFullname: " + dto.getUserFullname());
+                System.out.println("  DTO userEmail: " + dto.getUserEmail());
+                System.out.println("  DTO userSoDienThoai: " + dto.getUserSoDienThoai());
+                return ResponseEntity.ok(dto);
             } else {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body("Không tìm thấy bài đăng với ID: " + id);
@@ -51,7 +82,6 @@ public class BaiDangTimPhongController {
                     .body("Lỗi khi tìm bài đăng: " + e.getMessage());
         }
     }
-
 
     @GetMapping("user/{id}")
     public ResponseEntity<?> findByUser_Id(@PathVariable Integer id) {
@@ -71,7 +101,7 @@ public class BaiDangTimPhongController {
 
     @GetMapping("khuvuc/{thanhPho}/{xa}")
     public ResponseEntity<?> findByKhuVuc(@PathVariable String thanhPho,
-                                          @PathVariable String xa) {
+            @PathVariable String xa) {
         try {
             if (thanhPho == null || thanhPho.trim().isEmpty()) {
                 return ResponseEntity.badRequest().body("Tên thành phố không được để trống");
@@ -91,7 +121,7 @@ public class BaiDangTimPhongController {
 
     @GetMapping("min/{costMin}/max/{costMax}")
     public ResponseEntity<?> findByRangeCost(@PathVariable BigDecimal costMin,
-                                             @PathVariable BigDecimal costMax) {
+            @PathVariable BigDecimal costMax) {
         try {
             if (costMin == null || costMax == null) {
                 return ResponseEntity.badRequest().body("Giá tối thiểu và tối đa không được để trống");
@@ -151,6 +181,7 @@ public class BaiDangTimPhongController {
     }
 
     @PostMapping("createpost")
+    @PreAuthorize("hasAnyRole('NGUOI_THUE','QUAN_TRI_VIEN')")
     public ResponseEntity<?> createPost(
             @Valid @RequestBody BaiDangTimPhongDTO baiDangTimPhongDTO,
             BindingResult result) {

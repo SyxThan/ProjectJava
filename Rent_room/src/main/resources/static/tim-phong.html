@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tìm phòng trọ - Phòng Trọ 24/7</title>
+    <title>Tin tìm phòng - Phòng Trọ 24/7</title>
     <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
@@ -11,52 +11,7 @@
     <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
     <script src="https://unpkg.com/feather-icons"></script>
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Be Vietnam Pro', sans-serif;
-        }
-        .loading-skeleton {
-            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-            background-size: 200% 100%;
-            animation: loading 1.5s ease-in-out infinite;
-        }
-        @keyframes loading {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
-        }
-        .filter-sidebar {
-            transition: transform 0.3s ease;
-        }
-        .filter-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 40;
-        }
-        @media (max-width: 1024px) {
-            .filter-sidebar {
-                position: fixed;
-                top: 0;
-                left: 0;
-                height: 100vh;
-                width: 80%;
-                max-width: 400px;
-                z-index: 50;
-                transform: translateX(-100%);
-                overflow-y: auto;
-            }
-            .filter-sidebar.open {
-                transform: translateX(0);
-            }
-            .filter-overlay.open {
-                display: block;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="css/search.css">
 </head>
 <body class="bg-gray-50">
     <!-- Header - Navbar will be rendered by navbar.js -->
@@ -70,146 +25,156 @@
             <div class="flex items-center space-x-2 text-sm text-gray-600">
                 <a href="index.html" class="hover:text-blue-600">Trang chủ</a>
                 <i data-feather="chevron-right" class="w-4 h-4"></i>
-                <span class="text-blue-600">Tìm người thuê phòng</span>
+                <span class="text-blue-600">Tin tìm phòng</span>
             </div>
         </div>
     </nav>
 
-    <!-- Search Header -->
-    <section class="bg-white py-6 border-b">
+    <!-- Filter Bar -->
+    <section class="bg-white py-4 border-b sticky top-16 z-40">
         <div class="container mx-auto px-4">
-            <div class="flex flex-col md:flex-row gap-4 items-center">
-                <!-- Search Input -->
-                <div class="flex-1 relative">
-                    <i data-feather="search" class="absolute left-3 top-3 text-gray-400 w-5 h-5"></i>
+            <div class="flex flex-wrap gap-3 items-center">
+                <div class="flex-1 min-w-[200px]">
+                    <select id="filterDistrict" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">Quận/Huyện (Hà Nội)</option>
+                        <optgroup label="Quận">
+                            <option value="Ba Đình">Ba Đình</option>
+                            <option value="Bắc Từ Liêm">Bắc Từ Liêm</option>
+                            <option value="Cầu Giấy">Cầu Giấy</option>
+                            <option value="Đống Đa">Đống Đa</option>
+                            <option value="Hà Đông">Hà Đông</option>
+                            <option value="Hai Bà Trưng">Hai Bà Trưng</option>
+                            <option value="Hoàn Kiếm">Hoàn Kiếm</option>
+                            <option value="Hoàng Mai">Hoàng Mai</option>
+                            <option value="Long Biên">Long Biên</option>
+                            <option value="Nam Từ Liêm">Nam Từ Liêm</option>
+                            <option value="Tây Hồ">Tây Hồ</option>
+                            <option value="Thanh Xuân">Thanh Xuân</option>
+                        </optgroup>
+                        <optgroup label="Thị xã">
+                            <option value="Sơn Tây">Sơn Tây</option>
+                        </optgroup>
+                        <optgroup label="Huyện">
+                            <option value="Ba Vì">Ba Vì</option>
+                            <option value="Chương Mỹ">Chương Mỹ</option>
+                            <option value="Đan Phượng">Đan Phượng</option>
+                            <option value="Đông Anh">Đông Anh</option>
+                            <option value="Gia Lâm">Gia Lâm</option>
+                            <option value="Hoài Đức">Hoài Đức</option>
+                            <option value="Mê Linh">Mê Linh</option>
+                            <option value="Mỹ Đức">Mỹ Đức</option>
+                            <option value="Phú Xuyên">Phú Xuyên</option>
+                            <option value="Phúc Thọ">Phúc Thọ</option>
+                            <option value="Quốc Oai">Quốc Oai</option>
+                            <option value="Sóc Sơn">Sóc Sơn</option>
+                            <option value="Thạch Thất">Thạch Thất</option>
+                            <option value="Thanh Oai">Thanh Oai</option>
+                            <option value="Thanh Trì">Thanh Trì</option>
+                            <option value="Thường Tín">Thường Tín</option>
+                            <option value="Ứng Hòa">Ứng Hòa</option>
+                        </optgroup>
+                    </select>
+                </div>
+                
+                <div class="flex-1 min-w-[150px]">
                     <input 
-                        type="text" 
-                        id="searchKeyword" 
-                        placeholder="Tìm theo khu vực, thành phố..." 
-                        class="pl-10 w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        type="number" 
+                        id="priceMin" 
+                        placeholder="Giá thấp nhất (VNĐ)" 
+                        class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        min="0"
+                        step="100000"
                     >
                 </div>
                 
-                <!-- Quick Filters -->
-                <div class="flex gap-3 flex-wrap">
-                    <select id="quickCity" class="p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <option value="">Tất cả tỉnh/thành</option>
-                        <option value="Hà Nội">Hà Nội</option>
-                        <option value="TP. Hồ Chí Minh">TP. Hồ Chí Minh</option>
-                        <option value="Đà Nẵng">Đà Nẵng</option>
-                        <option value="Cần Thơ">Cần Thơ</option>
-                        <option value="Hải Phòng">Hải Phòng</option>
-                    </select>
-                    
+                <div class="flex-1 min-w-[150px]">
                     <input 
                         type="number" 
-                        id="quickPriceMin" 
-                        placeholder="Giá min (triệu)" 
-                        class="p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-32"
+                        id="priceMax" 
+                        placeholder="Giá cao nhất (VNĐ)" 
+                        class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        min="0"
+                        step="100000"
                     >
-                    <input 
-                        type="number" 
-                        id="quickPriceMax" 
-                        placeholder="Giá max (triệu)" 
-                        class="p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-32"
-                    >
-                    
-                    <button onclick="performSearch()" class="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition flex items-center">
-                        <i data-feather="search" class="mr-2 w-4 h-4"></i>
-                        Tìm kiếm
-                    </button>
                 </div>
+                
+                <div class="flex-1 min-w-[150px]">
+                    <input 
+                        type="number" 
+                        id="areaMin" 
+                        placeholder="Diện tích tối thiểu (m²)" 
+                        class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        min="0"
+                        step="1"
+                    >
+                </div>
+                
+                <div class="flex-1 min-w-[150px]">
+                    <input 
+                        type="number" 
+                        id="areaMax" 
+                        placeholder="Diện tích tối đa (m²)" 
+                        class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        min="0"
+                        step="1"
+                    >
+                </div>
+                
+                <button onclick="applyFilters()" class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition whitespace-nowrap">
+                    <i data-feather="filter" class="w-4 h-4 inline mr-1"></i>
+                    Lọc
+                </button>
+                
+                <button onclick="clearFilters()" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition whitespace-nowrap">
+                    <i data-feather="x" class="w-4 h-4 inline"></i>
+                </button>
             </div>
         </div>
     </section>
 
     <!-- Main Content -->
     <div class="container mx-auto px-4 py-6">
-        <div class="flex flex-col lg:flex-row gap-6">
-            <!-- Filter Sidebar -->
-            <div id="filterSidebar" class="filter-sidebar bg-white rounded-lg shadow-md p-6 h-fit lg:w-80">
-                <div class="flex items-center justify-between mb-6">
-                    <h2 class="text-xl font-bold">Bộ lọc tìm kiếm</h2>
-                    <button class="lg:hidden" onclick="closeFilterSidebar()">
-                        <i data-feather="x" class="w-6 h-6"></i>
-                    </button>
+        <div class="flex flex-col gap-6">
+            <!-- Search Results Header -->
+            <div class="flex items-center justify-between mb-6">
+                <div>
+                    <h1 class="text-2xl font-bold">Tìm thấy <span id="resultsCount">0</span> bài đăng</h1>
+                    <p class="text-gray-600" id="searchSummary">Tất cả khu vực • Tất cả mức giá</p>
                 </div>
-
-                <!-- Location Filter -->
-                <div class="mb-6">
-                    <h3 class="font-medium mb-3">Khu vực mong muốn</h3>
-                    <div class="space-y-2">
-                        <input 
-                            type="text" 
-                            id="filterXa" 
-                            placeholder="Xã/Phường" 
-                            class="w-full p-2 border border-gray-300 rounded-md"
-                        >
-                        <input 
-                            type="text" 
-                            id="filterThanhPho" 
-                            placeholder="Thành phố (Hà Nội)"
-                            value="Hà Nội"
-                            class="w-full p-2 border border-gray-300 rounded-md bg-gray-100"
-                            readonly
-                        >
-                    </div>
-                </div>
-
-                <!-- Price Range Filter -->
-                <div class="mb-6">
-                    <h3 class="font-medium mb-3">Khoảng giá mong muốn</h3>
-                    <div class="space-y-3">
-                        <input 
-                            type="number" 
-                            id="filterPriceMin" 
-                            placeholder="Giá thấp nhất (VNĐ)" 
-                            class="w-full p-2 border border-gray-300 rounded-md"
-                        >
-                        <input 
-                            type="number" 
-                            id="filterPriceMax" 
-                            placeholder="Giá cao nhất (VNĐ)" 
-                            class="w-full p-2 border border-gray-300 rounded-md"
-                        >
-                    </div>
-                </div>
-
-                <!-- Filter Actions -->
-                <div class="space-y-3">
-                    <button onclick="applyFilters()" class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition">
-                        Áp dụng bộ lọc
-                    </button>
-                    <button onclick="clearFilters()" class="w-full border border-gray-300 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-50 transition">
-                        Xóa bộ lọc
-                    </button>
-                </div>
+                
+                <a href="dang-tim-phong.html" class="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition flex items-center">
+                    <i data-feather="plus" class="mr-2 w-4 h-4"></i>
+                    Đăng bài tìm phòng
+                </a>
             </div>
-
-            <!-- Main Content Area -->
-            <div class="flex-1">
-                <!-- Search Results Header -->
-                <div class="flex items-center justify-between mb-6">
-                    <div class="flex items-center space-x-4">
-                        <button class="lg:hidden bg-blue-600 text-white px-4 py-2 rounded-md" onclick="openFilterSidebar()">
-                            <i data-feather="sliders" class="w-4 h-4 mr-2 inline"></i>
-                            Bộ lọc
-                        </button>
-                        <div>
-                            <h1 class="text-2xl font-bold">Tìm thấy <span id="resultsCount">0</span> bài đăng</h1>
-                            <p class="text-gray-600" id="searchSummary">Tất cả khu vực • Tất cả mức giá</p>
-                        </div>
-                    </div>
-                    
-                    <a href="dang-tim-phong.html" class="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition flex items-center">
-                        <i data-feather="plus" class="mr-2 w-4 h-4"></i>
-                        Đăng bài tìm phòng
-                    </a>
-                </div>
 
                 <!-- Loading State -->
                 <div id="loadingState" class="hidden">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div class="bg-white rounded-lg overflow-hidden shadow-md">
+                            <div class="loading-skeleton h-48"></div>
+                            <div class="p-4">
+                                <div class="loading-skeleton h-4 mb-2 rounded"></div>
+                                <div class="loading-skeleton h-3 mb-3 w-3/4 rounded"></div>
+                                <div class="loading-skeleton h-3 w-1/2 rounded"></div>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-lg overflow-hidden shadow-md">
+                            <div class="loading-skeleton h-48"></div>
+                            <div class="p-4">
+                                <div class="loading-skeleton h-4 mb-2 rounded"></div>
+                                <div class="loading-skeleton h-3 mb-3 w-3/4 rounded"></div>
+                                <div class="loading-skeleton h-3 w-1/2 rounded"></div>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-lg overflow-hidden shadow-md">
+                            <div class="loading-skeleton h-48"></div>
+                            <div class="p-4">
+                                <div class="loading-skeleton h-4 mb-2 rounded"></div>
+                                <div class="loading-skeleton h-3 mb-3 w-3/4 rounded"></div>
+                                <div class="loading-skeleton h-3 w-1/2 rounded"></div>
+                            </div>
+                        </div>
                         <div class="bg-white rounded-lg overflow-hidden shadow-md">
                             <div class="loading-skeleton h-48"></div>
                             <div class="p-4">
@@ -222,7 +187,7 @@
                 </div>
 
                 <!-- Search Results Grid -->
-                <div id="resultsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div id="resultsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     <!-- Results will be populated here -->
                 </div>
 
@@ -236,6 +201,11 @@
                             Xóa bộ lọc
                         </button>
                     </div>
+                </div>
+
+                <!-- Pagination -->
+                <div id="pagination" class="mt-12 flex justify-center">
+                    <!-- Pagination controls will be populated here -->
                 </div>
             </div>
         </div>
@@ -292,16 +262,29 @@
         </div>
     </footer>
 
-    <!-- Filter Overlay (Mobile) -->
-    <div id="filterOverlay" class="filter-overlay" onclick="closeFilterSidebar()"></div>
 
     <script>
-        const API_BASE_URL = 'http://localhost:8080/api/baidangtimphong/';
+        // Use API_BASE_URL from api.js, append specific endpoint
+        // Wait for api.js to load first, then set endpoint URL
+        const TIM_PHONG_API_BASE = 'http://localhost:8080/api/baidangtimphong/';
+        const ITEMS_PER_PAGE = 20;
         let currentPosts = [];
+        let currentResponse = null;
+        let currentPage = 0;
+        let currentFilters = {
+            thanhPho: null,
+            xa: null,
+            giaMin: null,
+            giaMax: null,
+            dienTichMin: null,
+            dienTichMax: null,
+            trangThai: null,
+            page: 0,
+            size: ITEMS_PER_PAGE
+        };
 
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
-            AOS.init({ duration: 600, easing: 'ease-in-out', once: true });
             feather.replace();
             
             // Load all posts on page load
@@ -316,187 +299,383 @@
                 });
             }
             
-            const searchKeyword = document.getElementById('searchKeyword');
-            if (searchKeyword) {
-                searchKeyword.addEventListener('keypress', function(e) {
-                    if (e.key === 'Enter') {
-                        performSearch();
-                    }
+            // Auto apply filters when dropdowns change (but not for price inputs - user needs to click filter button)
+            const filterDistrict = document.getElementById('filterDistrict');
+            if (filterDistrict) {
+                filterDistrict.addEventListener('change', function() {
+                    applyFilters();
                 });
             }
         });
 
-        // Load all posts
+        // Load all posts with pagination
         async function loadAllPosts() {
             showLoading();
             try {
-                console.log('Loading posts from:', API_BASE_URL);
-                const response = await fetch(API_BASE_URL);
+                // Reset filters
+                currentFilters = {
+                    thanhPho: null,
+                    xa: null,
+                    giaMin: null,
+                    giaMax: null,
+                    dienTichMin: null,
+                    dienTichMax: null,
+                    trangThai: null,
+                    page: currentPage,
+                    size: ITEMS_PER_PAGE
+                };
                 
-                console.log('Response status:', response.status);
-                console.log('Response ok:', response.ok);
-                
-                if (response.ok) {
-                    const contentType = response.headers.get('content-type');
-                    console.log('Content-Type:', contentType);
-                    
-                    let posts;
-                    if (contentType && contentType.includes('application/json')) {
-                        posts = await response.json();
-                    } else {
-                        const text = await response.text();
-                        console.log('Response text:', text);
-                        try {
-                            posts = JSON.parse(text);
-                        } catch (e) {
-                            console.error('Failed to parse JSON:', e);
-                            showError('Lỗi định dạng dữ liệu từ server');
-                            hideLoading();
-                            return;
-                        }
-                    }
-                    
-                    console.log('Posts received:', posts);
-                    console.log('Is array:', Array.isArray(posts));
-                    
-                    // Ensure posts is an array
-                    if (!Array.isArray(posts)) {
-                        console.error('Posts is not an array:', typeof posts, posts);
-                        if (typeof posts === 'string') {
-                            showError('Lỗi: ' + posts);
-                        } else {
-                            showError('Dữ liệu không đúng định dạng');
-                        }
-                        hideLoading();
-                        return;
-                    }
-                    
-                    currentPosts = posts;
-                    displayPosts(posts);
-                } else {
-                    const errorText = await response.text();
-                    console.error('Error response:', errorText);
-                    showError('Không thể tải danh sách bài đăng: ' + errorText);
-                }
+                await loadPostsFromBackend();
             } catch (error) {
                 console.error('Error loading posts:', error);
-                console.error('Error stack:', error.stack);
                 showError('Lỗi kết nối đến server: ' + error.message);
+                displayNoResults();
             } finally {
                 hideLoading();
             }
         }
-
-        // Perform search
-        async function performSearch() {
-            showLoading();
-            const keyword = document.getElementById('searchKeyword').value;
-            const city = document.getElementById('quickCity').value;
-            const priceMin = document.getElementById('quickPriceMin').value;
-            const priceMax = document.getElementById('quickPriceMax').value;
-
-            try {
-                let url = `${API_BASE_URL}search?`;
-                const params = [];
-                
-                if (city) params.push(`thanhPho=${encodeURIComponent(city)}`);
-                if (priceMin) params.push(`costMin=${priceMin * 1000000}`);
-                if (priceMax) params.push(`costMax=${priceMax * 1000000}`);
-                
-                if (params.length > 0) {
-                    url += params.join('&');
-                    console.log('Search URL:', url);
-                    const response = await fetch(url);
-                    if (response.ok) {
-                        const posts = await response.json();
-                        if (Array.isArray(posts)) {
-                            currentPosts = posts;
-                            displayPosts(posts);
-                        } else {
-                            console.error('Search result is not an array:', posts);
-                            showError('Kết quả tìm kiếm không đúng định dạng');
-                        }
-                    } else {
-                        const errorText = await response.text();
-                        showError('Lỗi tìm kiếm: ' + errorText);
+        
+        // Load posts from backend using new pagination API
+        async function loadPostsFromBackend() {
+            const params = new URLSearchParams();
+            
+            params.append('page', currentFilters.page);
+            params.append('size', currentFilters.size);
+            
+            // Only append non-empty values
+            if (currentFilters.thanhPho && currentFilters.thanhPho.trim() !== '') {
+                params.append('thanhPho', currentFilters.thanhPho);
+            }
+            if (currentFilters.xa && currentFilters.xa.trim() !== '') {
+                params.append('xa', currentFilters.xa);
+            }
+            if (currentFilters.giaMin !== null && currentFilters.giaMin !== undefined) {
+                params.append('giaMin', currentFilters.giaMin);
+            }
+            if (currentFilters.giaMax !== null && currentFilters.giaMax !== undefined) {
+                params.append('giaMax', currentFilters.giaMax);
+            }
+            if (currentFilters.dienTichMin !== null && currentFilters.dienTichMin !== undefined) {
+                params.append('dienTichMin', currentFilters.dienTichMin);
+            }
+            if (currentFilters.dienTichMax !== null && currentFilters.dienTichMax !== undefined) {
+                params.append('dienTichMax', currentFilters.dienTichMax);
+            }
+            if (currentFilters.trangThai) {
+                params.append('trangThai', currentFilters.trangThai);
+            }
+            
+            const url = `${TIM_PHONG_API_BASE}?${params.toString()}`;
+            console.log('Loading posts from:', url);
+            console.log('Current filters:', currentFilters);
+            
+            const response = await fetch(url);
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(errorText || `HTTP ${response.status}`);
+            }
+            
+            const data = await response.json();
+            console.log('Response data:', data);
+            
+            // Handle response - could be PaginationResponseDTO directly or wrapped
+            if (data.success === false) {
+                throw new Error(data.message || 'Có lỗi xảy ra');
+            }
+            
+            // Check if data has pagination structure
+            if (data.pagination && data.data) {
+                // It's a PaginationResponseDTO
+                currentResponse = data;
+                currentPosts = data.data || [];
+            } else if (Array.isArray(data)) {
+                // Fallback: direct array response
+                currentResponse = {
+                    success: true,
+                    data: data,
+                    pagination: {
+                        currentPage: 0,
+                        pageSize: data.length,
+                        totalItems: data.length,
+                        totalPages: 1,
+                        hasNext: false,
+                        hasPrevious: false
                     }
-                } else {
-                    loadAllPosts();
-                }
-            } catch (error) {
-                console.error('Error searching:', error);
-                showError('Lỗi khi tìm kiếm: ' + error.message);
-            } finally {
-                hideLoading();
+                };
+                currentPosts = data;
+            } else {
+                throw new Error('Dữ liệu không đúng định dạng');
             }
+            
+            console.log('Current posts:', currentPosts);
+            console.log('Pagination info:', currentResponse.pagination);
+            console.log('Posts count:', currentPosts.length);
+            console.log('Expected page size:', currentFilters.size);
+            displayPosts(currentPosts);
+            updatePagination(currentResponse.pagination);
+            updateSearchSummary(currentFilters.xa, currentFilters.giaMin, currentFilters.giaMax, currentFilters.dienTichMin, currentFilters.dienTichMax);
         }
+
 
         // Apply filters
         async function applyFilters() {
             showLoading();
-            const xa = document.getElementById('filterXa').value;
-            const thanhPho = document.getElementById('filterThanhPho').value;
-            const priceMin = document.getElementById('filterPriceMin').value;
-            const priceMax = document.getElementById('filterPriceMax').value;
+            const district = document.getElementById('filterDistrict').value;
+            const priceMinInput = document.getElementById('priceMin');
+            const priceMaxInput = document.getElementById('priceMax');
+            const areaMinInput = document.getElementById('areaMin');
+            const areaMaxInput = document.getElementById('areaMax');
 
             try {
-                let url = `${API_BASE_URL}search?`;
-                const params = [];
+                // Get price values from inputs
+                let costMin = null;
+                let costMax = null;
                 
-                if (xa) params.push(`xa=${encodeURIComponent(xa)}`);
-                if (thanhPho) params.push(`thanhPho=${encodeURIComponent(thanhPho)}`);
-                if (priceMin) params.push(`costMin=${priceMin}`);
-                if (priceMax) params.push(`costMax=${priceMax}`);
-                
-                if (params.length > 0) {
-                    url += params.join('&');
-                    console.log('Filter URL:', url);
-                    const response = await fetch(url);
-                    if (response.ok) {
-                        const posts = await response.json();
-                        if (Array.isArray(posts)) {
-                            currentPosts = posts;
-                            displayPosts(posts);
-                        } else {
-                            console.error('Filter result is not an array:', posts);
-                            showError('Kết quả lọc không đúng định dạng');
-                        }
-                    } else {
-                        const errorText = await response.text();
-                        showError('Lỗi lọc: ' + errorText);
+                if (priceMinInput && priceMinInput.value && priceMinInput.value.trim() !== '') {
+                    const minValue = parseFloat(priceMinInput.value);
+                    if (!isNaN(minValue) && minValue >= 0) {
+                        costMin = minValue;
                     }
-                } else {
-                    loadAllPosts();
                 }
+                
+                if (priceMaxInput && priceMaxInput.value && priceMaxInput.value.trim() !== '') {
+                    const maxValue = parseFloat(priceMaxInput.value);
+                    if (!isNaN(maxValue) && maxValue >= 0) {
+                        costMax = maxValue;
+                    }
+                }
+                
+                // Validate: min should not be greater than max
+                if (costMin !== null && costMax !== null && costMin > costMax) {
+                    showError('Giá thấp nhất không được lớn hơn giá cao nhất');
+                    hideLoading();
+                    return;
+                }
+                
+                // Get area values from inputs
+                let areaMin = null;
+                let areaMax = null;
+                
+                if (areaMinInput && areaMinInput.value && areaMinInput.value.trim() !== '') {
+                    const minValue = parseFloat(areaMinInput.value);
+                    if (!isNaN(minValue) && minValue >= 0) {
+                        areaMin = minValue;
+                    }
+                }
+                
+                if (areaMaxInput && areaMaxInput.value && areaMaxInput.value.trim() !== '') {
+                    const maxValue = parseFloat(areaMaxInput.value);
+                    if (!isNaN(maxValue) && maxValue >= 0) {
+                        areaMax = maxValue;
+                    }
+                }
+                
+                // Validate: min should not be greater than max
+                if (areaMin !== null && areaMax !== null && areaMin > areaMax) {
+                    showError('Diện tích tối thiểu không được lớn hơn diện tích tối đa');
+                    hideLoading();
+                    return;
+                }
+                
+                // Update current filters
+                // Only set thanhPho if district is selected (to filter by district)
+                // Otherwise, leave it null to get all posts
+                if (district && district.trim() !== '') {
+                    currentFilters.thanhPho = 'Hà Nội';
+                    currentFilters.xa = district;
+                } else {
+                    currentFilters.thanhPho = null;
+                    currentFilters.xa = null;
+                }
+                currentFilters.giaMin = costMin;
+                currentFilters.giaMax = costMax;
+                currentFilters.dienTichMin = areaMin;
+                currentFilters.dienTichMax = areaMax;
+                currentFilters.page = 0; // Reset to first page
+                
+                console.log('Applying filters:', {
+                    district: district,
+                    costMin: costMin,
+                    costMax: costMax,
+                    areaMin: areaMin,
+                    areaMax: areaMax,
+                    filters: currentFilters
+                });
+                
+                await loadPostsFromBackend();
+                updateSearchSummary(district, costMin, costMax, areaMin, areaMax);
+                
             } catch (error) {
                 console.error('Error filtering:', error);
                 showError('Lỗi khi lọc kết quả: ' + error.message);
+                displayNoResults();
             } finally {
                 hideLoading();
-                closeFilterSidebar();
             }
         }
 
         // Clear filters
         function clearFilters() {
-            const searchKeyword = document.getElementById('searchKeyword');
-            const quickCity = document.getElementById('quickCity');
-            const quickPriceMin = document.getElementById('quickPriceMin');
-            const quickPriceMax = document.getElementById('quickPriceMax');
-            const filterXa = document.getElementById('filterXa');
-            const filterThanhPho = document.getElementById('filterThanhPho');
-            const filterPriceMin = document.getElementById('filterPriceMin');
-            const filterPriceMax = document.getElementById('filterPriceMax');
+            const filterDistrict = document.getElementById('filterDistrict');
+            const priceMinInput = document.getElementById('priceMin');
+            const priceMaxInput = document.getElementById('priceMax');
+            const areaMinInput = document.getElementById('areaMin');
+            const areaMaxInput = document.getElementById('areaMax');
             
-            if (searchKeyword) searchKeyword.value = '';
-            if (quickCity) quickCity.value = '';
-            if (quickPriceMin) quickPriceMin.value = '';
-            if (quickPriceMax) quickPriceMax.value = '';
-            if (filterXa) filterXa.value = '';
-            if (filterThanhPho) filterThanhPho.value = '';
-            if (filterPriceMin) filterPriceMin.value = '';
-            if (filterPriceMax) filterPriceMax.value = '';
+            if (filterDistrict) filterDistrict.value = '';
+            if (priceMinInput) priceMinInput.value = '';
+            if (priceMaxInput) priceMaxInput.value = '';
+            if (areaMinInput) areaMinInput.value = '';
+            if (areaMaxInput) areaMaxInput.value = '';
+            
+            currentPage = 0;
             loadAllPosts();
+            updateSearchSummary('', null, null, null, null);
+        }
+        
+        // Update pagination controls
+        function updatePagination(pagination) {
+            const totalPages = pagination?.totalPages || 0;
+            const currentPageNum = pagination?.currentPage || 0;
+            const hasNext = pagination?.hasNext || false;
+            const hasPrevious = pagination?.hasPrevious || false;
+            
+            const paginationContainer = document.getElementById('pagination');
+            
+            if (!paginationContainer || totalPages <= 1) {
+                if (paginationContainer) {
+                    paginationContainer.innerHTML = '';
+                }
+                return;
+            }
+            
+            let html = '<nav class="flex items-center space-x-1">';
+            
+            // Previous button
+            html += `<button onclick="goToPage(${currentPageNum - 1})" 
+                     ${!hasPrevious ? 'disabled' : ''} 
+                     class="px-3 py-2 ${!hasPrevious ? 'text-gray-300 cursor-not-allowed' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'} rounded-md">
+                        <i data-feather="chevron-left" class="w-4 h-4"></i>
+                     </button>`;
+            
+            // Page numbers with ellipsis logic
+            const maxVisible = 5;
+            let startPage = Math.max(0, currentPageNum - 2);
+            let endPage = Math.min(totalPages - 1, startPage + maxVisible - 1);
+            
+            if (endPage - startPage < maxVisible - 1) {
+                startPage = Math.max(0, endPage - maxVisible + 1);
+            }
+            
+            // First page
+            if (startPage > 0) {
+                html += `<button onclick="goToPage(0)" class="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-md">1</button>`;
+                if (startPage > 1) {
+                    html += '<span class="px-3 py-2 text-gray-500">...</span>';
+                }
+            }
+            
+            // Page numbers
+            for (let i = startPage; i <= endPage; i++) {
+                const isActive = i === currentPageNum;
+                html += `<button onclick="goToPage(${i})" 
+                         class="px-4 py-2 ${isActive ? 'bg-blue-600 text-white' : 'text-gray-700 hover:bg-gray-100'} rounded-md">
+                            ${i + 1}
+                         </button>`;
+            }
+            
+            // Last page
+            if (endPage < totalPages - 1) {
+                if (endPage < totalPages - 2) {
+                    html += '<span class="px-3 py-2 text-gray-500">...</span>';
+                }
+                html += `<button onclick="goToPage(${totalPages - 1})" class="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-md">${totalPages}</button>`;
+            }
+            
+            // Next button
+            html += `<button onclick="goToPage(${currentPageNum + 1})" 
+                     ${!hasNext ? 'disabled' : ''} 
+                     class="px-3 py-2 ${!hasNext ? 'text-gray-300 cursor-not-allowed' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'} rounded-md">
+                        <i data-feather="chevron-right" class="w-4 h-4"></i>
+                     </button>`;
+            
+            html += '</nav>';
+            paginationContainer.innerHTML = html;
+            
+            // Re-initialize feather icons for the new buttons
+            feather.replace();
+        }
+        
+        // Navigate to a specific page
+        async function goToPage(page) {
+            currentPage = page;
+            currentFilters.page = page;
+            showLoading();
+            try {
+                await loadPostsFromBackend();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            } catch (e) {
+                console.error('Page navigation failed:', e);
+            } finally {
+                hideLoading();
+            }
+        }
+        
+        // Update search summary
+        function updateSearchSummary(district, priceMin, priceMax, areaMin, areaMax) {
+            let summary = [];
+            
+            summary.push('Hà Nội');
+            if (district) summary.push(district);
+            
+            // Format price range
+            if (priceMin !== null || priceMax !== null) {
+                let priceLabel = '';
+                if (priceMin !== null && priceMax !== null) {
+                    priceLabel = `${formatPriceDisplay(priceMin)} - ${formatPriceDisplay(priceMax)}`;
+                } else if (priceMin !== null) {
+                    priceLabel = `Từ ${formatPriceDisplay(priceMin)}`;
+                } else if (priceMax !== null) {
+                    priceLabel = `Đến ${formatPriceDisplay(priceMax)}`;
+                }
+                if (priceLabel) {
+                    summary.push(priceLabel);
+                }
+            }
+            
+            // Format area range
+            if (areaMin !== null || areaMax !== null) {
+                let areaLabel = '';
+                if (areaMin !== null && areaMax !== null) {
+                    areaLabel = `${areaMin} - ${areaMax} m²`;
+                } else if (areaMin !== null) {
+                    areaLabel = `Từ ${areaMin} m²`;
+                } else if (areaMax !== null) {
+                    areaLabel = `Đến ${areaMax} m²`;
+                }
+                if (areaLabel) {
+                    summary.push(areaLabel);
+                }
+            }
+            
+            const searchSummary = document.getElementById('searchSummary');
+            if (searchSummary) {
+                if (summary.length === 1 && !district && priceMin === null && priceMax === null && areaMin === null && areaMax === null) {
+                    searchSummary.textContent = 'Tất cả khu vực • Tất cả mức giá • Tất cả diện tích';
+                } else {
+                    searchSummary.textContent = summary.join(' • ');
+                }
+            }
+        }
+        
+        // Format price for display (convert to triệu if >= 1 million)
+        function formatPriceDisplay(price) {
+            if (!price && price !== 0) return '0';
+            if (price >= 1000000) {
+                const trieu = price / 1000000;
+                return trieu.toFixed(trieu % 1 === 0 ? 0 : 1) + ' triệu';
+            }
+            return new Intl.NumberFormat('vi-VN').format(price) + 'đ';
         }
 
         // Display posts
@@ -513,14 +692,15 @@
             
             if (!Array.isArray(posts)) {
                 console.error('Posts is not an array in displayPosts:', posts);
+                displayNoResults();
                 return;
             }
             
-            resultsCount.textContent = posts.length;
+            const count = currentResponse?.pagination?.totalItems || posts.length;
+            resultsCount.textContent = count.toLocaleString();
             
             if (posts.length === 0) {
-                resultsGrid.classList.add('hidden');
-                noResults.classList.remove('hidden');
+                displayNoResults();
                 return;
             }
             
@@ -528,14 +708,14 @@
             noResults.classList.add('hidden');
             
             try {
-                resultsGrid.innerHTML = posts.map(post => {
+                const htmlContent = posts.map(post => {
                     if (!post) {
                         console.warn('Null post found:', post);
                         return '';
                     }
                     
                     return `
-                        <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition" data-aos="fade-up">
+                        <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition">
                             <div class="p-6">
                                 <div class="flex justify-between items-start mb-3">
                                     <h3 class="text-lg font-bold text-gray-900 flex-1">${escapeHtml(post.tieuDe || 'Không có tiêu đề')}</h3>
@@ -578,10 +758,19 @@
                     `;
                 }).filter(html => html !== '').join('');
                 
+                // Check if we have valid content
+                if (!htmlContent || htmlContent.trim() === '') {
+                    console.warn('No valid posts to display after filtering');
+                    displayNoResults();
+                    return;
+                }
+                
+                resultsGrid.innerHTML = htmlContent;
                 feather.replace();
             } catch (error) {
                 console.error('Error rendering posts:', error);
                 showError('Lỗi khi hiển thị bài đăng: ' + error.message);
+                displayNoResults();
             }
         }
 
@@ -617,39 +806,41 @@
         function showLoading() {
             const loadingState = document.getElementById('loadingState');
             const resultsGrid = document.getElementById('resultsGrid');
+            const noResults = document.getElementById('noResults');
             if (loadingState) loadingState.classList.remove('hidden');
             if (resultsGrid) resultsGrid.classList.add('hidden');
+            if (noResults) noResults.classList.add('hidden');
         }
 
         function hideLoading() {
             const loadingState = document.getElementById('loadingState');
-            const resultsGrid = document.getElementById('resultsGrid');
             if (loadingState) loadingState.classList.add('hidden');
-            if (resultsGrid) resultsGrid.classList.remove('hidden');
+            // Don't automatically show resultsGrid - let displayPosts() or displayNoResults() handle it
         }
 
         function showError(message) {
             console.error('Error:', message);
             alert(message);
         }
-
-        // Filter sidebar functions
-        function openFilterSidebar() {
-            const sidebar = document.getElementById('filterSidebar');
-            const overlay = document.getElementById('filterOverlay');
-            if (sidebar) sidebar.classList.add('open');
-            if (overlay) overlay.classList.add('open');
+        
+        // Display no results
+        function displayNoResults() {
+            const resultsGrid = document.getElementById('resultsGrid');
+            const noResults = document.getElementById('noResults');
+            const resultsCount = document.getElementById('resultsCount');
+            
+            if (resultsGrid) {
+                resultsGrid.innerHTML = ''; // Clear any existing content
+                resultsGrid.classList.add('hidden');
+            }
+            if (noResults) noResults.classList.remove('hidden');
+            if (resultsCount) resultsCount.textContent = '0';
         }
 
-        function closeFilterSidebar() {
-            const sidebar = document.getElementById('filterSidebar');
-            const overlay = document.getElementById('filterOverlay');
-            if (sidebar) sidebar.classList.remove('open');
-            if (overlay) overlay.classList.remove('open');
-        }
     </script>
+    
+    <!-- Custom JavaScript -->
     <script src="js/api.js"></script>
     <script src="js/navbar.js"></script>
-    <script src="js/tim-phong.js"></script>
 </body>
 </html>
