@@ -87,16 +87,18 @@ function setupLoginForm() {
             if (data.token && data.message && data.message.includes('thành công')) {
                 // Save authentication data
                 const storage = rememberMeValue ? localStorage : sessionStorage;
-                storage.setItem('token', data.token);
+                localStorage.setItem('token', data.token);
                 
                 // Save user data
                 const userData = {
                     email: usernameValue,
                     fullname: data.fullname || usernameValue,
-                    role: data.role || 'nguoi_thue'
+                    role: data.role || 'nguoi_thue',
+                    user_id: data.userId || 1
                 };
-                storage.setItem('user', JSON.stringify(userData));
-
+                localStorage.setItem('user', JSON.stringify(userData));
+                localStorage.setItem('user_id',data.userId);
+                
                 // Show success message
                 showSuccessMessage('Đăng nhập thành công! Đang chuyển hướng...');
 

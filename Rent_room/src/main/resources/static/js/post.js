@@ -6,6 +6,7 @@ if (typeof apiPost === 'undefined') {
     // Fallback if api.js is not loaded
     window.apiPost = async function(url, data) {
         const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+        console.log(data);
         const response = await fetch(url, {
             method: 'POST',
             headers: {
@@ -478,11 +479,11 @@ async function handleFormSubmit(e) {
             dia_chi_day_du: addressEl ? addressEl.value.trim() : '',
             phuong_xa: districtName || districtValue,
             tinh_thanhpho: 'Hà Nội', // Luôn là Hà Nội
-            vi_do: 0.0, // Default, can be updated later with geocoding
-            kinh_do: 0.0, // Default, can be updated later with geocoding
             gia_thang: priceEl ? parseFloat(priceEl.value) || 0 : 0,
-            dien_tich_m2: areaEl ? parseFloat(areaEl.value) || 0 : 0
-            // Backend tự động set trangThai = PENDING và nguoiDang từ SecurityContext
+            dien_tich_m2: areaEl ? parseFloat(areaEl.value) || 0 : 0,
+            nguoiDang: {
+                "id": Number(localStorage.getItem("user_id"))
+            }
         };
         
         // Handle available date if exists
@@ -503,26 +504,22 @@ async function handleFormSubmit(e) {
 
         // Send to backend using apiPost if available, otherwise use fetch
         let response;
-        if (typeof apiPost !== 'undefined') {
-            response = await apiPost('http://localhost:8080/api/baidang', postData);
-        } else {
-            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-            const fetchResponse = await fetch('http://localhost:8080/api/baidang', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-                },
-                body: JSON.stringify(postData)
-            });
+        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+        const fetchResponse = await fetch('http://localhost:8080/api/baidang', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+            },
+            body: JSON.stringify(postData)
+        });
             
-            if (!fetchResponse.ok) {
-                const errorText = await fetchResponse.text();
-                throw new Error(errorText || `HTTP ${fetchResponse.status}`);
-            }
-            
-            response = await fetchResponse.json();
+        if (!fetchResponse.ok) {
+            const errorText = await fetchResponse.text();
+            throw new Error(errorText || `HTTP ${fetchResponse.status}`);
         }
+        
+        response = await fetchResponse.json();
 
         // Success - show success modal
         if (loadingOverlay) {

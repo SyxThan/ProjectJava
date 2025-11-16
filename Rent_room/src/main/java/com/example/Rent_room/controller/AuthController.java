@@ -68,6 +68,7 @@ public class AuthController {
         response.put("message", "Đăng nhập thành công!");
         response.put("token", token);
         response.put("role", user.getRole().name());
+        response.put("userId", user.getId());
         response.put("fullname", user.getFullname());
         return response;
     }
