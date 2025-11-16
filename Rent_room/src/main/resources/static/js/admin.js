@@ -45,8 +45,14 @@ function processImageUrl(url) {
         }
     }
     
-    // If it's already a full URL (http/https), return as is
+    // If it's already a full URL (http/https), normalize to relative path if it's localhost
     if (urlString.startsWith('http://') || urlString.startsWith('https://')) {
+        // If it's a localhost URL pointing to /uploads/, extract the relative path
+        const localhostMatch = urlString.match(/https?:\/\/localhost(?::\d+)?(\/uploads\/.+)/);
+        if (localhostMatch) {
+            return localhostMatch[1]; // Return relative path like /uploads/filename.jpg
+        }
+        // For other URLs, return as is
         return urlString;
     }
     

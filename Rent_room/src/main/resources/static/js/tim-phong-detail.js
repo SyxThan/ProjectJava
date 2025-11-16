@@ -34,16 +34,6 @@ async function loadPostDetails() {
         }
         
         const post = await response.json();
-        
-        // Debug log
-        console.log('Post data received:', post);
-        console.log('User info:', {
-            userFullname: post.userFullname,
-            userEmail: post.userEmail,
-            userSoDienThoai: post.userSoDienThoai,
-            userId: post.userId
-        });
-        
         displayPostDetails(post);
         
         hideLoading();

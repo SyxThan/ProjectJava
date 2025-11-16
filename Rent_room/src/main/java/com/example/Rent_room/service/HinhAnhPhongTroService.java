@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import java.nio.file.*;
 import java.io.File;
 import java.io.IOException;
 
@@ -82,16 +81,19 @@ public class HinhAnhPhongTroService {
 
     public List<HinhAnhPhongTro> uploadAnh(Integer baiDangId, MultipartFile[] files) throws Exception{
         List<HinhAnhPhongTro> listAnh = new ArrayList<>();
-        String uploadDir = "src/main/resources/upload/";
-
-        Files.createDirectories(Paths.get(uploadDir));
+        String uploadDir = "uploads/";
+        
+        File dir = new File(uploadDir);
+        if (!dir.exists()) dir.mkdirs();
 
         for(MultipartFile file : files){
+            if (file.isEmpty()) continue; // Skip empty files
+            
             String newFileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
             Path filePaths = Paths.get(uploadDir + newFileName);
             Files.write(filePaths, file.getBytes());
 
-            String imageUrl = "http://localhost:8080/uploads/" + newFileName;
+            String imageUrl = "/uploads/" + newFileName;
 
             HinhAnhPhongTro img = new HinhAnhPhongTro();
             img.setBaiDangChoThue(new BaiDangChoThue(baiDangId)); // Gắn va bài đăng
