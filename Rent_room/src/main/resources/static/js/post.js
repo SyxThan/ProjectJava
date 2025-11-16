@@ -521,6 +521,42 @@ async function handleFormSubmit(e) {
         
         response = await fetchResponse.json();
 
+        // Upload images if there are any
+        if (uploadedImages.length > 0 && response.id) {
+            try {
+                const formData = new FormData();
+                uploadedImages.forEach((image, index) => {
+                    formData.append('files', image.file);
+                });
+
+                const imageUploadResponse = await fetch(`http://localhost:8080/api/hinhanh/upload/${response.id}`, {
+                    method: 'POST',
+                    headers: {
+                        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+                    },
+                    body: formData
+                });
+
+                if (!imageUploadResponse.ok) {
+                    console.error('Failed to upload images:', await imageUploadResponse.text());
+                } else {
+                    const uploadedImagesList = await imageUploadResponse.json();
+                    // Set first image as thumbnail if there are images
+                    if (uploadedImagesList.length > 0 && uploadedImagesList[0].id) {
+                        await fetch(`http://localhost:8080/api/hinhanh/set-thumbnail/${uploadedImagesList[0].id}`, {
+                            method: 'PUT',
+                            headers: {
+                                ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+                            }
+                        });
+                    }
+                }
+            } catch (imageError) {
+                console.error('Error uploading images:', imageError);
+                // Don't fail the whole operation if image upload fails
+            }
+        }
+
         // Success - show success modal
         if (loadingOverlay) {
             loadingOverlay.classList.add('hidden');

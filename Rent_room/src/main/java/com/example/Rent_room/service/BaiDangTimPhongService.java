@@ -21,13 +21,6 @@ public class BaiDangTimPhongService {
     private final BaiDangTimPhongRepository baiDangTimPhongRepository;
     private final UserRepository userRepository;
 
-    public List<BaiDangTimPhongDTO> findAll() {
-        return baiDangTimPhongRepository.findAll()
-                .stream()
-                .map(this::toDto)
-                .collect(Collectors.toList());
-    }
-
     // Phân trang với filter thủ công - trả về DTO
     public PaginationResponseDTO<BaiDangTimPhongDTO> getAllBaiDangTimPhongWithPagination(
             int page, int size, String thanhPho, String xa,
@@ -67,56 +60,12 @@ public class BaiDangTimPhongService {
                     .map(this::toDto)
                     .collect(Collectors.toList());
 
-            // Debug log
-            System.out.println("Pagination Debug - Page: " + page + ", Size: " + size);
-            System.out.println("Total items: " + totalItems);
-            System.out.println("All data size: " + allData.size());
-            System.out.println("Page data size: " + pageData.size());
-            System.out.println("DTO list size: " + dtoList.size());
-            System.out.println("Offset: " + offset + ", ToIndex: " + toIndex);
-
             // Tạo response
             return new PaginationResponseDTO<>(dtoList, page, size, totalItems);
 
         } catch (Exception e) {
             return new PaginationResponseDTO<>(false, "Có lỗi xảy ra: " + e.getMessage());
         }
-    }
-
-    public List<BaiDangTimPhongDTO> findByUser_Id(Integer userId) {
-        return baiDangTimPhongRepository.findByUser_Id(userId)
-                .stream()
-                .map(this::toDto)
-                .collect(Collectors.toList());
-    }
-
-    public List<BaiDangTimPhongDTO> findByKhuVuc(String xa, String thanhPho) {
-        return baiDangTimPhongRepository.findByKhuVuc(xa, thanhPho)
-                .stream()
-                .map(this::toDto)
-                .collect(Collectors.toList());
-    }
-
-    public List<BaiDangTimPhongDTO> findByRangCost(BigDecimal min, BigDecimal max) {
-        return baiDangTimPhongRepository.findByRangCost(min, max)
-                .stream()
-                .map(this::toDto)
-                .collect(Collectors.toList());
-    }
-
-    public List<BaiDangTimPhongDTO> findByLower(BigDecimal max) {
-        return baiDangTimPhongRepository.findByLower(max)
-                .stream()
-                .map(this::toDto)
-                .collect(Collectors.toList());
-
-    }
-
-    public List<BaiDangTimPhongDTO> findByGreater(BigDecimal min) {
-        return baiDangTimPhongRepository.findByGreater(min)
-                .stream()
-                .map(this::toDto)
-                .collect(Collectors.toList());
     }
 
     public Optional<BaiDangTimPhongDTO> findById(Integer id) {
@@ -128,18 +77,6 @@ public class BaiDangTimPhongService {
         }
 
         BaiDangTimPhongEntity entity = entityOpt.get();
-
-        // Debug log
-        System.out.println("Finding post by ID: " + id);
-        System.out.println("Entity found: " + (entity != null));
-        System.out.println("User in entity: " + (entity.getUser() != null));
-        if (entity.getUser() != null) {
-            System.out.println("User ID: " + entity.getUser().getId());
-            System.out.println("User fullname: " + entity.getUser().getFullname());
-            System.out.println("User email: " + entity.getUser().getEmail());
-            System.out.println("User phone: " + entity.getUser().getSo_dien_thoai());
-        }
-
         return Optional.of(toDto(entity));
     }
 
@@ -156,7 +93,6 @@ public class BaiDangTimPhongService {
         User user = userRepository.findById(baiDangTimPhongDTO.getUserId())
                 .orElseThrow(
                         () -> new RuntimeException("Không tìm thấy user với ID: " + baiDangTimPhongDTO.getUserId()));
-        ;
         post.setUser(user);
         post.setTieuDe(baiDangTimPhongDTO.getTieuDe());
         post.setMoTa(baiDangTimPhongDTO.getMoTa());
@@ -226,26 +162,10 @@ public class BaiDangTimPhongService {
 
         // Thêm thông tin user nếu có
         if (entity.getUser() != null) {
-            String fullname = entity.getUser().getFullname();
-            String email = entity.getUser().getEmail();
-            String phone = entity.getUser().getSo_dien_thoai();
-
-            System.out.println("Setting user info to DTO:");
-            System.out.println("  Fullname: " + fullname);
-            System.out.println("  Email: " + email);
-            System.out.println("  Phone: " + phone);
-
-            dto.setUserFullname(fullname);
-            dto.setUserEmail(email);
-            dto.setUserSoDienThoai(phone);
-        } else {
-            System.out.println("WARNING: User is null in entity!");
+            dto.setUserFullname(entity.getUser().getFullname());
+            dto.setUserEmail(entity.getUser().getEmail());
+            dto.setUserSoDienThoai(entity.getUser().getSo_dien_thoai());
         }
-
-        System.out.println("DTO user info after setting:");
-        System.out.println("  DTO userFullname: " + dto.getUserFullname());
-        System.out.println("  DTO userEmail: " + dto.getUserEmail());
-        System.out.println("  DTO userSoDienThoai: " + dto.getUserSoDienThoai());
 
         return dto;
     }
