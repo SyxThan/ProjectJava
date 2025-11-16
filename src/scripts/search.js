@@ -3,8 +3,7 @@ const API_BASE = 'http://localhost:8080';
 
 // Data stores
 let currentFilters = {
-    keyword: '',
-    tinhThanhpho: '',
+    tinhThanh: '',
     phuongXa: '',
     giaMin: null,
     giaMax: null,
@@ -12,9 +11,7 @@ let currentFilters = {
     dienTichMax: null,
     trangThai: '',
     page: 0,
-    pageSize: 9,
-    sortBy: 'id',
-    sortDirection: 'desc'
+    size: 9
 };
 let currentResponse = null;
 let currentView = 'grid';
@@ -78,8 +75,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 async function loadRoomsFromBackend() {
     const params = new URLSearchParams();
     
-    if (currentFilters.keyword) params.append('keyword', currentFilters.keyword);
-    if (currentFilters.tinhThanhpho) params.append('tinhThanhpho', currentFilters.tinhThanhpho);
+    if (currentFilters.tinhThanh) params.append('tinhThanh', currentFilters.tinhThanh);
     if (currentFilters.phuongXa) params.append('phuongXa', currentFilters.phuongXa);
     if (currentFilters.giaMin !== null) params.append('giaMin', currentFilters.giaMin);
     if (currentFilters.giaMax !== null) params.append('giaMax', currentFilters.giaMax);
@@ -88,26 +84,32 @@ async function loadRoomsFromBackend() {
     if (currentFilters.trangThai) params.append('trangThai', currentFilters.trangThai);
     
     params.append('page', currentFilters.page);
-    params.append('pageSize', currentFilters.pageSize);
-    params.append('sortBy', currentFilters.sortBy);
-    params.append('sortDirection', currentFilters.sortDirection);
+    params.append('size', currentFilters.size);
     
     const resp = await fetch(`${API_BASE}/api/baidang?${params.toString()}`);
     if (!resp.ok) {
         throw new Error(`HTTP ${resp.status}`);
     }
     const data = await resp.json();
+    
+    if (!data.success) {
+        throw new Error(data.message || 'Có lỗi xảy ra');
+    }
+    
     currentResponse = data;
     
-    const rooms = (data.content || []).map(normalizeListingFromBackend);
+    const rooms = (data.data || []).map(normalizeListingFromBackend);
     displayRooms(rooms);
-    updatePagination(data);
+    updatePagination(data.pagination);
 }
 
 // Update pagination controls based on backend response
-function updatePagination(pageData) {
-    const totalPages = pageData.totalPages || 0;
-    const currentPage = pageData.number || 0;
+function updatePagination(pagination) {
+    const totalPages = pagination?.totalPages || 0;
+    const currentPage = pagination?.currentPage || 0;
+    const hasNext = pagination?.hasNext || false;
+    const hasPrevious = pagination?.hasPrevious || false;
+    
     const paginationContainer = document.getElementById('pagination');
     
     if (!paginationContainer || totalPages <= 1) {
@@ -121,8 +123,8 @@ function updatePagination(pageData) {
     
     // Previous button
     html += `<button onclick="goToPage(${currentPage - 1})" 
-             ${currentPage === 0 ? 'disabled' : ''} 
-             class="px-3 py-2 ${currentPage === 0 ? 'text-gray-300 cursor-not-allowed' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'} rounded-md">
+             ${!hasPrevious ? 'disabled' : ''} 
+             class="px-3 py-2 ${!hasPrevious ? 'text-gray-300 cursor-not-allowed' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'} rounded-md">
                 <i data-feather="chevron-left" class="w-4 h-4"></i>
              </button>`;
     
@@ -162,8 +164,8 @@ function updatePagination(pageData) {
     
     // Next button
     html += `<button onclick="goToPage(${currentPage + 1})" 
-             ${currentPage >= totalPages - 1 ? 'disabled' : ''} 
-             class="px-3 py-2 ${currentPage >= totalPages - 1 ? 'text-gray-300 cursor-not-allowed' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'} rounded-md">
+             ${!hasNext ? 'disabled' : ''} 
+             class="px-3 py-2 ${!hasNext ? 'text-gray-300 cursor-not-allowed' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'} rounded-md">
                 <i data-feather="chevron-right" class="w-4 h-4"></i>
              </button>`;
     
@@ -189,69 +191,31 @@ async function goToPage(page) {
     }
 }
 
-// Convert backend BaiDangChoThue -> UI room object
+// Convert backend BaiDangOutputDTO -> UI room object
 function normalizeListingFromBackend(item) {
     const id = item.id;
-    const title = item.tieu_de || 'Tin cho thuê';
-    const price = typeof item.gia_thang === 'number' ? item.gia_thang : 0;
-    const area = typeof item.dien_tich_m2 === 'number' ? item.dien_tich_m2 : 0;
-    const address = item.dia_chi_day_du || [item.phuong_xa, item.tinh_thanhpho].filter(Boolean).join(', ');
-    const images = extractImageUrls(item.hinhAnhPhongTro || item.HinhAnhPhongTro || []);
-    const posted = item.ngay_dang || item.ngay_cap_nhat || new Date().toISOString();
-    const featured = (item.hinhAnhPhongTro || item.HinhAnhPhongTro || []).some(i => i.laAnhBia);
+    const title = item.tieuDe || 'Tin cho thuê';
+    const price = typeof item.giaThang === 'number' ? item.giaThang : 0;
+    const area = typeof item.dienTichM2 === 'number' ? item.dienTichM2 : 0;
+    const address = item.diaChiDayDu || [item.phuongXa, item.tinhThanhpho].filter(Boolean).join(', ');
+    const image = item.anhBia || 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360" viewBox="0 0 640 360"><rect width="640" height="360" fill="%23f3f4f6"/><text x="320" y="180" font-family="Arial" font-size="16" fill="%23666" text-anchor="middle">Chưa có hình ảnh</text></svg>';
+    const posted = item.ngayDang || new Date().toISOString();
 
     return {
         id,
         title,
         price,
         area,
-        city: slugify(item.tinh_thanhpho),
-        district: slugify(item.phuong_xa),
+        city: slugify(item.tinhThanhpho),
+        district: slugify(item.phuongXa),
         address,
         type: 'room',
         amenities: [],
-        images: images.length ? images : [
-            'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360" viewBox="0 0 640 360"><rect width="640" height="360" fill="%23f3f4f6"/><text x="320" y="180" font-family="Arial" font-size="16" fill="%23666" text-anchor="middle">Chưa có hình ảnh</text></svg>'
-        ],
-        description: item.mo_ta || '',
-        featured,
+        images: [processImageUrl(image)],
+        description: '',
+        featured: false,
         posted
     };
-}
-
-// Extract image URLs from child entities or string field
-function extractImageUrls(arr) {
-    try {
-        const urls = [];
-        (arr || []).forEach(img => {
-            if (!img) return;
-            const raw = img.duong_dan_anh || img.url || img.path || '';
-            if (!raw) return;
-            if (Array.isArray(raw)) {
-                raw.forEach(u => { if (typeof u === 'string') urls.push(processImageUrl(u)); });
-            } else if (typeof raw === 'string') {
-                const trimmed = raw.trim();
-                if (trimmed.startsWith('[')) {
-                    // JSON-style array string
-                    try {
-                        const parsed = JSON.parse(trimmed);
-                        if (Array.isArray(parsed)) parsed.forEach(u => { if (typeof u === 'string') urls.push(processImageUrl(u)); });
-                    } catch (_) {
-                        // fall back to comma split
-                        trimmed.split(',').map(s => s.trim()).forEach(u => { if (u) urls.push(processImageUrl(u)); });
-                    }
-                } else if (trimmed.includes(',')) {
-                    trimmed.split(',').map(s => s.trim()).forEach(u => { if (u) urls.push(processImageUrl(u)); });
-                } else {
-                    urls.push(processImageUrl(trimmed));
-                }
-            }
-        });
-        return urls;
-    } catch (e) {
-        console.warn('extractImageUrls failed:', e);
-        return [];
-    }
 }
 
 // Process image URL to handle relative paths
@@ -313,8 +277,10 @@ function setupEventListeners() {
     const filterInputs = document.querySelectorAll('#filterSidebar input, #filterSidebar select');
     filterInputs.forEach(input => {
         input.addEventListener('change', function() {
-            if (this.type === 'range') return; // Handle range separately
-            applyFilters();
+            // Don't auto-apply, user needs to click "Áp dụng bộ lọc" button
+            if (this.id === 'priceRange') {
+                updatePriceDisplay(this.value);
+            }
         });
     });
 }
@@ -369,12 +335,10 @@ function updatePriceDisplay(value) {
     } else {
         priceDisplay.textContent = `Dưới ${value} triệu`;
     }
-    applyFilters();
 }
 
 // Perform search
 async function performSearch() {
-    const keyword = document.getElementById('searchKeyword').value.trim();
     const quickCity = document.getElementById('quickCity').value;
     const quickPrice = document.getElementById('quickPrice').value;
 
@@ -382,8 +346,7 @@ async function performSearch() {
     showLoading();
 
     // Update filters
-    currentFilters.keyword = keyword || '';
-    currentFilters.tinhThanhpho = quickCity || '';
+    currentFilters.tinhThanh = quickCity || '';
     currentFilters.page = 0; // Reset to first page
     
     // Parse price range
@@ -399,7 +362,7 @@ async function performSearch() {
     try {
         await loadRoomsFromBackend();
         updateResultsCount();
-        updateSearchSummary(keyword, quickCity, quickPrice);
+        updateSearchSummary(quickCity, quickPrice);
     } catch (e) {
         console.error('Search failed:', e);
         displayNoResults();
@@ -413,14 +376,12 @@ async function applyFilters() {
     showLoading();
 
     // Gather all filter values
-    const keyword = document.getElementById('searchKeyword').value.trim();
     const city = document.getElementById('filterCity').value;
     const district = document.getElementById('filterDistrict').value;
     const priceRange = parseFloat(document.getElementById('priceRange').value);
 
     // Update currentFilters
-    currentFilters.keyword = keyword || '';
-    currentFilters.tinhThanhpho = city || '';
+    currentFilters.tinhThanh = city || '';
     currentFilters.phuongXa = district || '';
     currentFilters.page = 0; // Reset to first page
     
@@ -444,27 +405,6 @@ async function applyFilters() {
     }
 }
 
-// Filter by price range
-function filterByPriceRange(rooms, priceRange) {
-    const [min, max] = priceRange.split('-').map(p => p === '+' ? Infinity : parseInt(p));
-    return rooms.filter(room => {
-        const price = room.price / 1000000; // Convert to millions
-        if (max === undefined || max === Infinity) {
-            return price >= min;
-        }
-        return price >= min && price <= max;
-    });
-}
-
-// Filter by area
-function filterByArea(rooms, areaRange) {
-    if (areaRange === '50+') {
-        return rooms.filter(room => room.area >= 50);
-    }
-    const [min, max] = areaRange.split('-').map(Number);
-    return rooms.filter(room => room.area >= min && room.area <= max);
-}
-
 // Clear filters
 function clearFilters() {
     // Clear all form inputs
@@ -481,15 +421,38 @@ function clearFilters() {
     document.querySelectorAll('#filterSidebar input[type="checkbox"]').forEach(cb => cb.checked = false);
     document.querySelectorAll('#filterSidebar input[type="radio"]').forEach(rb => rb.checked = false);
 
-    // Reset results
-    filteredRooms = [...allRooms];
-    displayRooms(filteredRooms);
-    updateResultsCount(filteredRooms.length);
-    updateSearchSummary('', '', '');
+    // Reset filters
+    currentFilters = {
+        tinhThanh: '',
+        phuongXa: '',
+        giaMin: null,
+        giaMax: null,
+        dienTichMin: null,
+        dienTichMax: null,
+        trangThai: '',
+        page: 0,
+        size: 9
+    };
+    
+    // Reload data
+    showLoading();
+    loadRoomsFromBackend().then(() => {
+        updateResultsCount();
+        updateSearchSummary('', '');
+        hideLoading();
+    }).catch(e => {
+        console.error('Clear filters failed:', e);
+        hideLoading();
+    });
 }
 
 // Display rooms
 function displayRooms(rooms) {
+    if (rooms.length === 0) {
+        displayNoResults();
+        return;
+    }
+    
     if (currentView === 'grid') {
         displayGridView(rooms);
     } else {
@@ -621,33 +584,12 @@ function displayListView(rooms) {
     feather.replace();
 }
 
-// Sort results - updates sorting and reloads from backend
+// Sort results - backend doesn't support sorting yet, so just reload
 async function sortResults() {
     const sortBy = document.getElementById('sortBy').value;
     
-    switch(sortBy) {
-        case 'newest':
-            currentFilters.sortBy = 'id';
-            currentFilters.sortDirection = 'desc';
-            break;
-        case 'price-asc':
-            currentFilters.sortBy = 'gia_thang';
-            currentFilters.sortDirection = 'asc';
-            break;
-        case 'price-desc':
-            currentFilters.sortBy = 'gia_thang';
-            currentFilters.sortDirection = 'desc';
-            break;
-        case 'area-desc':
-            currentFilters.sortBy = 'dien_tich_m2';
-            currentFilters.sortDirection = 'desc';
-            break;
-        case 'popular':
-            // Backend doesn't have a popularity field, fallback to newest
-            currentFilters.sortBy = 'id';
-            currentFilters.sortDirection = 'desc';
-            break;
-    }
+    // Note: Backend needs to add sorting support
+    console.log('Sorting by:', sortBy);
     
     currentFilters.page = 0; // Reset to first page
     showLoading();
@@ -663,15 +605,14 @@ async function sortResults() {
 
 // Display no results message
 function displayNoResults() {
-    const container = document.getElementById('roomsContainer');
-    container.innerHTML = `
-        <div class="col-span-full text-center py-12">
-            <i data-feather="search" class="w-16 h-16 mx-auto text-gray-400 mb-4"></i>
-            <h3 class="text-xl font-semibold text-gray-700 mb-2">Không tìm thấy kết quả</h3>
-            <p class="text-gray-500">Vui lòng thử lại với bộ lọc khác</p>
-        </div>
-    `;
-    feather.replace();
+    const grid = document.getElementById('resultsGrid');
+    const list = document.getElementById('resultsList');
+    const noResults = document.getElementById('noResults');
+    
+    grid.classList.add('hidden');
+    list.classList.add('hidden');
+    noResults.classList.remove('hidden');
+    
     updateResultsCount();
 }
 
@@ -693,7 +634,11 @@ function changeView(view) {
         gridBtn.classList.add('text-gray-600');
     }
     
-    displayRooms(filteredRooms);
+    // Re-render current rooms with new view
+    if (currentResponse && currentResponse.data) {
+        const rooms = currentResponse.data.map(normalizeListingFromBackend);
+        displayRooms(rooms);
+    }
 }
 
 // Filter sidebar functions
@@ -721,15 +666,14 @@ function hideLoading() {
 
 // Update results count
 function updateResultsCount() {
-    const count = currentResponse?.totalElements || 0;
+    const count = currentResponse?.pagination?.totalItems || 0;
     document.getElementById('resultsCount').textContent = count.toLocaleString();
 }
 
 // Update search summary
-function updateSearchSummary(keyword, city, price) {
+function updateSearchSummary(city, price) {
     let summary = [];
     
-    if (keyword) summary.push(`"${keyword}"`);
     if (city) summary.push(cityNames[city] || city);
     if (price) {
         const priceLabel = price === '10+' ? 'Trên 10 triệu' : 
