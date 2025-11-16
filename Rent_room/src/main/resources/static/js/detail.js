@@ -139,6 +139,7 @@ async function toggleLove() {
                 heartIcon.style.color = '#9ca3af';
                 heartIcon.style.fill = 'none';
                 loveButton.setAttribute('data-liked', 'false');
+                showToast('Đã bỏ lưu phòng trọ');
             } else {
                 console.error('Unlike failed:', response.status);
                 alert('Có lỗi khi bỏ thích. Vui lòng thử lại');
@@ -167,6 +168,7 @@ async function toggleLove() {
                 heartIcon.style.color = '#ef4444';
                 heartIcon.style.fill = '#ef4444';
                 loveButton.setAttribute('data-liked', 'true');
+                showToast('Đã lưu phòng trọ vào danh sách yêu thích', true);
             } else {
                 console.error('Like failed:', response.status);
                 alert('Có lỗi khi thích. Vui lòng thử lại');
@@ -176,6 +178,69 @@ async function toggleLove() {
         console.error('Error toggling love:', error);
         alert('Có lỗi xảy ra. Vui lòng thử lại');
     }
+}
+
+// Show toast notification
+function showToast(message, showLink = false) {
+    // Remove existing toast if any
+    const existingToast = document.getElementById('toast-notification');
+    if (existingToast) {
+        existingToast.remove();
+    }
+    
+    // Create toast element
+    const toast = document.createElement('div');
+    toast.id = 'toast-notification';
+    toast.className = 'fixed bottom-4 right-4 bg-gray-800 text-white px-6 py-4 rounded-lg shadow-lg flex items-center space-x-3 z-50 animate-slide-up';
+    toast.style.animation = 'slideUp 0.3s ease-out';
+    
+    toast.innerHTML = `
+        <i data-feather="check-circle" class="w-5 h-5 text-green-400"></i>
+        <span>${message}</span>
+        ${showLink ? '<a href="favorites.html" class="ml-2 underline hover:text-blue-400">Xem danh sách</a>' : ''}
+    `;
+    
+    document.body.appendChild(toast);
+    
+    // Initialize feather icons for the toast
+    if (typeof feather !== 'undefined') {
+        feather.replace();
+    }
+    
+    // Add animation styles
+    if (!document.getElementById('toast-animations')) {
+        const style = document.createElement('style');
+        style.id = 'toast-animations';
+        style.textContent = `
+            @keyframes slideUp {
+                from {
+                    transform: translateY(100%);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateY(0);
+                    opacity: 1;
+                }
+            }
+            @keyframes slideDown {
+                from {
+                    transform: translateY(0);
+                    opacity: 1;
+                }
+                to {
+                    transform: translateY(100%);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+    
+    // Auto remove after 3 seconds
+    setTimeout(() => {
+        toast.style.animation = 'slideDown 0.3s ease-in';
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
 }
 
 // Load room details from API

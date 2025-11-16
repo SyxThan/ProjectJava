@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phòng đã lưu - Phòng Trọ 24/7</title>
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+    <script src="https://unpkg.com/feather-icons"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/search.css">
+</head>
+<body class="bg-gray-50">
+    <!-- Header - Navbar will be rendered by navbar.js -->
+    <header class="bg-white shadow-sm sticky top-0 z-50" id="navbar-container">
+        <!-- Navbar content will be injected here -->
+    </header>
+
+    <!-- Breadcrumb -->
+    <nav class="bg-white py-3 border-b">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center space-x-2 text-sm text-gray-600">
+                <a href="index.html" class="hover:text-blue-600">Trang chủ</a>
+                <i data-feather="chevron-right" class="w-4 h-4"></i>
+                <span class="text-blue-600">Phòng đã lưu</span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mx-auto px-4 py-6">
+        <div class="flex flex-col gap-6">
+            <!-- Header -->
+            <div class="flex items-center justify-between mb-6">
+                <div>
+                    <h1 class="text-2xl font-bold flex items-center">
+                        <i data-feather="heart" class="w-6 h-6 mr-2 text-red-500"></i>
+                        Phòng đã lưu (<span id="resultsCount">0</span>)
+                    </h1>
+                    <p class="text-gray-600">Danh sách các phòng trọ bạn đã yêu thích</p>
+                </div>
+                
+                <div class="flex items-center space-x-3">
+                    <select id="sortBy" class="p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" onchange="sortResults()">
+                        <option value="newest">Mới lưu nhất</option>
+                        <option value="price-asc">Giá thấp đến cao</option>
+                        <option value="price-desc">Giá cao đến thấp</option>
+                        <option value="area-desc">Diện tích lớn nhất</option>
+                    </select>
+                    
+                    <div class="flex border border-gray-300 rounded-md">
+                        <button id="gridView" class="p-2 bg-blue-600 text-white rounded-l-md" onclick="changeView('grid')">
+                            <i data-feather="grid" class="w-4 h-4"></i>
+                        </button>
+                        <button id="listView" class="p-2 text-gray-600 rounded-r-md border-l" onclick="changeView('list')">
+                            <i data-feather="list" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Loading State -->
+            <div id="loadingState" class="hidden">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="bg-white rounded-lg overflow-hidden shadow-md">
+                        <div class="loading-skeleton h-56"></div>
+                        <div class="p-4">
+                            <div class="loading-skeleton h-4 mb-2 rounded"></div>
+                            <div class="loading-skeleton h-3 mb-3 w-3/4 rounded"></div>
+                            <div class="loading-skeleton h-3 w-1/2 rounded"></div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-lg overflow-hidden shadow-md">
+                        <div class="loading-skeleton h-56"></div>
+                        <div class="p-4">
+                            <div class="loading-skeleton h-4 mb-2 rounded"></div>
+                            <div class="loading-skeleton h-3 mb-3 w-3/4 rounded"></div>
+                            <div class="loading-skeleton h-3 w-1/2 rounded"></div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-lg overflow-hidden shadow-md">
+                        <div class="loading-skeleton h-56"></div>
+                        <div class="p-4">
+                            <div class="loading-skeleton h-4 mb-2 rounded"></div>
+                            <div class="loading-skeleton h-3 mb-3 w-3/4 rounded"></div>
+                            <div class="loading-skeleton h-3 w-1/2 rounded"></div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-lg overflow-hidden shadow-md">
+                        <div class="loading-skeleton h-56"></div>
+                        <div class="p-4">
+                            <div class="loading-skeleton h-4 mb-2 rounded"></div>
+                            <div class="loading-skeleton h-3 mb-3 w-3/4 rounded"></div>
+                            <div class="loading-skeleton h-3 w-1/2 rounded"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Favorites Grid -->
+            <div id="resultsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Results will be populated here -->
+            </div>
+
+            <!-- Favorites List (Hidden by default) -->
+            <div id="resultsList" class="hidden space-y-4">
+                <!-- List view results will be populated here -->
+            </div>
+
+            <!-- Empty State -->
+            <div id="emptyState" class="hidden text-center py-12">
+                <div class="max-w-md mx-auto">
+                    <i data-feather="heart" class="w-16 h-16 text-gray-400 mx-auto mb-4"></i>
+                    <h3 class="text-xl font-medium text-gray-900 mb-2">Chưa có phòng yêu thích</h3>
+                    <p class="text-gray-600 mb-6">Hãy tìm kiếm và lưu những phòng trọ bạn thích để xem lại sau</p>
+                    <a href="search.html" class="inline-block px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition">
+                        <i data-feather="search" class="w-4 h-4 inline mr-1"></i>
+                        Tìm phòng trọ
+                    </a>
+                </div>
+            </div>
+
+            <!-- Login Required State -->
+            <div id="loginRequired" class="hidden text-center py-12">
+                <div class="max-w-md mx-auto">
+                    <i data-feather="lock" class="w-16 h-16 text-gray-400 mx-auto mb-4"></i>
+                    <h3 class="text-xl font-medium text-gray-900 mb-2">Cần đăng nhập</h3>
+                    <p class="text-gray-600 mb-6">Vui lòng đăng nhập để xem danh sách phòng yêu thích của bạn</p>
+                    <a href="auth.html?redirect=favorites.html" class="inline-block px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition">
+                        <i data-feather="log-in" class="w-4 h-4 inline mr-1"></i>
+                        Đăng nhập
+                    </a>
+                </div>
+            </div>
+
+            <!-- Pagination -->
+            <div id="pagination" class="mt-12 flex justify-center">
+                <nav class="flex items-center space-x-1">
+                    <!-- Pagination will be generated dynamically -->
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-12 mt-16">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <h3 class="text-xl font-bold mb-4 flex items-center">
+                        <i data-feather="home" class="mr-2"></i> Phòng Trọ 24/7
+                    </h3>
+                    <p class="text-gray-400">Kết nối người thuê và chủ phòng trọ một cách nhanh chóng, tiện lợi.</p>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-4">Về chúng tôi</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white">Giới thiệu</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Điều khoản</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Chính sách bảo mật</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-4">Hỗ trợ</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white">Câu hỏi thường gặp</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Hướng dẫn sử dụng</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Liên hệ</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-4">Kết nối</h4>
+                    <div class="flex space-x-4">
+                        <a href="#" class="bg-gray-700 p-2 rounded-full hover:bg-blue-600 transition">
+                            <i data-feather="facebook"></i>
+                        </a>
+                        <a href="#" class="bg-gray-700 p-2 rounded-full hover:bg-pink-600 transition">
+                            <i data-feather="instagram"></i>
+                        </a>
+                        <a href="#" class="bg-gray-700 p-2 rounded-full hover:bg-blue-400 transition">
+                            <i data-feather="twitter"></i>
+                        </a>
+                        <a href="#" class="bg-gray-700 p-2 rounded-full hover:bg-red-600 transition">
+                            <i data-feather="youtube"></i>
+                        </a>
+                    </div>
+                    <div class="mt-4">
+                        <p class="text-gray-400">Hotline: 1900 1234</p>
+                        <p class="text-gray-400">Email: support@phongtro247.com</p>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
+                <p>© 2024 Phòng Trọ 24/7. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Custom JavaScript -->
+    <script src="js/api.js"></script>
+    <script src="js/navbar.js"></script>
+    <script src="js/favorites.js"></script>
+</body>
+</html>

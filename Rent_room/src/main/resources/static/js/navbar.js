@@ -171,6 +171,16 @@ function generateNavbarHTML(user, isAuth, role, currentPage) {
         { href: 'tim-phong.html', text: 'Tin tìm phòng', active: currentPage === 'tim-phong.html' }
     ];
     
+    // Add favorites for authenticated users
+    if (isAuth) {
+        commonMenuItems.push({ 
+            href: 'favorites.html', 
+            text: 'Phòng đã lưu', 
+            active: currentPage === 'favorites.html',
+            icon: 'heart'
+        });
+    }
+    
     // Menu items based on role
     let roleMenuItems = [];
     if (isAdmin) {
@@ -225,13 +235,15 @@ function generateNavbarHTML(user, isAuth, role, currentPage) {
     
     // Generate menu HTML
     const desktopMenu = menuItems.map(item => `
-        <a href="${item.href}" class="${item.active ? 'text-blue-600 font-medium' : 'text-gray-600 hover:text-blue-600'}">
+        <a href="${item.href}" class="${item.active ? 'text-blue-600 font-medium' : 'text-gray-600 hover:text-blue-600'} flex items-center">
+            ${item.icon ? `<i data-feather="${item.icon}" class="w-4 h-4 mr-1"></i>` : ''}
             ${item.text}
         </a>
     `).join('');
     
     const mobileMenu = menuItems.map(item => `
-        <a href="${item.href}" class="${item.active ? 'text-blue-600 font-medium' : 'text-gray-600 hover:text-blue-600'}">
+        <a href="${item.href}" class="${item.active ? 'text-blue-600 font-medium' : 'text-gray-600 hover:text-blue-600'} flex items-center">
+            ${item.icon ? `<i data-feather="${item.icon}" class="w-4 h-4 mr-1"></i>` : ''}
             ${item.text}
         </a>
     `).join('');
