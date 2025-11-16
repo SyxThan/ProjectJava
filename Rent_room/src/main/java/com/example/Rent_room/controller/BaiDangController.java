@@ -4,6 +4,7 @@ import com.example.Rent_room.dto.BaiDangOutputDTO;
 import com.example.Rent_room.dto.PaginationResponseDTO;
 import com.example.Rent_room.entity.BaiDangChoThue;
 import com.example.Rent_room.entity.TrangThaiBaiDang;
+import com.example.Rent_room.dto.GeocodeResponseDTO;
 import com.example.Rent_room.service.BaiDangService;
 import org.springframework.web.bind.annotation.*;
 
@@ -84,6 +85,15 @@ public class BaiDangController {
     @DeleteMapping("/{id}")
     public void delete(@PathVariable Integer id) {
         baiDangService.deleteBaiDang(id);
+    }
+
+    // ===============================================================
+    // =================== Phần này của Sỹ Kẹo =======================
+    // ===============================================================
+
+    @GetMapping("/{id}/geocode")
+    public GeocodeResponseDTO geocodeBaiDang(@PathVariable Integer id) {
+        return baiDangService.geocodeBaiDang(id);
     }
 }
 
