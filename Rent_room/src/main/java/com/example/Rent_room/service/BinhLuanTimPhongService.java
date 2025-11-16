@@ -5,6 +5,7 @@ import com.example.Rent_room.dto.CommentResponseDTO;
 import com.example.Rent_room.entity.BinhLuanTimPhong;
 import com.example.Rent_room.entity.BaiDangTimPhongEntity;
 import com.example.Rent_room.entity.User;
+import com.example.Rent_room.entity.UserTracking;
 import com.example.Rent_room.respository.BinhLuanTimPhongRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,6 +52,8 @@ public class BinhLuanTimPhongService {
         }
 
         BinhLuanTimPhong saved = binhLuanTimPhongRepository.save(comment);
+        UserTrackingService a = new UserTrackingService(); 
+        a.createTracking(new UserTracking(userId, baiDangId, "binhluan"));
         return convertToResponseDTO(saved);
     }
 

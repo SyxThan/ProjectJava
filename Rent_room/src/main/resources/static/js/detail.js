@@ -4,6 +4,7 @@ const API_BASE = 'http://localhost:8080';
 // Get room ID from URL
 const urlParams = new URLSearchParams(window.location.search);
 const roomId = urlParams.get('id');
+const userId = Number(localStorage.getItem("user_id")) || 0;
 
 // Initialize page
 document.addEventListener('DOMContentLoaded', async function() {
@@ -23,7 +24,152 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     // Load room details
     await loadRoomDetails();
+    
+    // Setup love button
+    await setupLoveButton();
 });
+
+// Setup love button event listener
+async function setupLoveButton() {
+    const loveButton = document.getElementById('love');
+    if (!loveButton) {
+        console.error('Love button not found!');
+        return;
+    }
+    
+    // Check if user has liked this room
+    if (userId > 0) {
+        await checkLoveStatus();
+    } else {
+        loveButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            alert('Vui lòng đăng nhập để thích phòng trọ');
+        });
+        return;
+    }
+    
+    // Add click listener to toggle love
+    loveButton.addEventListener('click', async function(e) {
+        e.preventDefault();
+        
+        if (userId <= 0) {
+            alert('Vui lòng đăng nhập để thích phòng trọ');
+            return;
+        }
+        
+        await toggleLove();
+    });
+}
+
+// Check love status when page loads
+async function checkLoveStatus() {
+    try {
+        const response = await fetch(
+            `${API_BASE}/api/usertracking/islove/${userId}/${roomId}`
+        );
+        
+        if (response.ok) {
+            const data = await response.json();
+            console.log('Love status response:', data);
+            
+            // Đợi 100ms để feather.replace() hoàn thành
+            setTimeout(() => {
+                const loveButton = document.getElementById('love');
+                if (!loveButton) {
+                    console.error('Love button not found in checkLoveStatus');
+                    return;
+                }
+                
+                const heartIcon = loveButton.querySelector('svg');
+                if (!heartIcon) {
+                    console.error('Heart icon (SVG) not found');
+                    return;
+                }
+                
+                if (data.isLove) {
+                    // User has liked - add red color
+                    console.log("User loved this room - applying red color");
+                    heartIcon.style.color = '#ef4444';
+                    heartIcon.style.fill = '#ef4444';
+                    loveButton.setAttribute('data-liked', 'true');
+                } else {
+                    // User hasn't liked - gray color
+                    console.log("User hasn't liked - applying gray color");
+                    heartIcon.style.color = '#9ca3af'; 
+                    heartIcon.style.fill = 'none';
+                    loveButton.setAttribute('data-liked', 'false');
+                }
+            }, 100);
+        } else {
+            console.error('Failed to check love status:', response.status);
+        }
+    } catch (error) {
+        console.error('Error checking love status:', error);
+    }
+}
+
+// Toggle love status
+async function toggleLove() {
+    try {
+        const loveButton = document.getElementById('love');
+        const heartIcon = loveButton.querySelector('svg');
+        const isLiked = loveButton.getAttribute('data-liked') === 'true';
+        
+        console.log('Toggle love - current state:', isLiked);
+        
+        if (isLiked) {
+            // Unlike - send DELETE request
+            const response = await fetch(
+                `${API_BASE}/api/usertracking/deletelove/${userId}/${roomId}`,
+                {
+                    method: 'DELETE'
+                }
+            );
+            
+            if (response.ok) {
+                console.log('Unlike successful');
+                // Remove red color
+                heartIcon.style.color = '#9ca3af';
+                heartIcon.style.fill = 'none';
+                loveButton.setAttribute('data-liked', 'false');
+            } else {
+                console.error('Unlike failed:', response.status);
+                alert('Có lỗi khi bỏ thích. Vui lòng thử lại');
+            }
+        } else {
+            // Like - send POST request
+            const response = await fetch(
+                `${API_BASE}/api/usertracking`,
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({
+                        user_id: userId,
+                        bai_dang_id: roomId,
+                        type: 'like'
+                    })
+                }
+            );
+            
+            if (response.ok) {
+                console.log('Like successful');
+                // Add red color
+                heartIcon.style.color = '#ef4444';
+                heartIcon.style.fill = '#ef4444';
+                loveButton.setAttribute('data-liked', 'true');
+            } else {
+                console.error('Like failed:', response.status);
+                alert('Có lỗi khi thích. Vui lòng thử lại');
+            }
+        }
+    } catch (error) {
+        console.error('Error toggling love:', error);
+        alert('Có lỗi xảy ra. Vui lòng thử lại');
+    }
+}
 
 // Load room details from API
 async function loadRoomDetails() {
@@ -202,55 +348,6 @@ function formatDescription(text) {
     // Convert line breaks to <p> tags
     const paragraphs = text.split('\n').filter(p => p.trim());
     return paragraphs.map(p => `<p class="mb-3">${p}</p>`).join('');
-}
-
-// Get type label
-function getTypeLabel(type) {
-    const labels = {
-        'PHONG_TRO': 'Phòng trọ',
-        'NHA_NGUYEN_CAN': 'Nhà nguyên căn',
-        'CAN_HO': 'Căn hộ',
-        'O_GHEP': 'Ở ghép'
-    };
-    return labels[type] || type;
-}
-
-// Get amenity icon
-function getAmenityIcon(amenity) {
-    const icons = {
-        'WIFI': 'wifi',
-        'DIEU_HOA': 'wind',
-        'NOI_THAT': 'home',
-        'GIU_XE': 'truck',
-        'TU_LANH': 'box',
-        'MAY_GIAT': 'disc',
-        'BEP': 'coffee',
-        'NHA_BEP': 'coffee',
-        'WC_RIENG': 'droplet',
-        'BAN_CONG': 'sun',
-        'CAMERA': 'camera',
-        'THANG_MAY': 'arrow-up'
-    };
-    return icons[amenity] || 'check';
-}
-
-// Get amenity label
-function getAmenityLabel(amenity) {
-    const labels = {
-        'WIFI': 'Wifi',
-        'DIEU_HOA': 'Điều hòa',
-        'NOI_THAT': 'Nội thất',
-        'GIU_XE': 'Giữ xe',
-        'TU_LANH': 'Tủ lạnh',
-        'MAY_GIAT': 'Máy giặt',
-        'BEP': 'Bếp',
-        'NHA_BEP': 'Nhà bếp',
-        'WC_RIENG': 'WC riêng',
-        'BAN_CONG': 'Ban công',
-        'CAMERA': 'Camera',
-        'THANG_MAY': 'Thang máy'
-    };
-    return labels[amenity] || amenity;
 }
 
 // Show loading
