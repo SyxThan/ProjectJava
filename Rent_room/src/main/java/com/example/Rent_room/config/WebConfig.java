@@ -1,4 +1,3 @@
-// Cho Spring cho phép truy cập hình qua URL
 package com.example.Rent_room.config;
 
 import org.springframework.context.annotation.Configuration;
@@ -10,6 +9,6 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry.addResourceHandler("/uploads/**")
-                .addResourceLocations("classpath:/uploads/");
+                .addResourceLocations("file:uploads/");
     }
 }
