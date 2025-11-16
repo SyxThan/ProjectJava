@@ -1,5 +1,6 @@
 package com.example.Rent_room.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.validation.constraints.*;
 import lombok.*;
 
@@ -49,4 +50,14 @@ public class BaiDangTimPhongDTO {
     private Timestamp ngayDang;
 
     private Timestamp ngayCapNhat;
+    
+    // Thông tin người đăng (optional, chỉ có khi load detail)
+    @JsonInclude(JsonInclude.Include.ALWAYS)
+    private String userFullname;
+    
+    @JsonInclude(JsonInclude.Include.ALWAYS)
+    private String userEmail;
+    
+    @JsonInclude(JsonInclude.Include.ALWAYS)
+    private String userSoDienThoai;
 }

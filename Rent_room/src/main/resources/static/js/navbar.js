@@ -3,12 +3,97 @@
  */
 
 /**
+ * Inject consistent navbar styles
+ */
+function injectNavbarStyles() {
+    if (!document.getElementById('navbar-styles')) {
+        const style = document.createElement('style');
+        style.id = 'navbar-styles';
+        style.textContent = `
+            #navbar-container {
+                background-color: white;
+                box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+                position: sticky;
+                top: 0;
+                z-index: 50;
+            }
+            #navbar-container .container {
+                padding-left: 1rem;
+                padding-right: 1rem;
+                padding-top: 0.75rem;
+                padding-bottom: 0.75rem;
+            }
+            #navbar-container a[href="index.html"] span {
+                font-size: 1.25rem;
+                font-weight: 700;
+                color: #2563eb;
+            }
+            #navbar-container nav a {
+                font-size: 1rem;
+                color: #4b5563;
+            }
+            #navbar-container nav a:hover {
+                color: #2563eb;
+            }
+            #navbar-container nav a.text-blue-600 {
+                color: #2563eb;
+                font-weight: 500;
+            }
+        `;
+        if (document.head) {
+            document.head.appendChild(style);
+        } else {
+            // If head is not ready, wait for DOMContentLoaded
+            document.addEventListener('DOMContentLoaded', function() {
+                if (!document.getElementById('navbar-styles')) {
+                    document.head.appendChild(style);
+                }
+            });
+        }
+    }
+}
+
+// Inject styles immediately if possible
+if (document.head) {
+    injectNavbarStyles();
+} else {
+    document.addEventListener('DOMContentLoaded', injectNavbarStyles);
+}
+
+/**
  * Render navbar dựa trên vai trò người dùng
  */
 function renderNavbar() {
+    // Check if getCurrentUser is available
+    if (typeof getCurrentUser === 'undefined') {
+        console.warn('getCurrentUser is not defined. Make sure api.js is loaded before navbar.js');
+        // Fallback: try to get user from storage directly
+        const userStr = localStorage.getItem('user') || sessionStorage.getItem('user');
+        const user = userStr ? (() => {
+            try {
+                return JSON.parse(userStr);
+            } catch (e) {
+                return null;
+            }
+        })() : null;
+        const isAuth = user !== null;
+        const role = user ? (user.role || 'nguoi_thue') : null;
+        renderNavbarWithUser(user, isAuth, role);
+        return;
+    }
+    
     const user = getCurrentUser();
     const isAuth = typeof isAuthenticated !== 'undefined' ? isAuthenticated() : (user !== null);
     const role = user ? (user.role || 'nguoi_thue') : null;
+    renderNavbarWithUser(user, isAuth, role);
+}
+
+/**
+ * Render navbar with user data
+ */
+function renderNavbarWithUser(user, isAuth, role) {
+    // Inject styles first if not already injected
+    injectNavbarStyles();
     
     // Get current page to highlight active menu item
     const currentPage = window.location.pathname.split('/').pop() || 'index.html';
@@ -31,6 +116,48 @@ function renderNavbar() {
 }
 
 /**
+ * Inject consistent navbar styles
+ */
+function injectNavbarStyles() {
+    if (!document.getElementById('navbar-styles')) {
+        const style = document.createElement('style');
+        style.id = 'navbar-styles';
+        style.textContent = `
+            #navbar-container {
+                background-color: white;
+                box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+                position: sticky;
+                top: 0;
+                z-index: 50;
+            }
+            #navbar-container .container {
+                padding-left: 1rem;
+                padding-right: 1rem;
+                padding-top: 0.75rem;
+                padding-bottom: 0.75rem;
+            }
+            #navbar-container a[href="index.html"] span {
+                font-size: 1.25rem;
+                font-weight: 700;
+                color: #2563eb;
+            }
+            #navbar-container nav a {
+                font-size: 1rem;
+                color: #4b5563;
+            }
+            #navbar-container nav a:hover {
+                color: #2563eb;
+            }
+            #navbar-container nav a.text-blue-600 {
+                color: #2563eb;
+                font-weight: 500;
+            }
+        `;
+        document.head.appendChild(style);
+    }
+}
+
+/**
  * Generate navbar HTML based on user role
  */
 function generateNavbarHTML(user, isAuth, role, currentPage) {
@@ -41,7 +168,7 @@ function generateNavbarHTML(user, isAuth, role, currentPage) {
     const commonMenuItems = [
         { href: 'index.html', text: 'Trang chủ', active: currentPage === 'index.html' },
         { href: 'search.html', text: 'Tìm phòng', active: currentPage === 'search.html' },
-        { href: 'tim-phong.html', text: 'Tìm người thuê', active: currentPage === 'tim-phong.html' }
+        { href: 'tim-phong.html', text: 'Tin tìm phòng', active: currentPage === 'tim-phong.html' }
     ];
     
     // Menu items based on role
@@ -54,8 +181,8 @@ function generateNavbarHTML(user, isAuth, role, currentPage) {
     } else if (isUser) {
         roleMenuItems = [
             { href: 'post.html', text: 'Đăng tin', active: currentPage === 'post.html' },
-            { href: 'dang-tim-phong.html', text: 'Đăng tìm phòng', active: currentPage === 'dang-tim-phong.html' },
-            { href: 'account.html', text: 'Tài khoản', active: currentPage === 'account.html' }
+            { href: 'dang-tim-phong.html', text: 'Đăng tìm phòng', active: currentPage === 'dang-tim-phong.html' }
+            // Không thêm "Tài khoản" vào menu vì đã có trong userSection
         ];
     } else {
         roleMenuItems = [
@@ -181,14 +308,33 @@ function handleLogout() {
 window.handleLogout = handleLogout;
 
 // Auto-render navbar when DOM is ready
-document.addEventListener('DOMContentLoaded', function() {
+// Render immediately with fallback, then update if api.js loads later
+function initNavbar() {
+    // Always render immediately - renderNavbar() has fallback built-in
     renderNavbar();
+    
+    // If api.js loads later, we can optionally re-render
+    // But for now, the fallback should work fine
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Render immediately
+    initNavbar();
+    
+    // Also try to render after a short delay in case api.js loads asynchronously
+    // But don't wait - render immediately first
+    setTimeout(function() {
+        if (typeof getCurrentUser !== 'undefined') {
+            // Re-render with proper getCurrentUser if it's now available
+            renderNavbar();
+        }
+    }, 50);
 });
 
 // Re-render navbar when user data changes (e.g., after login)
 window.addEventListener('storage', function(e) {
     if (e.key === 'user' || e.key === 'token') {
-        renderNavbar();
+        initNavbar();
     }
 });
 

@@ -3,7 +3,10 @@
  * Module: Đăng bài tìm phòng (BaiDangTimPhong)
  */
 
-const API_BASE = 'http://localhost:8080/api/baidangtimphong/createpost';
+// API endpoint - use from window if available, otherwise use default
+const API_BASE = (typeof window !== 'undefined' && window.DANG_TIM_PHONG_API_BASE) 
+    ? window.DANG_TIM_PHONG_API_BASE + '/createpost'
+    : 'http://localhost:8080/api/baidangtimphong/createpost';
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', function() {
@@ -33,15 +36,45 @@ function initializeDangTimPhong() {
 async function handleFormSubmit(e) {
     e.preventDefault();
     
-    // Check authentication
-    if (!isAuthenticated()) {
+    // Check authentication - use safe check
+    const isAuth = typeof isAuthenticated !== 'undefined' ? isAuthenticated() : 
+                   (localStorage.getItem('token') !== null || sessionStorage.getItem('token') !== null);
+    
+    if (!isAuth) {
         alert('Vui lòng đăng nhập để đăng bài');
         window.location.href = 'auth.html';
         return;
     }
     
-    const user = getCurrentUser();
-    if (!user || !user.id) {
+    // Get user - use safe check
+    let user = null;
+    if (typeof getCurrentUser !== 'undefined') {
+        user = getCurrentUser();
+    } else {
+        // Fallback: get user from storage
+        const userStr = localStorage.getItem('user') || sessionStorage.getItem('user');
+        if (userStr) {
+            try {
+                user = JSON.parse(userStr);
+            } catch (e) {
+                console.error('Error parsing user data:', e);
+            }
+        }
+    }
+    
+    // Normalize user ID - check both 'id' and 'user_id' fields
+    let userId = null;
+    if (user) {
+        userId = user.id || user.user_id || user.userId;
+        // Also check localStorage for user_id as fallback
+        if (!userId) {
+            userId = localStorage.getItem('user_id') || sessionStorage.getItem('user_id');
+        }
+    }
+    
+    if (!user || !userId) {
+        console.error('User data:', user);
+        console.error('User ID:', userId);
         alert('Không tìm thấy thông tin người dùng. Vui lòng đăng nhập lại.');
         window.location.href = 'auth.html';
         return;
@@ -50,7 +83,7 @@ async function handleFormSubmit(e) {
     // Collect form data
     const khuVucMongMuonThanhPhoEl = document.getElementById('khuVucMongMuonThanhPho');
     const formData = {
-        userId: user.id,
+        userId: parseInt(userId),
         tieuDe: document.getElementById('tieuDe').value.trim(),
         moTa: document.getElementById('moTa').value.trim(),
         khuVucMongMuonXa: document.getElementById('khuVucMongMuonXa').value.trim(),
@@ -92,7 +125,8 @@ async function handleFormSubmit(e) {
     
     try {
         // Backend trả về ResponseEntity với body là string message hoặc error array/string
-        const token = getAuthToken();
+        const token = typeof getAuthToken !== 'undefined' ? getAuthToken() : 
+                      (localStorage.getItem('token') || sessionStorage.getItem('token'));
         const response = await fetch(API_BASE, {
             method: 'POST',
             headers: {
@@ -102,29 +136,62 @@ async function handleFormSubmit(e) {
             body: JSON.stringify(formData)
         });
         
-        const responseData = await response.json();
+        // Handle both JSON and plain text responses
+        let responseData;
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+            try {
+                responseData = await response.json();
+            } catch (e) {
+                // If JSON parsing fails, try as text
+                const text = await response.text();
+                responseData = text;
+            }
+        } else {
+            // Plain text response
+            responseData = await response.text();
+        }
         
         if (response.ok) {
-            // Backend trả về ResponseEntity.ok("Tạo bài viết thành công")
-            const message = typeof responseData === 'string' ? responseData : 
-                           (responseData.message || 'Đăng bài thành công!');
-            showSuccessMessage(message);
+            // Backend trả về ResponseEntity.ok("Tạo bài viết thành công") - có thể là string hoặc JSON
+            let message = 'Đăng bài thành công!';
+            if (typeof responseData === 'string') {
+                message = responseData;
+            } else if (responseData && responseData.message) {
+                message = responseData.message;
+            }
+            
+            if (typeof showSuccessMessage !== 'undefined') {
+                showSuccessMessage(message);
+            } else {
+                alert(message);
+            }
             
             // Redirect after 2 seconds
             setTimeout(() => {
                 window.location.href = 'tim-phong.html';
             }, 2000);
         } else {
-            // Backend trả về error: string hoặc List<String>
+            // Backend trả về error: string hoặc List<String> hoặc JSON object
             let errorMessage = 'Đăng bài thất bại. Vui lòng thử lại.';
-            if (Array.isArray(responseData)) {
-                errorMessage = responseData.join(', ');
-            } else if (typeof responseData === 'string') {
+            if (typeof responseData === 'string') {
                 errorMessage = responseData;
-            } else if (responseData.message) {
-                errorMessage = responseData.message;
+            } else if (Array.isArray(responseData)) {
+                errorMessage = responseData.join(', ');
+            } else if (responseData && typeof responseData === 'object') {
+                if (responseData.message) {
+                    errorMessage = responseData.message;
+                } else if (Array.isArray(responseData.errors)) {
+                    errorMessage = responseData.errors.join(', ');
+                }
             }
-            showErrorMessage(errorMessage);
+            
+            if (typeof showErrorMessage !== 'undefined') {
+                showErrorMessage(errorMessage);
+            } else {
+                alert(errorMessage);
+            }
+            
             if (submitBtn) {
                 submitBtn.disabled = false;
                 submitBtn.textContent = originalText;
@@ -132,7 +199,13 @@ async function handleFormSubmit(e) {
         }
         
     } catch (error) {
-        handleApiError(error);
+        if (typeof handleApiError !== 'undefined') {
+            handleApiError(error);
+        } else {
+            console.error('Error submitting form:', error);
+            alert('Có lỗi xảy ra khi đăng bài. Vui lòng thử lại.');
+        }
+        
         if (submitBtn) {
             submitBtn.disabled = false;
             submitBtn.textContent = originalText;

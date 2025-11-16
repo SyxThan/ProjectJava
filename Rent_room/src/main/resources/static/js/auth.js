@@ -3,7 +3,8 @@
  * Handles login, register, and authentication state management
  */
 
-const API_BASE_URL = 'http://localhost:8080/api/auth/';
+// Use API_BASE_URL from api.js if available, otherwise use default
+const AUTH_API_BASE = (typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : 'http://localhost:8080/api') + '/auth/';
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', function() {
@@ -71,7 +72,7 @@ function setupLoginForm() {
         setLoading('login', true);
 
         try {
-            const response = await fetch(API_BASE_URL + 'login', {
+            const response = await fetch(AUTH_API_BASE + 'login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -186,7 +187,7 @@ function setupRegisterForm() {
                 confirmPassword: confirmPassword
             };
             
-            const response = await fetch(API_BASE_URL + 'register', {
+            const response = await fetch(AUTH_API_BASE + 'register', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
