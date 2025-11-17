@@ -19,6 +19,386 @@
             height: 24px;
             stroke-width: 2;
         }
+        .comment-section {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            border-radius: 1rem;
+            padding: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            backdrop-filter: blur(8px);
+        }
+        .comment-section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .comment-section-title::before {
+            content: "";
+            width: 4px;
+            height: 1.5rem;
+            background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+            border-radius: 2px;
+        }
+        .comment-form-container {
+            background: #ffffff;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+            border: 1px solid #e2e8f0;
+            transition: all 0.3s ease;
+        }
+        .comment-form-container:hover {
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+            transform: translateY(-2px);
+        }
+        .comment-form-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        .user-avatar-large {
+            width: 3rem;
+            height: 3rem;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 1rem;
+            flex-shrink: 0;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+            border: 3px solid #ffffff;
+        }
+        .user-info {
+            flex: 1;
+        }
+        .user-name {
+            font-weight: 600;
+            color: #0f172a;
+            font-size: 1rem;
+            margin-bottom: 0.25rem;
+        }
+        .user-subtitle {
+            font-size: 0.875rem;
+            color: #64748b;
+        }
+        .comment-textarea {
+            width: 100%;
+            min-height: 120px;
+            padding: 1rem 1.25rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 0.75rem;
+            font-family: inherit;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            resize: vertical;
+            transition: all 0.3s ease;
+            background: #fafbfc;
+        }
+        .comment-textarea:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+            background: #ffffff;
+        }
+        .comment-textarea::placeholder {
+            color: #94a3b8;
+        }
+        .comment-form-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1rem;
+        }
+        .character-count {
+            font-size: 0.75rem;
+            color: #94a3b8;
+        }
+        .submit-comment-btn {
+            background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+            color: white;
+            border: none;
+            border-radius: 0.75rem;
+            padding: 0.75rem 2rem;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+        .submit-comment-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
+        }
+        .submit-comment-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .comment-item {
+            background: #ffffff;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+            border: 1px solid #f1f5f9;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        .comment-item:hover {
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+            transform: translateY(-1px);
+        }
+        .comment-main {
+            display: flex;
+            gap: 1rem;
+        }
+        .comment-avatar {
+            width: 2.75rem;
+            height: 2.75rem;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 0.95rem;
+            flex-shrink: 0;
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
+            border: 2px solid #ffffff;
+        }
+        .comment-content {
+            flex: 1;
+            min-width: 0;
+        }
+        .comment-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+        .comment-author {
+            font-weight: 700;
+            color: #0f172a;
+            font-size: 1rem;
+        }
+        .comment-date {
+            font-size: 0.8rem;
+            color: #94a3b8;
+            margin-left: auto;
+        }
+        .comment-text {
+            color: #374151;
+            line-height: 1.7;
+            font-size: 0.95rem;
+            margin-bottom: 1rem;
+        }
+        .comment-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #f1f5f9;
+        }
+        .action-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            color: #64748b;
+            background: transparent;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 500;
+        }
+        .action-btn:hover {
+            color: #3b82f6;
+            background: #f8fafc;
+            border-color: #cbd5e1;
+            transform: translateY(-1px);
+        }
+        .action-btn.active {
+            color: #3b82f6;
+            background: #eff6ff;
+            border-color: #3b82f6;
+        }
+        .reply-form {
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 2px solid #f1f5f9;
+            display: none;
+        }
+        .reply-form.active {
+            display: block;
+            animation: slideDown 0.3s ease-out;
+        }
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .reply-form-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        .reply-avatar {
+            width: 2.25rem;
+            height: 2.25rem;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 0.8rem;
+            flex-shrink: 0;
+            box-shadow: 0 3px 8px rgba(139, 92, 246, 0.3);
+        }
+        .reply-textarea {
+            width: 100%;
+            min-height: 80px;
+            padding: 0.875rem 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 0.5rem;
+            font-family: inherit;
+            font-size: 0.875rem;
+            line-height: 1.5;
+            resize: vertical;
+            transition: all 0.2s ease;
+        }
+        .reply-textarea:focus {
+            outline: none;
+            border-color: #8b5cf6;
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+        }
+        .reply-form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.75rem;
+            margin-top: 1rem;
+        }
+        .reply-btn {
+            padding: 0.5rem 1.25rem;
+            border-radius: 999px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s ease;
+        }
+        .reply-btn-submit {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            color: white;
+        }
+        .reply-btn-cancel {
+            background: #e2e8f0;
+            color: #475569;
+        }
+        .reply-item {
+            border-left: 2px solid #e5e7eb;
+            margin-left: 2rem;
+            padding-left: 1.5rem;
+            margin-top: 1rem;
+        }
+        .reply-main {
+            display: flex;
+            gap: 0.75rem;
+        }
+        .reply-avatar-small {
+            width: 2rem;
+            height: 2rem;
+            border-radius: 999px;
+            background: linear-gradient(135deg, #ec4899 0%, #db2777 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 0.75rem;
+        }
+        .reply-content {
+            flex: 1;
+        }
+        .reply-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .reply-author {
+            font-weight: 600;
+            color: #111827;
+        }
+        .reply-date {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            margin-left: auto;
+        }
+        .reply-text {
+            color: #4b5563;
+            line-height: 1.6;
+        }
+        .comments-empty {
+            text-align: center;
+            padding: 3rem 1rem;
+            border-radius: 1rem;
+            border: 1px dashed #cbd5f5;
+            background: #f8fafc;
+        }
+        .comments-empty .empty-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 999px;
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #1d4ed8;
+            margin: 0 auto 1rem;
+        }
+        .empty-title {
+            font-weight: 700;
+            font-size: 1.125rem;
+            color: #0f172a;
+            margin-bottom: 0.5rem;
+        }
+        .empty-text {
+            color: #64748b;
+        }
+        .loading-spinner {
+            width: 1rem;
+            height: 1rem;
+            border: 2px solid #cbd5f5;
+            border-top-color: #3b82f6;
+            border-radius: 999px;
+            animation: spin 0.8s linear infinite;
+            display: inline-block;
+        }
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -128,6 +508,68 @@
                     <h2 class="text-xl font-bold mb-4">Mô tả</h2>
                     <div id="postDescription" class="prose max-w-none">
                         <p>Đang tải...</p>
+                    </div>
+                </div>
+
+                <!-- Comments Section -->
+                <div class="comment-section mb-6">
+                    <h2 class="comment-section-title">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                        </svg>
+                        Bình luận về nhu cầu tìm phòng
+                    </h2>
+
+                    <!-- Comment Form -->
+                    <div class="comment-form-container">
+                        <div class="comment-form-header">
+                            <div id="currentUserAvatar" class="user-avatar-large">
+                                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/>
+                                </svg>
+                            </div>
+                            <div class="user-info">
+                                <div id="currentUserName" class="user-name">Đăng nhập để bình luận</div>
+                                <div class="user-subtitle">Gửi lời khuyên hoặc gợi ý phòng phù hợp</div>
+                            </div>
+                        </div>
+
+                        <textarea id="commentInput"
+                            class="comment-textarea"
+                            placeholder="Chia sẻ gợi ý khu vực, kinh nghiệm tìm phòng hoặc đề nghị liên hệ..."
+                            maxlength="5000"></textarea>
+
+                        <div class="comment-form-footer">
+                            <div class="character-count">
+                                <span id="charCount">0</span>/5000 ký tự
+                            </div>
+                            <button id="submitCommentBtn" class="submit-comment-btn">
+                                <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+                                </svg>
+                                Đăng bình luận
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Comments List -->
+                    <div id="commentsList"></div>
+
+                    <!-- Loading indicator -->
+                    <div id="commentsLoading" class="text-center py-8">
+                        <div class="loading-spinner mx-auto mb-4"></div>
+                        <p class="text-gray-500 font-medium">Đang tải bình luận...</p>
+                    </div>
+
+                    <!-- Empty state -->
+                    <div id="commentsEmpty" class="comments-empty" style="display: none;">
+                        <div class="empty-icon">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                            </svg>
+                        </div>
+                        <h3 class="empty-title">Chưa có bình luận nào</h3>
+                        <p class="empty-text">Hãy là người đầu tiên gợi ý phòng phù hợp cho người tìm!</p>
                     </div>
                 </div>
             </div>

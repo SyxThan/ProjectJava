@@ -17,6 +17,8 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     // Load post details
     await loadPostDetails();
+    await loadComments();
+    setupCommentForm();
 });
 
 // Load post details from API
@@ -165,6 +167,40 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
+function getUserId() {
+    try {
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (user && user.id) {
+            return user.id;
+        }
+    } catch (e) {
+        console.warn('[AUTH] Cannot parse user object for ID');
+    }
+    const storedId = localStorage.getItem('user_id');
+    if (storedId) {
+        const parsedId = parseInt(storedId, 10);
+        if (!isNaN(parsedId) && parsedId > 0) {
+            return parsedId;
+        }
+    }
+    return null;
+}
+
+function getCurrentUserName() {
+    try {
+        const userObj = JSON.parse(localStorage.getItem('user'));
+        if (userObj && userObj.fullname) {
+            return userObj.fullname;
+        }
+        if (userObj && userObj.email) {
+            return userObj.email.split('@')[0];
+        }
+    } catch (e) {
+        console.warn('[AUTH] Cannot parse user object for name');
+    }
+    return 'Bạn';
+}
+
 // Show loading
 function showLoading() {
     document.getElementById('loadingState').classList.remove('hidden');
@@ -193,5 +229,382 @@ function showError(message) {
     `;
     content.classList.remove('hidden');
     feather.replace();
+}
+
+// ===============================
+// Bình luận tin tìm phòng
+// ===============================
+
+async function loadComments() {
+    try {
+        showCommentsLoading();
+        const endpoint = `${API_BASE}/api/bai-dang-tim-phong/${postId}/binh-luan`;
+        const response = await fetch(endpoint, { mode: 'cors' });
+
+        if (!response.ok) {
+            if (response.status === 404) {
+                showCommentsEmpty();
+                return;
+            }
+            throw new Error(`HTTP ${response.status}`);
+        }
+
+        const comments = await response.json();
+        if (Array.isArray(comments) && comments.length > 0) {
+            displayComments(comments);
+            hideCommentsLoading();
+        } else {
+            showCommentsEmpty();
+        }
+    } catch (error) {
+        console.error('[COMMENTS] Error loading comments:', error);
+        showCommentsEmpty();
+    }
+}
+
+function displayComments(comments) {
+    const commentsList = document.getElementById('commentsList');
+    const emptyState = document.getElementById('commentsEmpty');
+    const loadingState = document.getElementById('commentsLoading');
+
+    if (!commentsList) return;
+
+    commentsList.innerHTML = '';
+    if (emptyState) emptyState.style.display = 'none';
+    if (loadingState) loadingState.style.display = 'none';
+
+    comments.forEach((comment, index) => {
+        const element = createCommentElement(comment, index);
+        if (comment.id) {
+            element.dataset.commentId = comment.id;
+        }
+        commentsList.appendChild(element);
+    });
+}
+
+function createCommentElement(comment, index) {
+    const div = document.createElement('div');
+    div.className = 'comment-item';
+    div.id = `comment-${index}`;
+
+    const author = comment.fullname || comment.userName || 'Thành viên';
+    const content = comment.noiDung || '';
+    const dateStr = comment.ngayTao || new Date().toISOString();
+    const replies = comment.binhLuanCon || [];
+
+    const initials = author.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+    const formattedDate = formatCommentDate(dateStr);
+
+    div.innerHTML = `
+        <div class="comment-main">
+            <div class="comment-avatar">${initials}</div>
+            <div class="comment-content">
+                <div class="comment-header">
+                    <span class="comment-author">${escapeHtml(author)}</span>
+                    <span class="comment-date">${formattedDate}</span>
+                </div>
+
+                <div class="comment-text">${escapeHtml(content)}</div>
+
+                <div class="comment-actions">
+                    <button class="action-btn" onclick="toggleReplyForm(${index})">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path>
+                        </svg>
+                        Trả lời
+                    </button>
+                </div>
+
+                <div id="reply-form-${index}" class="reply-form">
+                    <div class="reply-form-header">
+                        <div class="reply-avatar">
+                            ${getCurrentUserName().split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2)}
+                        </div>
+                        <span class="reply-author">${getCurrentUserName()}</span>
+                    </div>
+                    <textarea
+                        id="reply-input-${index}"
+                        class="reply-textarea"
+                        placeholder="Viết phản hồi của bạn..."
+                        maxlength="1000"></textarea>
+                    <div class="reply-form-actions">
+                        <button onclick="cancelReply(${index})" class="reply-btn reply-btn-cancel">Hủy</button>
+                        <button onclick="submitReply(${index})" class="reply-btn reply-btn-submit">Gửi phản hồi</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        ${replies && replies.length > 0 ? `
+            <div class="replies-section">
+                <div class="replies-list">
+                    ${replies.map((reply, replyIndex) => createReplyElement(reply, index, replyIndex)).join('')}
+                </div>
+            </div>
+        ` : ''}
+    `;
+
+    return div;
+}
+
+function createReplyElement(reply) {
+    const author = reply.fullname || reply.userName || 'Thành viên';
+    const content = reply.noiDung || '';
+    const dateStr = reply.ngayTao || new Date().toISOString();
+    const initials = author.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+    const formattedDate = formatCommentDate(dateStr);
+
+    return `
+        <div class="reply-item">
+            <div class="reply-main">
+                <div class="reply-avatar-small">${initials}</div>
+                <div class="reply-content">
+                    <div class="reply-header">
+                        <span class="reply-author">${escapeHtml(author)}</span>
+                        <span class="reply-date">${formattedDate}</span>
+                    </div>
+                    <div class="reply-text">${escapeHtml(content)}</div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function setupCommentForm() {
+    const submitBtn = document.getElementById('submitCommentBtn');
+    const commentInput = document.getElementById('commentInput');
+    const charCount = document.getElementById('charCount');
+
+    if (submitBtn) {
+        submitBtn.addEventListener('click', sendComment);
+    }
+
+    if (commentInput && charCount) {
+        commentInput.addEventListener('input', function() {
+            charCount.textContent = this.value.length;
+        });
+    }
+
+    updateCurrentUserDisplay();
+}
+
+function updateCurrentUserDisplay() {
+    const userName = getCurrentUserName();
+    const userNameElement = document.getElementById('currentUserName');
+    const userAvatarElement = document.getElementById('currentUserAvatar');
+
+    if (userNameElement) {
+        userNameElement.textContent = userName !== 'Bạn' ? userName : 'Vui lòng đăng nhập để bình luận';
+    }
+
+    if (userAvatarElement && userName !== 'Bạn') {
+        const initials = userName.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+        userAvatarElement.innerHTML = `<span>${initials}</span>`;
+    }
+}
+
+async function sendComment() {
+    const commentInput = document.getElementById('commentInput');
+    const submitBtn = document.getElementById('submitCommentBtn');
+
+    if (!commentInput) return;
+
+    const content = commentInput.value.trim();
+    if (!content) {
+        showCommentError('Vui lòng nhập bình luận');
+        return;
+    }
+
+    const token = getAuthToken();
+    if (!token) {
+        showCommentError('Bạn cần đăng nhập để bình luận');
+        return;
+    }
+
+    const userId = getUserId();
+    if (!userId) {
+        showCommentError('Không xác định được người dùng. Vui lòng đăng nhập lại.');
+        return;
+    }
+
+    const originalText = submitBtn.textContent;
+
+    try {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="loading-spinner"></span> Đang gửi...';
+
+        const response = await fetch(`${API_BASE}/api/bai-dang-tim-phong/${postId}/binh-luan`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+                'userId': userId.toString()
+            },
+            body: JSON.stringify({ noiDung: content })
+        });
+
+        if (!response.ok) {
+            throw new Error('Không thể gửi bình luận. Vui lòng thử lại.');
+        }
+
+        commentInput.value = '';
+        showCommentSuccess('Bình luận đã được gửi thành công!');
+        setTimeout(loadComments, 400);
+    } catch (error) {
+        showCommentError(error.message || 'Đã xảy ra lỗi khi gửi bình luận');
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
+    }
+}
+
+function toggleReplyForm(commentIndex) {
+    const form = document.getElementById(`reply-form-${commentIndex}`);
+    const button = document.querySelector(`button[onclick="toggleReplyForm(${commentIndex})"]`);
+
+    if (!form) return;
+
+    const isActive = form.classList.contains('active');
+
+    document.querySelectorAll('.reply-form.active').forEach(f => f.classList.remove('active'));
+    document.querySelectorAll('.action-btn.active').forEach(btn => btn.classList.remove('active'));
+
+    if (!isActive) {
+        form.classList.add('active');
+        if (button) button.classList.add('active');
+        const textarea = document.getElementById(`reply-input-${commentIndex}`);
+        if (textarea) setTimeout(() => textarea.focus(), 100);
+    }
+}
+
+function cancelReply(commentIndex) {
+    const form = document.getElementById(`reply-form-${commentIndex}`);
+    const textarea = document.getElementById(`reply-input-${commentIndex}`);
+    const button = document.querySelector(`button[onclick="toggleReplyForm(${commentIndex})"]`);
+
+    if (form) form.classList.remove('active');
+    if (button) button.classList.remove('active');
+    if (textarea) textarea.value = '';
+}
+
+async function submitReply(commentIndex) {
+    const textarea = document.getElementById(`reply-input-${commentIndex}`);
+    if (!textarea) return;
+
+    const content = textarea.value.trim();
+    if (!content) {
+        showCommentError('Vui lòng nhập phản hồi');
+        return;
+    }
+
+    const token = getAuthToken();
+    if (!token) {
+        showCommentError('Bạn cần đăng nhập để trả lời bình luận');
+        return;
+    }
+
+    const userId = getUserId();
+    if (!userId) {
+        showCommentError('Không xác định được người dùng. Vui lòng đăng nhập lại.');
+        return;
+    }
+
+    const commentElement = document.getElementById(`comment-${commentIndex}`);
+    let parentCommentId = commentElement?.dataset.commentId ? parseInt(commentElement.dataset.commentId) : null;
+    if (!parentCommentId) {
+        showCommentError('Không xác định được bình luận cha.');
+        return;
+    }
+
+    const originalButton = document.querySelector(`#reply-form-${commentIndex} button[onclick="submitReply(${commentIndex})"]`);
+    const originalText = originalButton ? originalButton.textContent : 'Gửi';
+
+    try {
+        if (originalButton) {
+            originalButton.disabled = true;
+            originalButton.innerHTML = '<span class="loading-spinner"></span> Đang gửi...';
+        }
+
+        const response = await fetch(`${API_BASE}/api/bai-dang-tim-phong/${postId}/binh-luan`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+                'userId': userId.toString()
+            },
+            body: JSON.stringify({
+                noiDung: content,
+                idBinhLuanCha: parentCommentId
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error('Không thể gửi phản hồi. Vui lòng thử lại.');
+        }
+
+        textarea.value = '';
+        cancelReply(commentIndex);
+        showCommentSuccess('Phản hồi đã được gửi thành công!');
+        setTimeout(loadComments, 400);
+    } catch (error) {
+        showCommentError(error.message || 'Đã xảy ra lỗi khi gửi phản hồi');
+    } finally {
+        if (originalButton) {
+            originalButton.disabled = false;
+            originalButton.textContent = originalText;
+        }
+    }
+}
+
+function showCommentsLoading() {
+    const loadingState = document.getElementById('commentsLoading');
+    const commentsList = document.getElementById('commentsList');
+    const emptyState = document.getElementById('commentsEmpty');
+
+    if (loadingState) loadingState.style.display = 'block';
+    if (commentsList) commentsList.innerHTML = '';
+    if (emptyState) emptyState.style.display = 'none';
+}
+
+function hideCommentsLoading() {
+    const loadingState = document.getElementById('commentsLoading');
+    if (loadingState) loadingState.style.display = 'none';
+}
+
+function showCommentsEmpty() {
+    const loadingState = document.getElementById('commentsLoading');
+    const commentsList = document.getElementById('commentsList');
+    const emptyState = document.getElementById('commentsEmpty');
+
+    if (loadingState) loadingState.style.display = 'none';
+    if (commentsList) commentsList.innerHTML = '';
+    if (emptyState) emptyState.style.display = 'block';
+}
+
+function showCommentError(message) {
+    alert(message);
+}
+
+function showCommentSuccess(message) {
+    const container = document.createElement('div');
+    container.className = 'fixed bottom-4 right-4 bg-blue-600 text-white px-4 py-3 rounded-lg shadow-lg z-50';
+    container.textContent = message;
+    document.body.appendChild(container);
+    setTimeout(() => container.remove(), 3000);
+}
+
+function formatCommentDate(dateStr) {
+    if (!dateStr) return '';
+    try {
+        const date = new Date(dateStr);
+        return date.toLocaleDateString('vi-VN', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    } catch (e) {
+        return '';
+    }
 }
 
