@@ -20,6 +20,8 @@ public class BinhLuanTimPhongService {
     @Autowired
     private BinhLuanTimPhongRepository binhLuanTimPhongRepository;
 
+    @Autowired
+    private UserTrackingService userTrackingService;
 
     @Transactional(readOnly = true)
     public List<CommentResponseDTO> getCommentsByBaiDang(Integer baiDangId) {
@@ -52,8 +54,11 @@ public class BinhLuanTimPhongService {
         }
 
         BinhLuanTimPhong saved = binhLuanTimPhongRepository.save(comment);
-        UserTrackingService a = new UserTrackingService(); 
-        a.createTracking(new UserTracking(userId, baiDangId, "binhluan"));
+
+        if (userTrackingService != null) {
+            userTrackingService.createTracking(new UserTracking(userId, baiDangId, "binhluan"));
+        }
+
         return convertToResponseDTO(saved);
     }
 
@@ -75,7 +80,7 @@ public class BinhLuanTimPhongService {
                 .findById(commentId)
                 .orElseThrow(() -> new RuntimeException("Bình luận không tồn tại với ID: " + commentId));
 
-        binhLuanTimPhongRepository.deleteById(commentId);
+        binhLuanTimPhongRepository.delete(comment);
     }
 
     @Transactional(readOnly = true)

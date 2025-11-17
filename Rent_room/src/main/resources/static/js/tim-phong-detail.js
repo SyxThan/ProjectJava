@@ -235,6 +235,14 @@ function showError(message) {
 // Bình luận tin tìm phòng
 // ===============================
 
+function getAuthToken() {
+    const token = localStorage.getItem('token') || 
+                  localStorage.getItem('authToken') || 
+                  localStorage.getItem('accessToken') ||
+                  localStorage.getItem('jwtToken');
+    return token;
+}
+
 async function loadComments() {
     try {
         showCommentsLoading();
@@ -274,11 +282,15 @@ function displayComments(comments) {
     if (loadingState) loadingState.style.display = 'none';
 
     comments.forEach((comment, index) => {
-        const element = createCommentElement(comment, index);
-        if (comment.id) {
-            element.dataset.commentId = comment.id;
+        try {
+            const element = createCommentElement(comment, index);
+            if (comment.id) {
+                element.dataset.commentId = comment.id;
+            }
+            commentsList.appendChild(element);
+        } catch (e) {
+            console.error('[COMMENTS] Error rendering comment', e);
         }
-        commentsList.appendChild(element);
     });
 }
 
@@ -287,10 +299,10 @@ function createCommentElement(comment, index) {
     div.className = 'comment-item';
     div.id = `comment-${index}`;
 
-    const author = comment.fullname || comment.userName || 'Thành viên';
-    const content = comment.noiDung || '';
-    const dateStr = comment.ngayTao || new Date().toISOString();
-    const replies = comment.binhLuanCon || [];
+    const author = comment.fullname || comment.hoTen || comment.tenNguoiDung || comment.author || comment.userName || comment.name || 'Thành viên';
+    const content = comment.noiDung || comment.content || comment.text || '';
+    const dateStr = comment.ngayTao || comment.createdAt || comment.created_at || new Date().toISOString();
+    const replies = comment.binhLuanCon || comment.replies || [];
 
     const initials = author.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
     const formattedDate = formatCommentDate(dateStr);
@@ -322,10 +334,10 @@ function createCommentElement(comment, index) {
                         </div>
                         <span class="reply-author">${getCurrentUserName()}</span>
                     </div>
-                    <textarea
-                        id="reply-input-${index}"
+                    <textarea 
+                        id="reply-input-${index}" 
                         class="reply-textarea"
-                        placeholder="Viết phản hồi của bạn..."
+                        placeholder="Viết phản hồi của bạn..." 
                         maxlength="1000"></textarea>
                     <div class="reply-form-actions">
                         <button onclick="cancelReply(${index})" class="reply-btn reply-btn-cancel">Hủy</button>
@@ -347,9 +359,10 @@ function createCommentElement(comment, index) {
 }
 
 function createReplyElement(reply) {
-    const author = reply.fullname || reply.userName || 'Thành viên';
-    const content = reply.noiDung || '';
-    const dateStr = reply.ngayTao || new Date().toISOString();
+    const author = reply.fullname || reply.hoTen || reply.tenNguoiDung || reply.author || reply.userName || reply.name || 'Thành viên';
+    const content = reply.noiDung || reply.content || reply.text || '';
+    const dateStr = reply.ngayTao || reply.createdAt || reply.created_at || new Date().toISOString();
+
     const initials = author.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
     const formattedDate = formatCommentDate(dateStr);
 
@@ -378,9 +391,19 @@ function setupCommentForm() {
         submitBtn.addEventListener('click', sendComment);
     }
 
-    if (commentInput && charCount) {
+    if (commentInput) {
         commentInput.addEventListener('input', function() {
-            charCount.textContent = this.value.length;
+            if (charCount) {
+                charCount.textContent = this.value.length;
+            }
+            this.style.height = 'auto';
+            this.style.height = Math.max(120, this.scrollHeight) + 'px';
+        });
+
+        commentInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && e.ctrlKey) {
+                sendComment();
+            }
         });
     }
 
@@ -393,12 +416,19 @@ function updateCurrentUserDisplay() {
     const userAvatarElement = document.getElementById('currentUserAvatar');
 
     if (userNameElement) {
-        userNameElement.textContent = userName !== 'Bạn' ? userName : 'Vui lòng đăng nhập để bình luận';
+        if (userName !== 'Bạn') {
+            userNameElement.textContent = userName;
+            userNameElement.className = 'user-name';
+        } else {
+            userNameElement.textContent = 'Vui lòng đăng nhập để bình luận';
+            userNameElement.className = 'user-name';
+        }
     }
 
     if (userAvatarElement && userName !== 'Bạn') {
         const initials = userName.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
         userAvatarElement.innerHTML = `<span>${initials}</span>`;
+        userAvatarElement.className = 'user-avatar-large';
     }
 }
 
@@ -409,8 +439,14 @@ async function sendComment() {
     if (!commentInput) return;
 
     const content = commentInput.value.trim();
+
     if (!content) {
         showCommentError('Vui lòng nhập bình luận');
+        return;
+    }
+
+    if (content.length > 5000) {
+        showCommentError('Bình luận không được vượt quá 5000 ký tự');
         return;
     }
 
@@ -434,8 +470,10 @@ async function sendComment() {
 
         const response = await fetch(`${API_BASE}/api/bai-dang-tim-phong/${postId}/binh-luan`, {
             method: 'POST',
+            mode: 'cors',
             headers: {
                 'Content-Type': 'application/json',
+                'Accept': 'application/json',
                 'Authorization': `Bearer ${token}`,
                 'userId': userId.toString()
             },
@@ -443,12 +481,19 @@ async function sendComment() {
         });
 
         if (!response.ok) {
-            throw new Error('Không thể gửi bình luận. Vui lòng thử lại.');
+            let errorMessage = 'Không thể gửi bình luận. Vui lòng thử lại.';
+            if (response.status === 401) {
+                errorMessage = 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.';
+            } else if (response.status === 403) {
+                errorMessage = 'Bạn không có quyền bình luận bài viết này.';
+            }
+            throw new Error(errorMessage);
         }
 
         commentInput.value = '';
+        commentInput.style.height = '120px';
         showCommentSuccess('Bình luận đã được gửi thành công!');
-        setTimeout(loadComments, 400);
+        setTimeout(loadComments, 500);
     } catch (error) {
         showCommentError(error.message || 'Đã xảy ra lỗi khi gửi bình luận');
     } finally {
@@ -471,8 +516,11 @@ function toggleReplyForm(commentIndex) {
     if (!isActive) {
         form.classList.add('active');
         if (button) button.classList.add('active');
+
         const textarea = document.getElementById(`reply-input-${commentIndex}`);
-        if (textarea) setTimeout(() => textarea.focus(), 100);
+        if (textarea) {
+            setTimeout(() => textarea.focus(), 100);
+        }
     }
 }
 
@@ -491,8 +539,14 @@ async function submitReply(commentIndex) {
     if (!textarea) return;
 
     const content = textarea.value.trim();
+
     if (!content) {
         showCommentError('Vui lòng nhập phản hồi');
+        return;
+    }
+
+    if (content.length > 5000) {
+        showCommentError('Phản hồi không được vượt quá 5000 ký tự');
         return;
     }
 
@@ -526,8 +580,10 @@ async function submitReply(commentIndex) {
 
         const response = await fetch(`${API_BASE}/api/bai-dang-tim-phong/${postId}/binh-luan`, {
             method: 'POST',
+            mode: 'cors',
             headers: {
                 'Content-Type': 'application/json',
+                'Accept': 'application/json',
                 'Authorization': `Bearer ${token}`,
                 'userId': userId.toString()
             },
@@ -538,13 +594,19 @@ async function submitReply(commentIndex) {
         });
 
         if (!response.ok) {
-            throw new Error('Không thể gửi phản hồi. Vui lòng thử lại.');
+            let errorMessage = 'Không thể gửi phản hồi. Vui lòng thử lại.';
+            if (response.status === 401) {
+                errorMessage = 'Token hết hạn. Vui lòng đăng nhập lại.';
+            } else if (response.status === 404) {
+                errorMessage = 'Bình luận gốc không tồn tại.';
+            }
+            throw new Error(errorMessage);
         }
 
         textarea.value = '';
         cancelReply(commentIndex);
         showCommentSuccess('Phản hồi đã được gửi thành công!');
-        setTimeout(loadComments, 400);
+        setTimeout(loadComments, 500);
     } catch (error) {
         showCommentError(error.message || 'Đã xảy ra lỗi khi gửi phản hồi');
     } finally {
@@ -581,30 +643,79 @@ function showCommentsEmpty() {
 }
 
 function showCommentError(message) {
-    alert(message);
+    const commentSection = document.querySelector('.comment-section');
+    if (!commentSection) return;
+
+    document.querySelectorAll('.status-message').forEach(msg => msg.remove());
+
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'status-message error';
+    errorDiv.innerHTML = `
+        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+        </svg>
+        ${message}
+    `;
+
+    const commentForm = commentSection.querySelector('.comment-form-container');
+    commentForm.parentNode.insertBefore(errorDiv, commentForm.nextSibling);
+
+    setTimeout(() => {
+        if (errorDiv) {
+            errorDiv.style.opacity = '0';
+            setTimeout(() => errorDiv.remove(), 300);
+        }
+    }, 5000);
 }
 
 function showCommentSuccess(message) {
-    const container = document.createElement('div');
-    container.className = 'fixed bottom-4 right-4 bg-blue-600 text-white px-4 py-3 rounded-lg shadow-lg z-50';
-    container.textContent = message;
-    document.body.appendChild(container);
-    setTimeout(() => container.remove(), 3000);
+    const commentSection = document.querySelector('.comment-section');
+    if (!commentSection) return;
+
+    document.querySelectorAll('.status-message').forEach(msg => msg.remove());
+
+    const successDiv = document.createElement('div');
+    successDiv.className = 'status-message success';
+    successDiv.innerHTML = `
+        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+        </svg>
+        ${message}
+    `;
+
+    const commentForm = commentSection.querySelector('.comment-form-container');
+    commentForm.parentNode.insertBefore(successDiv, commentForm.nextSibling);
+
+    setTimeout(() => {
+        if (successDiv) {
+            successDiv.style.opacity = '0';
+            setTimeout(() => successDiv.remove(), 300);
+        }
+    }, 4000);
 }
 
-function formatCommentDate(dateStr) {
-    if (!dateStr) return '';
+function formatCommentDate(dateString) {
     try {
-        const date = new Date(dateStr);
-        return date.toLocaleDateString('vi-VN', {
+        const date = new Date(dateString);
+        const now = new Date();
+        const diffMs = now - date;
+        const diffMins = Math.floor(diffMs / 60000);
+        const diffHours = Math.floor(diffMs / 3600000);
+        const diffDays = Math.floor(diffMs / 86400000);
+
+        if (diffMins < 1) return 'Vừa xong';
+        if (diffMins < 60) return `${diffMins} phút trước`;
+        if (diffHours < 24) return `${diffHours} giờ trước`;
+        if (diffDays < 7) return `${diffDays} ngày trước`;
+
+        return new Intl.DateTimeFormat('vi-VN', {
             day: '2-digit',
             month: '2-digit',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
+            year: 'numeric'
+        }).format(date);
     } catch (e) {
-        return '';
+        console.error('[COMMENTS] Error formatting date:', e);
+        return 'Gần đây';
     }
 }
 
