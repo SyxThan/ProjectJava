@@ -31,7 +31,7 @@ public class BaiDangService {
     }
 
     public List<BaiDangChoThue> getAllBaiDang() {
-        return baiDangRepository.findAll();
+        return baiDangRepository.findByTrangThai(TrangThaiBaiDang.APPROVED);
     }
     
     public PaginationResponseDTO<BaiDangOutputDTO> getAllBaiDangWithPagination(
@@ -45,12 +45,14 @@ public class BaiDangService {
             if (size < 1 || size > 100) size = 10;
 
             // Lấy tất cả dữ liệu đã filter từ database
+            TrangThaiBaiDang effectiveStatus = trangThai != null ? trangThai : TrangThaiBaiDang.APPROVED;
+
             List<BaiDangChoThue> allData = baiDangRepository.findWithFilters(
-                    tinhThanh, phuongXa, giaMin, giaMax, dienTichMin, dienTichMax, trangThai);
+                    tinhThanh, phuongXa, giaMin, giaMax, dienTichMin, dienTichMax, effectiveStatus);
 
             // Đếm tổng số items
             long totalItems = baiDangRepository.countWithFilters(
-                    tinhThanh, phuongXa, giaMin, giaMax, dienTichMin, dienTichMax, trangThai);
+                    tinhThanh, phuongXa, giaMin, giaMax, dienTichMin, dienTichMax, effectiveStatus);
 
             // Tính toán phân trang thủ công
             int offset = page * size;
