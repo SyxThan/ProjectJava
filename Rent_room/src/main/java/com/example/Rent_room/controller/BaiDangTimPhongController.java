@@ -23,7 +23,6 @@ import java.util.Optional;
 public class BaiDangTimPhongController {
     private final BaiDangTimPhongService baiDangTimPhongService;
 
-    // Endpoint với phân trang và filter
     @GetMapping
     public ResponseEntity<?> getAllWithPagination(
             @RequestParam(defaultValue = "0") int page, // Trang hiện tại (bắt đầu từ 0)
