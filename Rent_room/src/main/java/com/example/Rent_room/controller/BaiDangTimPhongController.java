@@ -23,7 +23,6 @@ import java.util.Optional;
 public class BaiDangTimPhongController {
     private final BaiDangTimPhongService baiDangTimPhongService;
 
-    // Endpoint với phân trang và filter
     @GetMapping
     public ResponseEntity<?> getAllWithPagination(
             @RequestParam(defaultValue = "0") int page, // Trang hiện tại (bắt đầu từ 0)
@@ -62,7 +61,7 @@ public class BaiDangTimPhongController {
             if (id == null || id <= 0) {
                 return ResponseEntity.badRequest().body("ID bài đăng không hợp lệ");
             }
-            Optional<BaiDangTimPhongDTO> post = baiDangTimPhongService.findById(id);
+Optional<BaiDangTimPhongDTO> post = baiDangTimPhongService.findById(id);
             if (post.isPresent()) {
                 return ResponseEntity.ok(post.get());
             } else {
@@ -126,8 +125,7 @@ public class BaiDangTimPhongController {
             if (id == null || id <= 0) {
                 return ResponseEntity.badRequest().body("ID bài đăng không hợp lệ");
             }
-
-            baiDangTimPhongService.deletePost(id);
+baiDangTimPhongService.deletePost(id);
             return ResponseEntity.ok("Xóa bài viết thành công");
 
         } catch (IllegalArgumentException e) {

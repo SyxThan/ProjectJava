@@ -5,7 +5,6 @@ import lombok.Getter;
 import lombok.Setter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.time.LocalDateTime;
-import java.sql.Timestamp;
 
 @Entity
 @Table(name = "bai_dang_cho_thue")
@@ -18,7 +17,7 @@ public class BaiDangChoThue {
     private Integer id;
 
     // Khóa ngoại trỏ đến bảng users
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_nguoi_dang", nullable = false)
 //    @JsonIgnore
     private User nguoiDang;
@@ -44,11 +43,11 @@ public class BaiDangChoThue {
     private TrangThaiBaiDang trangThai = TrangThaiBaiDang.PENDING;
 
     private LocalDateTime ngay_co_the_vao_o;
-    private Timestamp ngay_dang;
-    private Timestamp ngay_cap_nhat;
+    private LocalDateTime ngay_dang;
+    private LocalDateTime ngay_cap_nhat;
 
     @OneToMany(mappedBy = "baiDangChoThue", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private java.util.List<HinhAnhPhongTro> HinhAnhPhongTro;
+    private java.util.List<HinhAnhPhongTro> hinhAnhPhongTro;
 
     public BaiDangChoThue() {}
 

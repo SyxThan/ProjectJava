@@ -3,13 +3,13 @@ package com.example.Rent_room.controller;
 import com.example.Rent_room.dto.LoginDTO;
 import com.example.Rent_room.dto.RegisterDTO;
 import com.example.Rent_room.entity.User;
-import com.example.Rent_room.respository.UserRepository;
+import com.example.Rent_room.repository.UserRepository;
 import com.example.Rent_room.service.JwtService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -23,7 +23,8 @@ public class AuthController {
     @Autowired
     private JwtService jwtService;
 
-    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @PostMapping("/register")
     public Map<String, Object> register(@RequestBody @Valid RegisterDTO dto) {
@@ -43,8 +44,8 @@ public class AuthController {
         user.setSo_dien_thoai(dto.getSoDienThoai());
         user.setHash_password(passwordEncoder.encode(dto.getPassword()));
         user.setRole(User.Role.nguoi_thue);
-        user.setNgay_tao(new Timestamp(System.currentTimeMillis()));
-        user.setNgay_cap_nhat(new Timestamp(System.currentTimeMillis()));
+        user.setNgay_tao(LocalDateTime.now());
+        user.setNgay_cap_nhat(LocalDateTime.now());
         userRepository.save(user);
 
         response.put("message", "Đăng ký thành công!");

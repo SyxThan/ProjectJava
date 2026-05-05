@@ -2,7 +2,7 @@ package com.example.Rent_room.service;
 
 import com.example.Rent_room.dto.GeocodeResponseDTO;
 import com.example.Rent_room.entity.BaiDangChoThue;
-import com.example.Rent_room.respository.BaiDangRepository;
+import com.example.Rent_room.repository.BaiDangRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
@@ -35,8 +35,18 @@ public class GeocodingService {
         String url = String.format("%s?address=%s&key=%s", 
             GOOGLE_GEOCODING_API_URL, address.replace(" ", "+"), googleMapsApiKey);
         
-        JsonNode location = objectMapper.readTree(restTemplate.getForObject(url, String.class))
-            .path("results").get(0).path("geometry").path("location");
+        String responseBody = restTemplate.getForObject(url, String.class);
+        JsonNode root = objectMapper.readTree(responseBody);
+        JsonNode results = root.path("results");
+        
+        if (!results.isArray() || results.isEmpty()) {
+            throw new RuntimeException("Không tìm thấy địa chỉ: " + address);
+        }
+        
+        JsonNode location = results.get(0).path("geometry").path("location");
+        if (location.isMissingNode()) {
+            throw new RuntimeException("Không thể lấy tọa độ cho địa chỉ: " + address);
+        }
         
         return new GeocodeResponseDTO(address, 
             location.path("lat").asDouble(), 

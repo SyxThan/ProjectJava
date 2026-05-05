@@ -1,7 +1,7 @@
 package com.example.Rent_room.service;
 
 import com.example.Rent_room.entity.User;
-import com.example.Rent_room.respository.UserRepository;
+import com.example.Rent_room.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

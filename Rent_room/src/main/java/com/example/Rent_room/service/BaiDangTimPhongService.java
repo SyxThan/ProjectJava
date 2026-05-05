@@ -5,8 +5,8 @@ import com.example.Rent_room.dto.PaginationResponseDTO;
 import com.example.Rent_room.entity.BaiDangTimPhongEntity;
 import com.example.Rent_room.entity.TrangThaiTimPhong;
 import com.example.Rent_room.entity.User;
-import com.example.Rent_room.respository.BaiDangTimPhongRepository;
-import com.example.Rent_room.respository.UserRepository;
+import com.example.Rent_room.repository.BaiDangTimPhongRepository;
+import com.example.Rent_room.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

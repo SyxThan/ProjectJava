@@ -2,12 +2,12 @@ package com.example.Rent_room.controller;
 
 import com.example.Rent_room.dto.UserDTO;
 import com.example.Rent_room.entity.User;
-import com.example.Rent_room.respository.UserRepository;
+import com.example.Rent_room.repository.UserRepository;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,10 +17,10 @@ import java.util.Optional;
 public class AdminController {
 
     private final UserRepository userRepository;
-    private final BCryptPasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
 
     // Constructor injection (khuyến nghị)
-    public AdminController(UserRepository userRepository, BCryptPasswordEncoder passwordEncoder) {
+    public AdminController(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
     }
@@ -53,7 +53,7 @@ public class AdminController {
             return "Role không hợp lệ!";
         }
 
-        user.setNgay_cap_nhat(new Timestamp(System.currentTimeMillis()));
+        user.setNgay_cap_nhat(LocalDateTime.now());
         userRepository.save(user);
         return "Cập nhật role thành công cho user " + user.getEmail();
     }
@@ -80,7 +80,7 @@ public class AdminController {
                 return "Role không hợp lệ!";
             }
         }
-        user.setNgay_cap_nhat(new Timestamp(System.currentTimeMillis()));
+        user.setNgay_cap_nhat(LocalDateTime.now());
         userRepository.save(user);
 
         return "Cập nhật user thành công!";

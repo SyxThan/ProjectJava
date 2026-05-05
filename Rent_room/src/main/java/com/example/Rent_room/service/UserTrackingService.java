@@ -4,8 +4,8 @@ import com.example.Rent_room.entity.UserTracking;
 import com.example.Rent_room.dto.BaiDangOutputDTO;
 import com.example.Rent_room.dto.PaginationResponseDTO;
 import com.example.Rent_room.entity.BaiDangChoThue;
-import com.example.Rent_room.respository.UserTrackingRepository;
-import com.example.Rent_room.respository.HinhAnhPhongTroRepository;
+import com.example.Rent_room.repository.UserTrackingRepository;
+import com.example.Rent_room.repository.HinhAnhPhongTroRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 

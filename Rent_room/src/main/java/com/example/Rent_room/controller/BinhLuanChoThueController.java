@@ -2,8 +2,10 @@ package com.example.Rent_room.controller;
 
 import com.example.Rent_room.dto.CommentRequestDTO;
 import com.example.Rent_room.dto.CommentResponseDTO;
+import com.example.Rent_room.entity.User;
 import com.example.Rent_room.service.BinhLuanChoThueService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -24,10 +26,9 @@ public class BinhLuanChoThueController {
     @PostMapping("/{id}/binh-luan")
     public CommentResponseDTO addComment(
             @PathVariable Integer id,
-            @Valid @RequestBody CommentRequestDTO request,
-            @RequestHeader(name = "userId") Integer userId) { 
-        
-        return binhLuanChoThueService.addComment(id, userId, request);
+            @Valid @RequestBody CommentRequestDTO request) { 
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return binhLuanChoThueService.addComment(id, user.getId(), request);
     }
    
     @PutMapping("/binh-luan/{id}")

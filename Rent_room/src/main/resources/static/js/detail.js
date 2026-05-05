@@ -298,43 +298,37 @@ function displayRoomDetails(room) {
     }
     
     // Room gallery - xử lý hinhAnhPhongTro
-    let images = [];
-    if (room.hinhAnhPhongTro && room.hinhAnhPhongTro.length > 0) {
-        // Tìm ảnh bìa trước (laAnhBia: true)
-        const coverImage = room.hinhAnhPhongTro.find(img => img.laAnhBia === true);
-        if (coverImage && coverImage.duong_dan_anh) {
-            images.push(coverImage.duong_dan_anh);
-        }
-        
-        // Lấy các ảnh từ array (laAnhBia: false)
-        const imageArrayItem = room.hinhAnhPhongTro.find(img => img.laAnhBia === false);
-        if (imageArrayItem && imageArrayItem.duong_dan_anh) {
-            // Parse chuỗi JSON array
-            try {
-                const parsedImages = JSON.parse(imageArrayItem.duong_dan_anh.replace(/'/g, '"'));
-                if (Array.isArray(parsedImages)) {
-                    images = images.concat(parsedImages);
-                }
-            } catch (e) {
-                console.error('Error parsing images:', e);
-            }
-        }
-    }
+    const images = collectRoomImages(room.hinhAnhPhongTro || []);
     
     if (images.length > 0) {
         const mainImage = document.getElementById('mainImage');
-        mainImage.src = images[0];
-        mainImage.alt = room.tieu_de;
+        if (mainImage) {
+            mainImage.src = images[0];
+            mainImage.alt = room.tieu_de;
+        }
         
-        document.getElementById('imageCount').textContent = `1/${images.length}`;
+        const imageCount = document.getElementById('imageCount');
+        if (imageCount) {
+            imageCount.textContent = `1/${images.length}`;
+        }
         
         const thumbnails = document.getElementById('thumbnails');
-        thumbnails.innerHTML = images.map((img, index) => `
-            <div class="flex-shrink-0 w-24 h-16 rounded-md overflow-hidden cursor-pointer ${index === 0 ? 'border-2 border-blue-500' : 'hover:border-2 hover:border-blue-500'}" 
-                 onclick="changeMainImage('${img}', ${index})">
-                <img src="${img}" alt="Ảnh ${index + 1}" class="w-full h-full object-cover">
-            </div>
-        `).join('');
+        if (thumbnails) {
+            thumbnails.innerHTML = '';
+            images.forEach((img, index) => {
+                const thumbWrapper = document.createElement('div');
+                thumbWrapper.className = `flex-shrink-0 w-24 h-16 rounded-md overflow-hidden cursor-pointer ${index === 0 ? 'border-2 border-blue-500' : 'hover:border-2 hover:border-blue-500'}`;
+                const thumbImg = document.createElement('img');
+                thumbImg.src = img;
+                thumbImg.alt = `Ảnh ${index + 1}`;
+                thumbImg.className = 'w-full h-full object-cover';
+                thumbWrapper.addEventListener('click', () => changeMainImage(img, index));
+                thumbWrapper.appendChild(thumbImg);
+                thumbnails.appendChild(thumbWrapper);
+            });
+        }
+    } else {
+        console.warn('Không tìm thấy ảnh hiển thị cho bài đăng:', room.id);
     }
     
     // Room info
@@ -370,6 +364,110 @@ function displayRoomDetails(room) {
     
     // Replace feather icons
     feather.replace();
+}
+
+// Thu thập danh sách ảnh hợp lệ từ dữ liệu trả về
+function collectRoomImages(imageRecords) {
+    if (!Array.isArray(imageRecords) || imageRecords.length === 0) {
+        return [];
+    }
+    
+    const coverImages = imageRecords.filter(img => img && img.laAnhBia);
+    const otherImages = imageRecords.filter(img => img && !img.laAnhBia);
+    const orderedImages = [...coverImages, ...otherImages];
+    
+    const uniqueImages = [];
+    const seen = new Set();
+    
+    orderedImages.forEach(record => {
+        const paths = extractImagePaths(record?.duong_dan_anh);
+        paths.forEach(path => {
+            const normalized = normalizeImageUrl(path);
+            if (normalized && !seen.has(normalized)) {
+                seen.add(normalized);
+                uniqueImages.push(normalized);
+            }
+        });
+    });
+    
+    return uniqueImages;
+}
+
+// Xử lý chuỗi đường dẫn ảnh có thể ở nhiều định dạng khác nhau
+function extractImagePaths(rawValue) {
+    if (!rawValue || typeof rawValue !== 'string') {
+        return [];
+    }
+    
+    const value = rawValue.trim();
+    if (!value) {
+        return [];
+    }
+    
+    // Nếu backend trả về JSON array
+    if (value.startsWith('[')) {
+        try {
+            const parsed = JSON.parse(value.replace(/'/g, '"'));
+            if (Array.isArray(parsed)) {
+                return parsed
+                    .filter(item => typeof item === 'string')
+                    .map(item => item.trim())
+                    .filter(Boolean);
+            }
+        } catch (err) {
+            console.warn('Không thể parse JSON array ảnh:', err);
+        }
+    }
+    
+    // Nếu backend trả về JSON object có trường images
+    if (value.startsWith('{')) {
+        try {
+            const parsed = JSON.parse(value.replace(/'/g, '"'));
+            if (Array.isArray(parsed?.images)) {
+                return parsed.images
+                    .filter(item => typeof item === 'string')
+                    .map(item => item.trim())
+                    .filter(Boolean);
+            }
+        } catch (err) {
+            console.warn('Không thể parse JSON object ảnh:', err);
+        }
+    }
+    
+    // Nếu chuỗi chứa nhiều đường dẫn cách nhau bởi dấu phẩy
+    if (value.includes(',')) {
+        return value
+            .split(',')
+            .map(item => item.trim())
+            .filter(Boolean);
+    }
+    
+    // Ngược lại xem như một đường dẫn duy nhất
+    return [value];
+}
+
+// Chuẩn hoá đường dẫn ảnh để tránh lỗi hiển thị
+function normalizeImageUrl(path) {
+    if (!path || typeof path !== 'string') {
+        return null;
+    }
+    
+    const trimmed = path.trim();
+    if (!trimmed) {
+        return null;
+    }
+    
+    if (/^https?:\/\//i.test(trimmed) || trimmed.startsWith('data:')) {
+        return trimmed;
+    }
+    
+    // Giữ nguyên đường dẫn tuyệt đối bắt đầu bằng /
+    if (trimmed.startsWith('/')) {
+        return trimmed;
+    }
+    
+    // Đảm bảo thêm dấu / đầu nếu thiếu để khớp với static path
+    return `/${trimmed}`;
 }
 
 // Change main image

@@ -17,6 +17,14 @@ public class UserTracking {
     @Column(name = "type", columnDefinition = "TEXT")
     private String type;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", insertable = false, updatable = false)
+    private User user;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "bai_dang_id", insertable = false, updatable = false)
+    private BaiDangChoThue baiDang;
+
     @Column(name = "user_id")
     private Integer user_id;
 

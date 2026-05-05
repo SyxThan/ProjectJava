@@ -1,4 +1,4 @@
-package com.example.Rent_room.respository;
+package com.example.Rent_room.repository;
 
 import com.example.Rent_room.entity.HinhAnhPhongTro;
 import com.example.Rent_room.entity.TrangThaiBaiDang;

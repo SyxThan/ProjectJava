@@ -4,8 +4,12 @@ import com.example.Rent_room.dto.BaiDangOutputDTO;
 import com.example.Rent_room.dto.PaginationResponseDTO;
 import com.example.Rent_room.entity.BaiDangChoThue;
 import com.example.Rent_room.entity.TrangThaiBaiDang;
+import com.example.Rent_room.entity.User;
 import com.example.Rent_room.dto.GeocodeResponseDTO;
 import com.example.Rent_room.service.BaiDangService;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -59,19 +63,16 @@ public class BaiDangController {
 
     @PostMapping
     public BaiDangChoThue create(@RequestBody BaiDangChoThue baiDang) {
+        User currentUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        baiDang.setNguoiDang(currentUser);
         return baiDangService.saveBaiDang(baiDang);
     }
 
     // Admin duyệt bài
     @PutMapping("/{id}/status")
+    @PreAuthorize("hasRole('QUAN_TRI_VIEN')")
     public BaiDangChoThue updateStatus(@PathVariable Integer id,
-                                       @RequestParam TrangThaiBaiDang status,
-                                       @RequestParam String role) {
-
-        if (!role.equals("ADMIN")) {
-            throw new RuntimeException("Bạn không có quyền duyệt bài!");
-        }
-
+                                       @RequestParam TrangThaiBaiDang status) {
         return baiDangService.updateStatus(id, status);
     }
 
@@ -84,12 +85,15 @@ public class BaiDangController {
 
     @DeleteMapping("/{id}")
     public void delete(@PathVariable Integer id) {
+        User currentUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        BaiDangChoThue post = baiDangService.getBaiDangById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy bài đăng"));
+        if (!post.getNguoiDang().getId().equals(currentUser.getId())
+                && !currentUser.getRole().equals(User.Role.quan_tri_vien)) {
+            throw new AccessDeniedException("Bạn không có quyền xóa bài đăng này");
+        }
         baiDangService.deleteBaiDang(id);
     }
-
-    // ===============================================================
-    // =================== Phần này của Sỹ Kẹo =======================
-    // ===============================================================
 
     @GetMapping("/{id}/geocode")
     public GeocodeResponseDTO geocodeBaiDang(@PathVariable Integer id) {

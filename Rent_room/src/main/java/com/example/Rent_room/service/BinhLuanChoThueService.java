@@ -5,9 +5,11 @@ import com.example.Rent_room.dto.CommentResponseDTO;
 import com.example.Rent_room.entity.BinhLuanChoThue;
 import com.example.Rent_room.entity.BaiDangChoThue;
 import com.example.Rent_room.entity.User;
-import com.example.Rent_room.respository.BinhLuanChoThueRepository;
+import com.example.Rent_room.repository.BinhLuanChoThueRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
@@ -61,6 +63,8 @@ public class BinhLuanChoThueService {
                 .findById(commentId)
                 .orElseThrow(() -> new RuntimeException("Bình luận không tồn tại với ID: " + commentId));
 
+        checkOwnership(comment);
+
         comment.setNoiDung(request.getNoiDung());
         if (request.getDanhGiaSao() != null) {
             comment.setDanhGiaSao(request.getDanhGiaSao());
@@ -76,7 +80,17 @@ public class BinhLuanChoThueService {
                 .findById(commentId)
                 .orElseThrow(() -> new RuntimeException("Bình luận không tồn tại với ID: " + commentId));
 
+        checkOwnership(comment);
+
         binhLuanChoThueRepository.deleteById(commentId);
+    }
+
+    private void checkOwnership(BinhLuanChoThue comment) {
+        User currentUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (!comment.getUser().getId().equals(currentUser.getId())
+                && !currentUser.getRole().equals(User.Role.quan_tri_vien)) {
+            throw new AccessDeniedException("Bạn không có quyền thao tác bình luận này");
+        }
     }
 
     @Transactional(readOnly = true)

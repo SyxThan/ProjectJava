@@ -5,8 +5,11 @@ import com.example.Rent_room.dto.GeocodeResponseDTO;
 import com.example.Rent_room.dto.PaginationResponseDTO;
 import com.example.Rent_room.entity.BaiDangChoThue;
 import com.example.Rent_room.entity.TrangThaiBaiDang;
-import com.example.Rent_room.respository.BaiDangRepository;
-import com.example.Rent_room.respository.HinhAnhPhongTroRepository;
+import com.example.Rent_room.repository.BaiDangRepository;
+import com.example.Rent_room.repository.HinhAnhPhongTroRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
@@ -31,7 +34,7 @@ public class BaiDangService {
     }
 
     public List<BaiDangChoThue> getAllBaiDang() {
-        return baiDangRepository.findAll();
+        return baiDangRepository.findByTrangThai(TrangThaiBaiDang.APPROVED);
     }
     
     public PaginationResponseDTO<BaiDangOutputDTO> getAllBaiDangWithPagination(
@@ -44,13 +47,21 @@ public class BaiDangService {
             if (page < 0) page = 0;
             if (size < 1 || size > 100) size = 10;
 
+<<<<<<< HEAD
+            // Phân trang tại DB bằng Pageable
+            PageRequest pageable = PageRequest.of(page, size, Sort.by("ngay_dang").descending());
+            Page<BaiDangChoThue> pageResult = baiDangRepository.findWithFilters(
+                    tinhThanh, phuongXa, giaMin, giaMax, dienTichMin, dienTichMax, trangThai, pageable);
+=======
             // Lấy tất cả dữ liệu đã filter từ database
+            TrangThaiBaiDang effectiveStatus = trangThai != null ? trangThai : TrangThaiBaiDang.APPROVED;
+
             List<BaiDangChoThue> allData = baiDangRepository.findWithFilters(
-                    tinhThanh, phuongXa, giaMin, giaMax, dienTichMin, dienTichMax, trangThai);
+                    tinhThanh, phuongXa, giaMin, giaMax, dienTichMin, dienTichMax, effectiveStatus);
 
             // Đếm tổng số items
             long totalItems = baiDangRepository.countWithFilters(
-                    tinhThanh, phuongXa, giaMin, giaMax, dienTichMin, dienTichMax, trangThai);
+                    tinhThanh, phuongXa, giaMin, giaMax, dienTichMin, dienTichMax, effectiveStatus);
 
             // Tính toán phân trang thủ công
             int offset = page * size;
@@ -60,12 +71,12 @@ public class BaiDangService {
             List<BaiDangChoThue> pageData = offset < allData.size()
                     ? allData.subList(offset, toIndex)
                     : List.of();
+>>>>>>> 51c922d34034c3cef761ca378a5ebbb8ff037b2a
 
             // Chuyển Entity sang DTO và set ảnh bìa
-            List<BaiDangOutputDTO> dtoList = pageData.stream()
+            List<BaiDangOutputDTO> dtoList = pageResult.getContent().stream()
                     .map(entity -> {
                         BaiDangOutputDTO dto = new BaiDangOutputDTO(entity);
-                        // Lấy ảnh bìa từ repository và set vào DTO
                         try {
                             String anhBia = hinhAnhRepository.file_anh_nen(entity.getId());
                             dto.setAnhBia(anhBia != null ? anhBia : "");
@@ -77,7 +88,7 @@ public class BaiDangService {
                     .collect(Collectors.toList());
 
             // Tạo response
-            return new PaginationResponseDTO<>(dtoList, page, size, totalItems);
+            return new PaginationResponseDTO<>(dtoList, page, size, pageResult.getTotalElements());
 
         } catch (Exception e) {
             return new PaginationResponseDTO<>(false, "Có lỗi xảy ra: " + e.getMessage());
@@ -107,11 +118,7 @@ public class BaiDangService {
     public List<BaiDangChoThue> getByStatus(TrangThaiBaiDang status) {
         return baiDangRepository.findByTrangThai(status);
     }
-    // ================================================================
-    // =================== Phần này của Sỹ Kẹo ========================
-    // ================================================================
-
-    //  Chyển đổi qua kinh độ vĩ độ trước khi save
+    //  Chuyển đổi qua kinh độ vĩ độ trước khi save
     public BaiDangChoThue saveBaiDang(BaiDangChoThue baiDang) {
         if (baiDang.getVi_do() == null || baiDang.getKinh_do() == null) {
             try {

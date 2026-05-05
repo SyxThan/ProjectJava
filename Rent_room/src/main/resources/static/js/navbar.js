@@ -82,10 +82,12 @@ function renderNavbar() {
         return;
     }
     
-    const user = getCurrentUser();
-    const isAuth = typeof isAuthenticated !== 'undefined' ? isAuthenticated() : (user !== null);
-    const role = user ? (user.role || 'nguoi_thue') : null;
-    renderNavbarWithUser(user, isAuth, role);
+    // getCurrentUser may return Promise; ensure async handling
+    Promise.resolve(getCurrentUser()).then(user => {
+        const isAuth = !!user;
+        const role = user ? (user.role || 'nguoi_thue') : null;
+        renderNavbarWithUser(user, isAuth, role);
+    });
 }
 
 /**

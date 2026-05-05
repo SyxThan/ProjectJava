@@ -1,0 +1,154 @@
+/* Comments Section Styles */
+
+.comment-item {
+    transition: all 0.2s ease;
+}
+
+.comment-item:hover {
+    background-color: rgba(249, 250, 251, 0.5);
+}
+
+.comment-menu {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.replies-container {
+    border-left: 2px solid #e5e7eb;
+    position: relative;
+}
+
+.replies-container::before {
+    content: '';
+    position: absolute;
+    left: -2px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: linear-gradient(to bottom, #3b82f6, transparent);
+}
+
+.reply-item {
+    background-color: rgba(249, 250, 251, 0.3);
+    border-radius: 0.5rem;
+    padding: 0.75rem;
+    transition: all 0.2s ease;
+}
+
+.reply-item:hover {
+    background-color: rgba(243, 244, 246, 0.7);
+}
+
+.like-btn.liked .feather {
+    fill: currentColor;
+}
+
+.like-btn:hover .feather {
+    fill: currentColor;
+}
+
+.comment-menu-btn {
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.comment-item:hover .comment-menu-btn {
+    opacity: 1;
+}
+
+/* Character counter styles */
+.char-counter {
+    font-size: 0.75rem;
+    color: #6b7280;
+}
+
+.char-counter.near-limit {
+    color: #f59e0b;
+}
+
+.char-counter.over-limit {
+    color: #ef4444;
+}
+
+/* Notification animations */
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.notification {
+    animation: slideInRight 0.3s ease-out;
+}
+
+/* Loading animations */
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.loading-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Custom scrollbar for comment inputs */
+.comment-input::-webkit-scrollbar {
+    width: 4px;
+}
+
+.comment-input::-webkit-scrollbar-track {
+    background: #f1f5f9;
+}
+
+.comment-input::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 2px;
+}
+
+.comment-input::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* Focus states */
+.comment-input:focus {
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 640px) {
+    .comment-item {
+        padding: 0.75rem 0;
+    }
+    
+    .replies-container {
+        margin-left: 0.5rem;
+        padding-left: 0.5rem;
+    }
+    
+    .comment-menu {
+        right: -1rem;
+    }
+}
+
+/* Dark mode support (if needed in future) */
+@media (prefers-color-scheme: dark) {
+    .comment-item:hover {
+        background-color: rgba(55, 65, 81, 0.1);
+    }
+    
+    .reply-item {
+        background-color: rgba(55, 65, 81, 0.1);
+    }
+    
+    .reply-item:hover {
+        background-color: rgba(55, 65, 81, 0.2);
+    }
+}

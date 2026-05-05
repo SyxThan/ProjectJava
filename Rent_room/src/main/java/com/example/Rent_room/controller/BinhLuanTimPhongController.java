@@ -2,14 +2,16 @@ package com.example.Rent_room.controller;
 
 import com.example.Rent_room.dto.CommentRequestDTO;
 import com.example.Rent_room.dto.CommentResponseDTO;
+import com.example.Rent_room.entity.User;
 import com.example.Rent_room.service.BinhLuanTimPhongService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/bai-dang-tim-phong")
+@RequestMapping("/api/baidangtimphong")
 @CrossOrigin(origins = "*", maxAge = 3600)
 public class BinhLuanTimPhongController {
 
@@ -24,10 +26,9 @@ public class BinhLuanTimPhongController {
     @PostMapping("/{id}/binh-luan")
     public CommentResponseDTO addComment(
             @PathVariable Integer id,
-            @Valid @RequestBody CommentRequestDTO request,
-            @RequestHeader(name = "userId") Integer userId) { 
-        
-        return binhLuanTimPhongService.addComment(id, userId, request);
+            @Valid @RequestBody CommentRequestDTO request) { 
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return binhLuanTimPhongService.addComment(id, user.getId(), request);
     }
    
     @PutMapping("/binh-luan/{id}")

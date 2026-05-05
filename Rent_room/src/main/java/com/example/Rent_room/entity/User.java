@@ -3,7 +3,7 @@ package com.example.Rent_room.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import java.util.Collection;
@@ -29,8 +29,8 @@ public class User {
     @Column(columnDefinition = "ENUM('nguoi_thue', 'chu_tro', 'quan_tri_vien') DEFAULT 'nguoi_thue'")
     private Role role;
 
-    private Timestamp ngay_tao;
-    private Timestamp ngay_cap_nhat;
+    private LocalDateTime ngay_tao;
+    private LocalDateTime ngay_cap_nhat;
 
     public enum Role {
         nguoi_thue,

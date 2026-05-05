@@ -5,6 +5,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import java.security.Key;
 import java.util.Date;
@@ -15,7 +16,11 @@ import java.util.function.Function;
 @Service
 public class JwtService {
 
-    private static final String SECRET_KEY = "4F6251655468576D5A7134743777217A25432A462D4A614E645267556B587032";
+    @Value("${jwt.secret:4F6251655468576D5A7134743777217A25432A462D4A614E645267556B587032}")
+    private String secretKey;
+
+    @Value("${jwt.expiration:36000000}")
+    private long expirationTime;
 
     public String generateToken(String email) {
         Map<String, Object> claims = new HashMap<>();
@@ -23,7 +28,6 @@ public class JwtService {
     }
 
     private String createToken(Map<String, Object> claims, String subject) {
-        long expirationTime = 1000 * 60 * 60 * 10; // 10 tiếng
         return Jwts.builder()
             .setClaims(claims)
             .setSubject(subject)
@@ -64,7 +68,7 @@ public class JwtService {
     }
 
     private Key getSignKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(SECRET_KEY);
+        byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         return Keys.hmacShaKeyFor(keyBytes);
     }
 }

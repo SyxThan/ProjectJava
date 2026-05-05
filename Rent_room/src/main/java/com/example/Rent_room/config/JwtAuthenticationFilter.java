@@ -1,7 +1,7 @@
 package com.example.Rent_room.config;
 
 import com.example.Rent_room.entity.User;
-import com.example.Rent_room.respository.UserRepository;
+import com.example.Rent_room.repository.UserRepository;
 import com.example.Rent_room.service.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
