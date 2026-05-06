@@ -129,7 +129,10 @@ async function toggleLove() {
             const response = await fetch(
                 `${API_BASE}/api/usertracking/deletelove/${userId}/${roomId}`,
                 {
-                    method: 'DELETE'
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
                 }
             );
             

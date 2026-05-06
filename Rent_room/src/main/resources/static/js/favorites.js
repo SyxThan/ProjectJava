@@ -351,8 +351,12 @@ async function removeFavorite(roomId) {
     }
     
     try {
+        const token = localStorage.getItem('token');
         const resp = await fetch(`${API_BASE}/api/usertracking/deletelove/${userId}/${roomId}`, {
-            method: 'DELETE'
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
         });
         
         if (!resp.ok) {
