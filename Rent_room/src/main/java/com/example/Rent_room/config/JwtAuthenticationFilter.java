@@ -46,6 +46,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 User user = userRepository.findByEmail(email);
+                System.out.println("DEBUG Filter - Email from token: " + email + ", User found: " + (user != null));
+                if (user != null) {
+                    System.out.println("DEBUG Filter - User role: " + user.getRole());
+                    System.out.println("DEBUG Filter - User authorities: " + user.getAuthorities());
+                }
                 if (user != null && jwtService.isTokenValid(jwt, user.getEmail())) {
                     UsernamePasswordAuthenticationToken authToken =
                         new UsernamePasswordAuthenticationToken(
@@ -54,6 +59,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                             user.getAuthorities()
                         );
                     SecurityContextHolder.getContext().setAuthentication(authToken);
+                    System.out.println("DEBUG Filter - Authentication set for: " + email);
                 }
             }
         } catch (Exception e) {

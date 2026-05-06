@@ -67,9 +67,9 @@
                                 <i data-feather="home" class="w-5 h-5 mr-3"></i>
                                 Tin đăng của tôi
                             </a>
-                            <a href="#settings" class="flex items-center px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-lg transition">
-                                <i data-feather="settings" class="w-5 h-5 mr-3"></i>
-                                Cài đặt
+                            <a href="#password" onclick="showPasswordSection(); return false;" class="flex items-center px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-lg transition" id="passwordLink">
+                                <i data-feather="lock" class="w-5 h-5 mr-3"></i>
+                                Đổi mật khẩu
                             </a>
                         </nav>
                     </div>
@@ -133,7 +133,7 @@
                     </div>
 
                     <!-- Đổi mật khẩu -->
-                    <div class="bg-white rounded-xl shadow-sm p-6" id="settings">
+                    <div class="bg-white rounded-xl shadow-sm p-6 hidden" id="passwordSection">
                         <h3 class="text-lg font-semibold text-gray-800 mb-6">Đổi mật khẩu</h3>
                         
                         <form id="passwordForm" class="space-y-4">
@@ -269,6 +269,14 @@
             } catch (e) {
                 console.error('Failed to load statistics:', e);
             }
+        }
+
+        // Show password section
+        function showPasswordSection() {
+            document.getElementById('passwordSection').classList.remove('hidden');
+            document.getElementById('passwordLink').classList.add('bg-blue-50', 'text-blue-700');
+            document.getElementById('passwordLink').classList.remove('text-gray-600', 'hover:bg-gray-50');
+            document.getElementById('passwordSection').scrollIntoView({ behavior: 'smooth' });
         }
 
         // Toggle edit mode

@@ -65,17 +65,26 @@ async function handleFormSubmit(e) {
     // Normalize user ID - check both 'id' and 'user_id' fields
     let userId = null;
     if (user) {
-        userId = user.id || user.user_id || user.userId;
-        // Also check localStorage for user_id as fallback
-        if (!userId) {
-            userId = localStorage.getItem('user_id') || sessionStorage.getItem('user_id');
+        // Priority: user_id (from auth.js), then userId, then id
+        userId = user.user_id || user.userId || user.id;
+    }
+    
+    // Fallback: check localStorage for user_id
+    if (!userId) {
+        const storedId = localStorage.getItem('user_id') || sessionStorage.getItem('user_id');
+        // Avoid using string "undefined" or "null"
+        if (storedId && storedId !== 'undefined' && storedId !== 'null') {
+            userId = storedId;
         }
     }
     
-    if (!user || !userId) {
+    // Parse and validate
+    const parsedUserId = parseInt(userId, 10);
+    if (!user || isNaN(parsedUserId) || parsedUserId <= 0) {
         console.error('User data:', user);
-        console.error('User ID:', userId);
-        alert('Không tìm thấy thông tin người dùng. Vui lòng đăng nhập lại.');
+        console.error('Raw User ID:', userId);
+        console.error('Parsed User ID:', parsedUserId);
+        alert('Không tìm thấy thông tin người dùng hợp lệ. Vui lòng đăng nhập lại.');
         window.location.href = 'auth.html';
         return;
     }
@@ -83,14 +92,14 @@ async function handleFormSubmit(e) {
     // Collect form data
     const khuVucMongMuonThanhPhoEl = document.getElementById('khuVucMongMuonThanhPho');
     const formData = {
-        userId: parseInt(userId),
+        userId: parsedUserId,
         tieuDe: document.getElementById('tieuDe').value.trim(),
         moTa: document.getElementById('moTa').value.trim(),
         khuVucMongMuonXa: document.getElementById('khuVucMongMuonXa').value.trim(),
         khuVucMongMuonThanhPho: khuVucMongMuonThanhPhoEl ? (khuVucMongMuonThanhPhoEl.value.trim() || 'Hà Nội') : 'Hà Nội', // Default to Hà Nội
         giaThapNhat: parseFloat(document.getElementById('giaThapNhat').value) || 0,
         giaCaoNhat: parseFloat(document.getElementById('giaCaoNhat').value) || 0,
-        dienTichToiThieu: parseFloat(document.getElementById('dienTichToiThieu').value) || null,
+        dienTichToiThieu: parseFloat(document.getElementById('dienTichToiThieu').value) || 0,
         soNguoiO: parseInt(document.getElementById('soNguoiO').value) || null
     };
     
@@ -107,6 +116,11 @@ async function handleFormSubmit(e) {
     
     if (formData.giaThapNhat <= 0 || formData.giaCaoNhat <= 0) {
         alert('Giá phải lớn hơn 0');
+        return;
+    }
+    
+    if (!formData.dienTichToiThieu || formData.dienTichToiThieu <= 0) {
+        alert('Diện tích tối thiểu phải lớn hơn 0');
         return;
     }
     

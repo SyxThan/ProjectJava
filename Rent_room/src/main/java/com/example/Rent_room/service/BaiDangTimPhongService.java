@@ -1,5 +1,12 @@
 package com.example.Rent_room.service;
 
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+
 import com.example.Rent_room.dto.BaiDangTimPhongDTO;
 import com.example.Rent_room.dto.PaginationResponseDTO;
 import com.example.Rent_room.entity.BaiDangTimPhongEntity;
@@ -7,13 +14,8 @@ import com.example.Rent_room.entity.TrangThaiTimPhong;
 import com.example.Rent_room.entity.User;
 import com.example.Rent_room.repository.BaiDangTimPhongRepository;
 import com.example.Rent_room.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -90,9 +92,11 @@ public class BaiDangTimPhongService {
         }
 
         BaiDangTimPhongEntity post = new BaiDangTimPhongEntity();
+        System.out.println("DEBUG Service - Looking for userId: " + baiDangTimPhongDTO.getUserId());
         User user = userRepository.findById(baiDangTimPhongDTO.getUserId())
                 .orElseThrow(
                         () -> new RuntimeException("Không tìm thấy user với ID: " + baiDangTimPhongDTO.getUserId()));
+        System.out.println("DEBUG Service - Found user: " + (user != null ? user.getId() : "null"));
         post.setUser(user);
         post.setTieuDe(baiDangTimPhongDTO.getTieuDe());
         post.setMoTa(baiDangTimPhongDTO.getMoTa());

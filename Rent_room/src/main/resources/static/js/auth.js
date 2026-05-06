@@ -98,7 +98,9 @@ function setupLoginForm() {
                     user_id: data.userId || 1
                 };
                 localStorage.setItem('user', JSON.stringify(userData));
-                localStorage.setItem('user_id',data.userId);
+                if (data.userId) {
+                    localStorage.setItem('user_id', data.userId);
+                }
                 
                 // Show success message
                 showSuccessMessage('Đăng nhập thành công! Đang chuyển hướng...');
