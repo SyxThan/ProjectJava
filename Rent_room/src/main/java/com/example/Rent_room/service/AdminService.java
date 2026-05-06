@@ -11,9 +11,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.example.Rent_room.dto.BaiDangTimPhongDTO;
 import com.example.Rent_room.dto.PaginationResponseDTO;
 import com.example.Rent_room.dto.UserDTO;
 import com.example.Rent_room.entity.BaiDangChoThue;
+import com.example.Rent_room.entity.BaiDangTimPhongEntity;
 import com.example.Rent_room.entity.TrangThaiBaiDang;
 import com.example.Rent_room.entity.User;
 import com.example.Rent_room.repository.BaiDangRepository;
@@ -161,12 +163,63 @@ public class AdminService {
     // 🔹 Lấy bài đăng cho thuê có phân trang (dành cho admin)
     public PaginationResponseDTO<BaiDangChoThue> getAllBaiDangPaged(Pageable pageable) {
         Page<BaiDangChoThue> page = baiDangRepository.findAll(pageable);
-        
+
         return new PaginationResponseDTO<>(
             page.getContent(),
             page.getNumber(),
             page.getSize(),
             page.getTotalElements()
         );
+    }
+
+    // 🔹 Lấy tất cả bài đăng tìm phòng có phân trang (dành cho admin)
+    public PaginationResponseDTO<BaiDangTimPhongDTO> getAllBaiDangTimPhongPaged(Pageable pageable) {
+        Page<BaiDangTimPhongEntity> page = baiDangTimPhongRepository.findAll(pageable);
+
+        List<BaiDangTimPhongDTO> dtoList = page.getContent().stream()
+                .map(this::toTimPhongDto)
+                .toList();
+
+        return new PaginationResponseDTO<>(
+            dtoList,
+            page.getNumber(),
+            page.getSize(),
+            page.getTotalElements()
+        );
+    }
+
+    // 🔹 Xóa bài đăng tìm phòng
+    public String deleteBaiDangTimPhong(Integer id) {
+        Optional<BaiDangTimPhongEntity> optional = baiDangTimPhongRepository.findById(id);
+        if (!optional.isPresent()) {
+            return "Bài đăng tìm phòng không tồn tại!";
+        }
+        baiDangTimPhongRepository.deleteById(id);
+        return "Xóa bài đăng tìm phòng thành công!";
+    }
+
+    private BaiDangTimPhongDTO toTimPhongDto(BaiDangTimPhongEntity entity) {
+        BaiDangTimPhongDTO dto = new BaiDangTimPhongDTO();
+        dto.setId(entity.getId());
+        dto.setUserId(entity.getUser() != null ? entity.getUser().getId() : null);
+        dto.setTieuDe(entity.getTieuDe());
+        dto.setMoTa(entity.getMoTa());
+        dto.setKhuVucMongMuonXa(entity.getKhuVucMongMuonXa());
+        dto.setKhuVucMongMuonThanhPho(entity.getKhuVucMongMuonThanhPho());
+        dto.setGiaThapNhat(entity.getGiaThapNhat());
+        dto.setGiaCaoNhat(entity.getGiaCaoNhat());
+        dto.setDienTichToiThieu(entity.getDienTichToiThieu());
+        dto.setSoNguoiO(entity.getSoNguoiO());
+        dto.setTrangThai(entity.getTrangThaiTimPhong() != null ? entity.getTrangThaiTimPhong().name() : null);
+        dto.setNgayDang(entity.getNgayDang());
+        dto.setNgayCapNhat(entity.getNgayCapNhat());
+
+        if (entity.getUser() != null) {
+            dto.setUserFullname(entity.getUser().getFullname());
+            dto.setUserEmail(entity.getUser().getEmail());
+            dto.setUserSoDienThoai(entity.getUser().getSo_dien_thoai());
+        }
+
+        return dto;
     }
 }

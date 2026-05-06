@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.Rent_room.dto.BaiDangTimPhongDTO;
 import com.example.Rent_room.dto.PaginationResponseDTO;
 import com.example.Rent_room.dto.UserDTO;
 import com.example.Rent_room.entity.BaiDangChoThue;
@@ -83,5 +84,20 @@ public class AdminController {
             @RequestParam(defaultValue = "10") int size) {
         Pageable pageable = PageRequest.of(page, size);
         return adminService.getAllBaiDangPaged(pageable);
+    }
+
+    // 🔹 Lấy tất cả bài đăng tìm phòng có phân trang
+    @GetMapping("/tim-phong/paged")
+    public PaginationResponseDTO<BaiDangTimPhongDTO> getAllTimPhongPaged(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return adminService.getAllBaiDangTimPhongPaged(pageable);
+    }
+
+    // 🔹 Xóa bài đăng tìm phòng
+    @DeleteMapping("/tim-phong/{id}")
+    public String deleteTimPhong(@PathVariable Integer id) {
+        return adminService.deleteBaiDangTimPhong(id);
     }
 }

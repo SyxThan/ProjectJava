@@ -6,6 +6,8 @@ const userRole = user?.role;
 // Pagination state
 let postsPage = 0;
 let postsTotalPages = 1;
+let findRoomPage = 0;
+let findRoomTotalPages = 1;
 
 if (!token || userRole !== "quan_tri_vien") {
     document.getElementById("not-admin").classList.remove("hidden");
@@ -312,6 +314,7 @@ async function loadDashboardStats() {
         // Main stat cards
         document.getElementById("stat-users").textContent = stats.totalUsers || 0;
         document.getElementById("stat-posts").textContent = stats.totalPosts || 0;
+        document.getElementById("stat-tim-phong").textContent = stats.totalTimPhong || 0;
         document.getElementById("stat-pending").textContent = stats.pendingPosts || 0;
         document.getElementById("stat-comments").textContent = stats.totalComments || 0;
         
@@ -465,6 +468,139 @@ function renderPostsPagination() {
     document.getElementById('tab-posts').appendChild(paginationDiv);
 }
 
+// Load find room posts with pagination
+async function loadFindRoomPosts(page = 0) {
+    const tbody = document.getElementById("find-room-posts-table-body");
+    tbody.innerHTML = `<tr><td colspan="6" class="px-4 py-4 text-center text-gray-500">Đang tải...</td></tr>`;
+
+    try {
+        const res = await fetch(`${API_BASE}/api/admin/tim-phong/paged?page=${page}&size=10`, {
+            headers: { Authorization: "Bearer " + token }
+        });
+        if (!res.ok) throw new Error("Không tải được danh sách bài đăng tìm phòng");
+
+        const result = await res.json();
+        const posts = result.data || [];
+        findRoomPage = result.pagination?.currentPage || 0;
+        findRoomTotalPages = result.pagination?.totalPages || 1;
+
+        if (!posts || posts.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="6" class="px-4 py-4 text-center text-gray-500">Không có bài đăng tìm phòng nào.</td></tr>`;
+            renderFindRoomPagination();
+            return;
+        }
+
+        tbody.innerHTML = posts.map(p => {
+            const statusText = p.trangThai === 'dang_tim' ? 'Đang tìm' :
+                             p.trangThai === 'da_tim_duoc' ? 'Đã tìm được' : p.trangThai;
+            const statusClass = p.trangThai === 'dang_tim' ? 'bg-blue-100 text-blue-700' :
+                              p.trangThai === 'da_tim_duoc' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700';
+
+            return `
+                <tr class="hover:bg-gray-50">
+                    <td class="px-4 py-3 text-sm">${p.id}</td>
+                    <td class="px-4 py-3 text-sm font-medium">${p.tieuDe || 'N/A'}</td>
+                    <td class="px-4 py-3 text-sm">${p.khuVucMongMuonXa || ''}, ${p.khuVucMongMuonThanhPho || ''}</td>
+                    <td class="px-4 py-3 text-sm">${p.giaThapNhat ? p.giaThapNhat.toLocaleString('vi-VN') : '-'} - ${p.giaCaoNhat ? p.giaCaoNhat.toLocaleString('vi-VN') : '-'} VNĐ</td>
+                    <td class="px-4 py-3">
+                        <span class="px-2 py-1 text-xs rounded-full ${statusClass}">${statusText}</span>
+                    </td>
+                    <td class="px-4 py-3">
+                        <button onclick="openFindRoomDetailModal(${p.id})" class="text-blue-600 hover:text-blue-800 mr-2">
+                            <i data-feather="eye" class="w-4 h-4"></i>
+                        </button>
+                        <button onclick="deleteFindRoomPost(${p.id})" class="text-red-600 hover:text-red-800">
+                            <i data-feather="trash-2" class="w-4 h-4"></i>
+                        </button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+
+        renderFindRoomPagination();
+        if (typeof feather !== "undefined") feather.replace();
+    } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="6" class="px-4 py-4 text-center text-red-500">${err.message}</td></tr>`;
+    }
+}
+
+function renderFindRoomPagination() {
+    const existing = document.getElementById('find-room-posts-pagination');
+    if (existing) existing.remove();
+
+    const paginationDiv = document.createElement('div');
+    paginationDiv.id = 'find-room-posts-pagination';
+    paginationDiv.className = 'flex justify-center items-center gap-2 mt-4';
+
+    let html = `
+        <button onclick="loadFindRoomPosts(${findRoomPage - 1})" ${findRoomPage === 0 ? 'disabled' : ''}
+            class="px-3 py-1 bg-gray-200 rounded ${findRoomPage === 0 ? 'opacity-50' : 'hover:bg-gray-300'}">Trước</button>
+        <span class="text-sm text-gray-600">Trang ${findRoomPage + 1} / ${findRoomTotalPages}</span>
+        <button onclick="loadFindRoomPosts(${findRoomPage + 1})" ${findRoomPage >= findRoomTotalPages - 1 ? 'disabled' : ''}
+            class="px-3 py-1 bg-gray-200 rounded ${findRoomPage >= findRoomTotalPages - 1 ? 'opacity-50' : 'hover:bg-gray-300'}">Sau</button>
+    `;
+
+    paginationDiv.innerHTML = html;
+    document.getElementById('tab-find-room-posts').appendChild(paginationDiv);
+}
+
+async function openFindRoomDetailModal(id) {
+    modalBody.innerHTML = "Đang tải...";
+    modalActions.innerHTML = "";
+    modal.style.display = "block";
+
+    try {
+        const res = await fetch(`${API_BASE}/api/baidangtimphong/${id}`, {
+            headers: { Authorization: "Bearer " + token }
+        });
+        if (!res.ok) throw new Error("Không tải được bài đăng tìm phòng");
+        const post = await res.json();
+
+        const statusText = post.trangThai === 'dang_tim' ? 'Đang tìm' :
+                         post.trangThai === 'da_tim_duoc' ? 'Đã tìm được' : post.trangThai;
+
+        modalTitle.textContent = post.tieuDe;
+        modalBody.innerHTML = `
+            <div class="space-y-3">
+                <p><strong>Mô tả:</strong> ${post.moTa || 'N/A'}</p>
+                <p><strong>Khu vực mong muốn:</strong> ${post.khuVucMongMuonXa || ''}, ${post.khuVucMongMuonThanhPho || ''}</p>
+                <p><strong>Giá mong muốn:</strong> ${post.giaThapNhat ? post.giaThapNhat.toLocaleString('vi-VN') : '-'} - ${post.giaCaoNhat ? post.giaCaoNhat.toLocaleString('vi-VN') : '-'} VNĐ</p>
+                <p><strong>Diện tích tối thiểu:</strong> ${post.dienTichToiThieu || '-'} m²</p>
+                <p><strong>Số người ở:</strong> ${post.soNguoiO || '-'}</p>
+                <p><strong>Trạng thái:</strong> ${statusText}</p>
+                <p><strong>Ngày đăng:</strong> ${post.ngayDang ? new Date(post.ngayDang).toLocaleString('vi-VN') : 'N/A'}</p>
+                <p><strong>Người đăng:</strong> ${post.userFullname || 'N/A'} (${post.userEmail || 'N/A'}, ${post.userSoDienThoai || 'N/A'})</p>
+            </div>
+        `;
+
+        modalActions.innerHTML = `
+            <button onclick="deleteFindRoomPost(${id})" class="btn-delete">Xóa</button>
+            <button onclick="closeModal()" class="px-4 py-2 bg-gray-200 rounded-lg">Đóng</button>
+        `;
+    } catch (err) {
+        modalBody.innerHTML = `<p class="text-red-600">${err.message}</p>`;
+    }
+}
+
+async function deleteFindRoomPost(id) {
+    if (!confirm("Bạn có chắc muốn xóa bài đăng tìm phòng này?")) return;
+
+    try {
+        const res = await fetch(`${API_BASE}/api/admin/tim-phong/${id}`, {
+            method: "DELETE",
+            headers: { Authorization: "Bearer " + token }
+        });
+
+        if (!res.ok) throw new Error("Không thể xóa bài đăng tìm phòng");
+
+        alert("Xóa bài đăng tìm phòng thành công!");
+        modal.style.display = "none";
+        loadFindRoomPosts(findRoomPage);
+    } catch (err) {
+        alert(err.message);
+    }
+}
+
 // User management functions
 async function viewUser(id) {
     try {
@@ -614,6 +750,8 @@ function showTab(tabName) {
         loadAllPosts();
     } else if (tabName === 'pending') {
         loadPendingPosts();
+    } else if (tabName === 'find-room-posts') {
+        loadFindRoomPosts();
     }
 }
 

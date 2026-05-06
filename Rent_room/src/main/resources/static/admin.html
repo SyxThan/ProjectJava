@@ -55,6 +55,9 @@
                         <button onclick="showTab('posts')" class="sidebar-btn w-full flex items-center px-4 py-3 text-gray-600 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition" data-tab="posts">
                             <i data-feather="home" class="w-5 h-5 mr-3"></i>Bài đăng
                         </button>
+                        <button onclick="showTab('find-room-posts')" class="sidebar-btn w-full flex items-center px-4 py-3 text-gray-600 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition" data-tab="find-room-posts">
+                            <i data-feather="search" class="w-5 h-5 mr-3"></i>Bài đăng tìm phòng
+                        </button>
                         <button onclick="showTab('users')" class="sidebar-btn w-full flex items-center px-4 py-3 text-gray-600 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition" data-tab="users">
                             <i data-feather="users" class="w-5 h-5 mr-3"></i>Người dùng
                         </button>
@@ -86,6 +89,15 @@
                                     <p id="stat-posts" class="text-3xl font-bold text-gray-800">-</p>
                                 </div>
                                 <i data-feather="home" class="w-10 h-10 text-green-500"></i>
+                            </div>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-indigo-500">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm text-gray-500">Bài đăng tìm phòng</p>
+                                    <p id="stat-tim-phong" class="text-3xl font-bold text-gray-800">-</p>
+                                </div>
+                                <i data-feather="search" class="w-10 h-10 text-indigo-500"></i>
                             </div>
                         </div>
                         <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-yellow-500">
@@ -198,6 +210,26 @@
                                 </tr>
                             </thead>
                             <tbody id="posts-table-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Find Room Posts -->
+                <div id="tab-find-room-posts" class="tab-content">
+                    <h2 class="text-2xl font-bold mb-6">Bài đăng tìm phòng</h2>
+                    <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+                        <table class="w-full">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-4 py-3 text-left">ID</th>
+                                    <th class="px-4 py-3 text-left">Tiêu đề</th>
+                                    <th class="px-4 py-3 text-left">Khu vực</th>
+                                    <th class="px-4 py-3 text-left">Giá</th>
+                                    <th class="px-4 py-3 text-left">Trạng thái</th>
+                                    <th class="px-4 py-3 text-left">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody id="find-room-posts-table-body"></tbody>
                         </table>
                     </div>
                 </div>
