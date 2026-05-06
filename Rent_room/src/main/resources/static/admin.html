@@ -4,65 +4,241 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quản trị hệ thống - Phòng trọ 24/7</title>
-
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="css/admin.css">
-
-    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
-    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/feather-icons"></script>
+    <style>
+        body { font-family: 'Be Vietnam Pro', sans-serif; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+    </style>
 </head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-sm sticky top-0 z-40">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center">
+                <i data-feather="shield" class="w-8 h-8 text-blue-600 mr-3"></i>
+                <div>
+                    <h1 class="text-xl font-bold text-gray-800">Admin Panel</h1>
+                    <p class="text-xs text-gray-500">Phòng Trọ 24/7</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-4">
+                <a href="index.html" class="text-gray-600 hover:text-gray-800">Trang chủ</a>
+                <button onclick="logout()" class="text-red-600 hover:text-red-700">Đăng xuất</button>
+            </div>
+        </div>
+    </header>
 
-<body class="bg-gray-100">
-<!-- Navbar -->
-<header id="navbar-container"></header>
-
-<!-- MAIN CONTENT -->
-<div class="container mx-auto px-4 py-10">
-
-    <h1 class="text-3xl font-bold mb-6 text-gray-800">
-        Quản lý bài đăng chờ duyệt
-    </h1>
-
-    <!-- CHỈ HIỂN THỊ NẾU KHÔNG PHẢI ADMIN -->
-    <div id="not-admin" class="hidden p-6 bg-red-100 text-red-700 rounded-lg mb-10">
-        <p class="text-lg font-semibold">Bạn không có quyền truy cập trang này!</p>
-    </div>
-
-    <!-- LIST BÀI ĐĂNG -->
-    <div id="admin-content" class="hidden">
-        <div id="pending-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
-
-        <!-- Loading -->
-        <div id="loading" class="text-center py-10 hidden">
-            <div class="animate-spin h-10 w-10 border-4 border-blue-600 border-t-transparent rounded-full mx-auto"></div>
-            <p class="mt-3 text-gray-600">Đang tải...</p>
+    <!-- Not Admin -->
+    <div id="not-admin" class="hidden container mx-auto px-4 py-10">
+        <div class="bg-red-100 text-red-700 p-4 rounded-lg">
+            <p class="font-semibold">Bạn không có quyền truy cập!</p>
         </div>
     </div>
-</div>
 
-<div id="detail-modal" class="modal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h2 id="modal-title"></h2>
-            <span class="close-modal" id="close-modal">&times;</span>
-        </div>
-        <div class="modal-body" id="modal-body">
-            <!-- Thông tin bài đăng sẽ inject bằng JS -->
-        </div>
-        <div class="modal-actions" id="modal-actions">
-            <!-- Nút duyệt/từ chối/xóa sẽ inject bằng JS -->
+    <!-- Admin Content -->
+    <div id="admin-content" class="hidden container mx-auto px-4 py-6">
+        <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+            <!-- Sidebar -->
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-xl shadow-sm p-4">
+                    <nav class="space-y-2">
+                        <button onclick="showTab('dashboard')" class="sidebar-btn w-full flex items-center px-4 py-3 text-gray-600 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition" data-tab="dashboard">
+                            <i data-feather="pie-chart" class="w-5 h-5 mr-3"></i>Dashboard
+                        </button>
+                        <button onclick="showTab('pending')" class="sidebar-btn w-full flex items-center px-4 py-3 text-gray-600 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition" data-tab="pending">
+                            <i data-feather="clock" class="w-5 h-5 mr-3"></i>Chờ duyệt
+                            <span id="pending-badge" class="ml-auto bg-red-500 text-white text-xs px-2 py-0.5 rounded-full hidden">0</span>
+                        </button>
+                        <button onclick="showTab('posts')" class="sidebar-btn w-full flex items-center px-4 py-3 text-gray-600 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition" data-tab="posts">
+                            <i data-feather="home" class="w-5 h-5 mr-3"></i>Bài đăng
+                        </button>
+                        <button onclick="showTab('users')" class="sidebar-btn w-full flex items-center px-4 py-3 text-gray-600 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition" data-tab="users">
+                            <i data-feather="users" class="w-5 h-5 mr-3"></i>Người dùng
+                        </button>
+                    </nav>
+                </div>
+            </div>
+
+            <!-- Main -->
+            <div class="lg:col-span-4">
+                <!-- Dashboard -->
+                <div id="tab-dashboard" class="tab-content active">
+                    <h2 class="text-2xl font-bold mb-6">Tổng quan hệ thống</h2>
+                    
+                    <!-- Main Stats Cards -->
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                        <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-blue-500">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm text-gray-500">Tổng người dùng</p>
+                                    <p id="stat-users" class="text-3xl font-bold text-gray-800">-</p>
+                                </div>
+                                <i data-feather="users" class="w-10 h-10 text-blue-500"></i>
+                            </div>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-green-500">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm text-gray-500">Bài đăng cho thuê</p>
+                                    <p id="stat-posts" class="text-3xl font-bold text-gray-800">-</p>
+                                </div>
+                                <i data-feather="home" class="w-10 h-10 text-green-500"></i>
+                            </div>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-yellow-500">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm text-gray-500">Chờ duyệt</p>
+                                    <p id="stat-pending" class="text-3xl font-bold text-yellow-600">-</p>
+                                </div>
+                                <i data-feather="clock" class="w-10 h-10 text-yellow-500"></i>
+                            </div>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-purple-500">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm text-gray-500">Tổng bình luận</p>
+                                    <p id="stat-comments" class="text-3xl font-bold text-gray-800">-</p>
+                                </div>
+                                <i data-feather="message-square" class="w-10 h-10 text-purple-500"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <!-- User Breakdown -->
+                        <div class="bg-white p-6 rounded-xl shadow-sm">
+                            <h3 class="text-lg font-semibold mb-4 flex items-center">
+                                <i data-feather="users" class="w-5 h-5 mr-2 text-blue-500"></i>
+                                Người dùng theo vai trò
+                            </h3>
+                            <div class="space-y-3">
+                                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                    <span class="flex items-center"><span class="w-3 h-3 bg-purple-500 rounded-full mr-2"></span>Quản trị viên</span>
+                                    <span id="stat-admin-count" class="font-bold text-lg">-</span>
+                                </div>
+                                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                    <span class="flex items-center"><span class="w-3 h-3 bg-blue-500 rounded-full mr-2"></span>Chủ trọ</span>
+                                    <span id="stat-chutro-count" class="font-bold text-lg">-</span>
+                                </div>
+                                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                    <span class="flex items-center"><span class="w-3 h-3 bg-gray-400 rounded-full mr-2"></span>Người thuê</span>
+                                    <span id="stat-nguoithue-count" class="font-bold text-lg">-</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Post Status Breakdown -->
+                        <div class="bg-white p-6 rounded-xl shadow-sm">
+                            <h3 class="text-lg font-semibold mb-4 flex items-center">
+                                <i data-feather="home" class="w-5 h-5 mr-2 text-green-500"></i>
+                                Bài đăng theo trạng thái
+                            </h3>
+                            <div class="space-y-3">
+                                <div class="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                                    <span class="flex items-center"><span class="w-3 h-3 bg-green-500 rounded-full mr-2"></span>Đã duyệt</span>
+                                    <span id="stat-approved" class="font-bold text-lg text-green-600">-</span>
+                                </div>
+                                <div class="flex items-center justify-between p-3 bg-yellow-50 rounded-lg">
+                                    <span class="flex items-center"><span class="w-3 h-3 bg-yellow-500 rounded-full mr-2"></span>Chờ duyệt</span>
+                                    <span id="stat-pending-detail" class="font-bold text-lg text-yellow-600">-</span>
+                                </div>
+                                <div class="flex items-center justify-between p-3 bg-red-50 rounded-lg">
+                                    <span class="flex items-center"><span class="w-3 h-3 bg-red-500 rounded-full mr-2"></span>Từ chối</span>
+                                    <span id="stat-rejected" class="font-bold text-lg text-red-600">-</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="bg-white p-6 rounded-xl shadow-sm mt-6">
+                        <h3 class="text-lg font-semibold mb-4">Thao tác nhanh</h3>
+                        <div class="flex flex-wrap gap-3">
+                            <button onclick="showTab('pending')" class="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition flex items-center">
+                                <i data-feather="clock" class="w-4 h-4 mr-2"></i>
+                                Xem bài chờ duyệt
+                            </button>
+                            <button onclick="showTab('users')" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center">
+                                <i data-feather="users" class="w-4 h-4 mr-2"></i>
+                                Quản lý người dùng
+                            </button>
+                            <button onclick="showTab('posts')" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition flex items-center">
+                                <i data-feather="list" class="w-4 h-4 mr-2"></i>
+                                Xem tất cả bài đăng
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pending -->
+                <div id="tab-pending" class="tab-content">
+                    <h2 class="text-2xl font-bold mb-6">Bài chờ duyệt</h2>
+                    <div id="pending-list" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+                    <div id="loading" class="text-center py-10 hidden">
+                        <div class="animate-spin h-10 w-10 border-4 border-blue-600 border-t-transparent rounded-full mx-auto"></div>
+                    </div>
+                </div>
+
+                <!-- All Posts -->
+                <div id="tab-posts" class="tab-content">
+                    <h2 class="text-2xl font-bold mb-6">Tất cả bài đăng</h2>
+                    <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+                        <table class="w-full">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-4 py-3 text-left">ID</th>
+                                    <th class="px-4 py-3 text-left">Tiêu đề</th>
+                                    <th class="px-4 py-3 text-left">Người đăng</th>
+                                    <th class="px-4 py-3 text-left">Trạng thái</th>
+                                    <th class="px-4 py-3 text-left">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody id="posts-table-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Users -->
+                <div id="tab-users" class="tab-content">
+                    <h2 class="text-2xl font-bold mb-6">Người dùng</h2>
+                    <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+                        <table class="w-full">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-4 py-3 text-left">ID</th>
+                                    <th class="px-4 py-3 text-left">Họ tên</th>
+                                    <th class="px-4 py-3 text-left">Email</th>
+                                    <th class="px-4 py-3 text-left">Vai trò</th>
+                                    <th class="px-4 py-3 text-left">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody id="users-table-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-</div>
 
-<script src="js/api.js"></script>
-<script src="js/navbar.js"></script>
-<script src="js/admin.js"></script>
+    <!-- Modal -->
+    <div id="detail-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+        <div class="bg-white rounded-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div class="p-6 border-b flex justify-between items-center">
+                <h2 id="modal-title" class="text-xl font-bold"></h2>
+                <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
+                    <i data-feather="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+            <div id="modal-body" class="p-6"></div>
+            <div id="modal-actions" class="p-6 border-t bg-gray-50 flex gap-3"></div>
+        </div>
+    </div>
 
-<script>
-    if (typeof feather !== "undefined") feather.replace();
-</script>
+    <script src="js/admin.js"></script>
+    <script>if(typeof feather!=="undefined")feather.replace();</script>
 </body>
 </html>

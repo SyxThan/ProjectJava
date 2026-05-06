@@ -1,6 +1,11 @@
+const API_BASE = 'http://localhost:8080';
 const token = localStorage.getItem("token");
 const user = JSON.parse(localStorage.getItem("user"));
 const userRole = user?.role;
+
+// Pagination state
+let postsPage = 0;
+let postsTotalPages = 1;
 
 if (!token || userRole !== "quan_tri_vien") {
     document.getElementById("not-admin").classList.remove("hidden");
@@ -107,7 +112,7 @@ async function loadPendingPosts() {
     document.getElementById("loading").classList.remove("hidden");
 
     try {
-        const res = await fetch("/api/baidang/status/PENDING", {
+        const res = await fetch(`${API_BASE}/api/baidang/status/PENDING`, {
             headers: { Authorization: "Bearer " + token }
         });
 
@@ -171,12 +176,12 @@ async function openDetailModal(id) {
 
     try {
         // Lấy bài đăng chi tiết
-        const res = await fetch(`/api/baidang/${id}`, { headers: { Authorization: "Bearer " + token } });
+        const res = await fetch(`${API_BASE}/api/baidang/${id}`, { headers: { Authorization: "Bearer " + token } });
         if (!res.ok) throw new Error("Không tải được bài đăng");
         const post = await res.json();
 
         // Lấy gallery ảnh
-        const imgRes = await fetch(`/api/hinhanh/baidang/${id}`, { headers: { Authorization: "Bearer " + token } });
+        const imgRes = await fetch(`${API_BASE}/api/hinhanh/baidang/${id}`, { headers: { Authorization: "Bearer " + token } });
         const images = imgRes.ok ? await imgRes.json() : [];
         
         console.log('Images from API:', images); // Debug log
@@ -261,7 +266,7 @@ async function rejectPost(id) { await updateStatus(id, 'REJECTED'); }
 
 async function updateStatus(id, status) {
     try {
-        const res = await fetch(`/api/baidang/${id}/status?status=${status}&role=ADMIN`, {
+        const res = await fetch(`${API_BASE}/api/baidang/${id}/status?status=${status}`, {
             method: "PUT",
             headers: { Authorization: "Bearer " + token }
         });
@@ -277,7 +282,7 @@ async function updateStatus(id, status) {
 async function deletePost(id) {
     if (!confirm("Bạn có chắc muốn xóa bài này?")) return;
     try {
-        const res = await fetch(`/api/baidang/${id}`, {
+        const res = await fetch(`${API_BASE}/api/baidang/${id}`, {
             method: "DELETE",
             headers: { Authorization: "Bearer " + token }
         });
@@ -289,3 +294,343 @@ async function deletePost(id) {
         alert(err.message);
     }
 }
+
+// ==========================================
+// ADMIN DASHBOARD & USER MANAGEMENT
+// ==========================================
+
+// Load dashboard statistics
+async function loadDashboardStats() {
+    try {
+        const res = await fetch(`${API_BASE}/api/admin/dashboard`, {
+            headers: { Authorization: "Bearer " + token }
+        });
+        if (!res.ok) throw new Error("Không tải được thống kê");
+        
+        const stats = await res.json();
+        
+        // Main stat cards
+        document.getElementById("stat-users").textContent = stats.totalUsers || 0;
+        document.getElementById("stat-posts").textContent = stats.totalPosts || 0;
+        document.getElementById("stat-pending").textContent = stats.pendingPosts || 0;
+        document.getElementById("stat-comments").textContent = stats.totalComments || 0;
+        
+        // User breakdown
+        document.getElementById("stat-admin-count").textContent = stats.adminCount || 0;
+        document.getElementById("stat-chutro-count").textContent = stats.chuTro || 0;
+        document.getElementById("stat-nguoithue-count").textContent = stats.nguoiThue || 0;
+        
+        // Post status breakdown
+        document.getElementById("stat-approved").textContent = stats.approvedPosts || 0;
+        document.getElementById("stat-pending-detail").textContent = stats.pendingPosts || 0;
+        document.getElementById("stat-rejected").textContent = stats.rejectedPosts || 0;
+        
+        // Update pending badge
+        const pendingBadge = document.getElementById("pending-badge");
+        if (stats.pendingPosts > 0) {
+            pendingBadge.textContent = stats.pendingPosts;
+            pendingBadge.classList.remove("hidden");
+        }
+    } catch (err) {
+        console.error("Dashboard error:", err);
+    }
+}
+
+// Load all users
+async function loadUsers() {
+    const tbody = document.getElementById("users-table-body");
+    tbody.innerHTML = `<tr><td colspan="5" class="px-4 py-4 text-center text-gray-500">Đang tải...</td></tr>`;
+    
+    try {
+        const res = await fetch(`${API_BASE}/api/admin/users`, {
+            headers: { Authorization: "Bearer " + token }
+        });
+        if (!res.ok) throw new Error("Không tải được danh sách người dùng");
+        
+        const users = await res.json();
+        
+        if (!users || users.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5" class="px-4 py-4 text-center text-gray-500">Không có người dùng nào.</td></tr>`;
+            return;
+        }
+        
+        tbody.innerHTML = users.map(u => {
+            const roleText = u.role === 'quan_tri_vien' ? 'Quản trị viên' :
+                           u.role === 'chu_tro' ? 'Chủ trọ' : 'Người thuê';
+            const roleClass = u.role === 'quan_tri_vien' ? 'bg-purple-100 text-purple-700' :
+                            u.role === 'chu_tro' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-700';
+            
+            return `
+                <tr class="hover:bg-gray-50">
+                    <td class="px-4 py-3 text-sm">${u.id}</td>
+                    <td class="px-4 py-3 text-sm font-medium">${u.fullname || 'N/A'}</td>
+                    <td class="px-4 py-3 text-sm">${u.email}</td>
+                    <td class="px-4 py-3">
+                        <span class="px-2 py-1 text-xs rounded-full ${roleClass}">${roleText}</span>
+                    </td>
+                    <td class="px-4 py-3">
+                        <button onclick="viewUser(${u.id})" class="text-blue-600 hover:text-blue-800 mr-2">
+                            <i data-feather="eye" class="w-4 h-4"></i>
+                        </button>
+                        <button onclick="editUser(${u.id})" class="text-green-600 hover:text-green-800 mr-2">
+                            <i data-feather="edit" class="w-4 h-4"></i>
+                        </button>
+                        <button onclick="deleteUser(${u.id})" class="text-red-600 hover:text-red-800">
+                            <i data-feather="trash-2" class="w-4 h-4"></i>
+                        </button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+        
+        if (typeof feather !== "undefined") feather.replace();
+    } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="5" class="px-4 py-4 text-center text-red-500">${err.message}</td></tr>`;
+    }
+}
+
+// Load all posts with pagination
+async function loadAllPosts(page = 0) {
+    const tbody = document.getElementById("posts-table-body");
+    tbody.innerHTML = `<tr><td colspan="5" class="px-4 py-4 text-center text-gray-500">Đang tải...</td></tr>`;
+    
+    try {
+        const res = await fetch(`${API_BASE}/api/admin/posts/paged?page=${page}&size=10`, {
+            headers: { Authorization: "Bearer " + token }
+        });
+        if (!res.ok) throw new Error("Không tải được danh sách bài đăng");
+        
+        const result = await res.json();
+        const posts = result.data || [];
+        postsPage = result.pagination?.currentPage || 0;
+        postsTotalPages = result.pagination?.totalPages || 1;
+        
+        if (!posts || posts.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5" class="px-4 py-4 text-center text-gray-500">Không có bài đăng nào.</td></tr>`;
+            renderPostsPagination();
+            return;
+        }
+        
+        tbody.innerHTML = posts.map(p => {
+            const statusText = p.trangThai === 'PENDING' ? 'Chờ duyệt' :
+                             p.trangThai === 'APPROVED' ? 'Đã duyệt' : 'Từ chối';
+            const statusClass = p.trangThai === 'PENDING' ? 'bg-yellow-100 text-yellow-700' :
+                              p.trangThai === 'APPROVED' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700';
+            
+            return `
+                <tr class="hover:bg-gray-50">
+                    <td class="px-4 py-3 text-sm">${p.id}</td>
+                    <td class="px-4 py-3 text-sm font-medium">${p.tieu_de || 'N/A'}</td>
+                    <td class="px-4 py-3 text-sm">${p.nguoiDang?.fullname || 'N/A'}</td>
+                    <td class="px-4 py-3">
+                        <span class="px-2 py-1 text-xs rounded-full ${statusClass}">${statusText}</span>
+                    </td>
+                    <td class="px-4 py-3">
+                        <button onclick="openDetailModal(${p.id})" class="text-blue-600 hover:text-blue-800 mr-2">
+                            <i data-feather="eye" class="w-4 h-4"></i>
+                        </button>
+                        <button onclick="deletePost(${p.id})" class="text-red-600 hover:text-red-800">
+                            <i data-feather="trash-2" class="w-4 h-4"></i>
+                        </button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+        
+        renderPostsPagination();
+        if (typeof feather !== "undefined") feather.replace();
+    } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="5" class="px-4 py-4 text-center text-red-500">${err.message}</td></tr>`;
+    }
+}
+
+// Render pagination controls
+function renderPostsPagination() {
+    const existing = document.getElementById('posts-pagination');
+    if (existing) existing.remove();
+    
+    const paginationDiv = document.createElement('div');
+    paginationDiv.id = 'posts-pagination';
+    paginationDiv.className = 'flex justify-center items-center gap-2 mt-4';
+    
+    let html = `
+        <button onclick="loadAllPosts(${postsPage - 1})" ${postsPage === 0 ? 'disabled' : ''} 
+            class="px-3 py-1 bg-gray-200 rounded ${postsPage === 0 ? 'opacity-50' : 'hover:bg-gray-300'}">Trước</button>
+        <span class="text-sm text-gray-600">Trang ${postsPage + 1} / ${postsTotalPages}</span>
+        <button onclick="loadAllPosts(${postsPage + 1})" ${postsPage >= postsTotalPages - 1 ? 'disabled' : ''} 
+            class="px-3 py-1 bg-gray-200 rounded ${postsPage >= postsTotalPages - 1 ? 'opacity-50' : 'hover:bg-gray-300'}">Sau</button>
+    `;
+    
+    paginationDiv.innerHTML = html;
+    document.getElementById('tab-posts').appendChild(paginationDiv);
+}
+
+// User management functions
+async function viewUser(id) {
+    try {
+        const res = await fetch(`${API_BASE}/api/admin/users/${id}`, {
+            headers: { Authorization: "Bearer " + token }
+        });
+        if (!res.ok) throw new Error("Không tải được thông tin user");
+        
+        const u = await res.json();
+        const roleText = u.role === 'quan_tri_vien' ? 'Quản trị viên' :
+                       u.role === 'chu_tro' ? 'Chủ trọ' : 'Người thuê';
+        
+        modalTitle.textContent = `Thông tin người dùng #${u.id}`;
+        modalBody.innerHTML = `
+            <div class="space-y-3">
+                <p><strong>Họ tên:</strong> ${u.fullname || 'N/A'}</p>
+                <p><strong>Email:</strong> ${u.email}</p>
+                <p><strong>Số điện thoại:</strong> ${u.so_dien_thoai || 'N/A'}</p>
+                <p><strong>Vai trò:</strong> ${roleText}</p>
+                <p><strong>Ngày tạo:</strong> ${u.ngay_tao ? new Date(u.ngay_tao).toLocaleString('vi-VN') : 'N/A'}</p>
+            </div>
+        `;
+        modalActions.innerHTML = `
+            <button onclick="editUser(${u.id})" class="btn-primary">Chỉnh sửa</button>
+            <button onclick="closeModal()" class="px-4 py-2 bg-gray-200 rounded-lg">Đóng</button>
+        `;
+        modal.style.display = "block";
+    } catch (err) {
+        alert(err.message);
+    }
+}
+
+async function editUser(id) {
+    try {
+        const res = await fetch(`${API_BASE}/api/admin/users/${id}`, {
+            headers: { Authorization: "Bearer " + token }
+        });
+        if (!res.ok) throw new Error("Không tải được thông tin user");
+        
+        const u = await res.json();
+        
+        modalTitle.textContent = `Chỉnh sửa người dùng #${u.id}`;
+        modalBody.innerHTML = `
+            <form id="editUserForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Họ tên</label>
+                    <input type="text" id="edit-fullname" value="${u.fullname || ''}" class="w-full px-3 py-2 border rounded-lg">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Số điện thoại</label>
+                    <input type="text" id="edit-phone" value="${u.so_dien_thoai || ''}" class="w-full px-3 py-2 border rounded-lg">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Vai trò</label>
+                    <select id="edit-role" class="w-full px-3 py-2 border rounded-lg">
+                        <option value="nguoi_thue" ${u.role === 'nguoi_thue' ? 'selected' : ''}>Người thuê</option>
+                        <option value="chu_tro" ${u.role === 'chu_tro' ? 'selected' : ''}>Chủ trọ</option>
+                        <option value="quan_tri_vien" ${u.role === 'quan_tri_vien' ? 'selected' : ''}>Quản trị viên</option>
+                    </select>
+                </div>
+            </form>
+        `;
+        modalActions.innerHTML = `
+            <button onclick="saveUser(${id})" class="btn-primary">Lưu thay đổi</button>
+            <button onclick="closeModal()" class="px-4 py-2 bg-gray-200 rounded-lg">Hủy</button>
+        `;
+        modal.style.display = "block";
+    } catch (err) {
+        alert(err.message);
+    }
+}
+
+async function saveUser(id) {
+    const data = {
+        fullname: document.getElementById("edit-fullname").value,
+        soDienThoai: document.getElementById("edit-phone").value,
+        role: document.getElementById("edit-role").value
+    };
+    
+    try {
+        const res = await fetch(`${API_BASE}/api/admin/update-user/${id}`, {
+            method: "PUT",
+            headers: { 
+                "Content-Type": "application/json",
+                Authorization: "Bearer " + token 
+            },
+            body: JSON.stringify(data)
+        });
+        
+        if (!res.ok) throw new Error("Không thể cập nhật user");
+        
+        alert("Cập nhật thành công!");
+        modal.style.display = "none";
+        loadUsers();
+    } catch (err) {
+        alert(err.message);
+    }
+}
+
+async function deleteUser(id) {
+    if (!confirm("Bạn có chắc muốn xóa người dùng này?")) return;
+    
+    try {
+        const res = await fetch(`${API_BASE}/api/admin/delete-user/${id}`, {
+            method: "DELETE",
+            headers: { Authorization: "Bearer " + token }
+        });
+        
+        if (!res.ok) throw new Error("Không thể xóa user");
+        
+        alert("Xóa user thành công!");
+        loadUsers();
+    } catch (err) {
+        alert(err.message);
+    }
+}
+
+// Tab navigation
+function showTab(tabName) {
+    // Hide all tabs
+    document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    
+    // Remove active from sidebar buttons
+    document.querySelectorAll('.sidebar-btn').forEach(btn => {
+        btn.classList.remove('bg-blue-50', 'text-blue-600', 'font-medium');
+        btn.classList.add('text-gray-600');
+    });
+    
+    // Show selected tab
+    document.getElementById(`tab-${tabName}`).classList.add('active');
+    
+    // Add active to clicked button
+    const clickedBtn = event.target.closest('.sidebar-btn');
+    if (clickedBtn) {
+        clickedBtn.classList.remove('text-gray-600');
+        clickedBtn.classList.add('bg-blue-50', 'text-blue-600', 'font-medium');
+    }
+    
+    // Load data for specific tabs
+    if (tabName === 'dashboard') {
+        loadDashboardStats();
+    } else if (tabName === 'users') {
+        loadUsers();
+    } else if (tabName === 'posts') {
+        loadAllPosts();
+    } else if (tabName === 'pending') {
+        loadPendingPosts();
+    }
+}
+
+function closeModal() {
+    modal.style.display = "none";
+}
+
+function logout() {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    localStorage.removeItem("user_id");
+    window.location.href = "auth.html";
+}
+
+// Initialize
+document.addEventListener('DOMContentLoaded', function() {
+    if (token && userRole === "quan_tri_vien") {
+        loadDashboardStats();
+    }
+});

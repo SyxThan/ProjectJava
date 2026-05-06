@@ -1,19 +1,28 @@
 package com.example.Rent_room.controller;
 
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.example.Rent_room.dto.BaiDangOutputDTO;
+import com.example.Rent_room.dto.GeocodeResponseDTO;
 import com.example.Rent_room.dto.PaginationResponseDTO;
 import com.example.Rent_room.entity.BaiDangChoThue;
 import com.example.Rent_room.entity.TrangThaiBaiDang;
 import com.example.Rent_room.entity.User;
-import com.example.Rent_room.dto.GeocodeResponseDTO;
 import com.example.Rent_room.service.BaiDangService;
-import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/baidang")
@@ -77,9 +86,24 @@ public class BaiDangController {
     }
 
     // Lấy danh sách bài theo trạng thái
+    // Chỉ admin mới được xem bài PENDING
     @GetMapping("/status/{status}")
-    public List<BaiDangChoThue> getByStatus(@PathVariable TrangThaiBaiDang status) {
-        return baiDangService.getByStatus(status);
+    public List<BaiDangChoThue> getByStatus(@PathVariable String status) {
+        try {
+            TrangThaiBaiDang trangThai = TrangThaiBaiDang.valueOf(status.toUpperCase());
+            
+            // Nếu là PENDING, chỉ admin được xem
+            if (trangThai == TrangThaiBaiDang.PENDING) {
+                User currentUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+                if (currentUser == null || !currentUser.getRole().equals(User.Role.quan_tri_vien)) {
+                    throw new AccessDeniedException("Bạn không có quyền xem bài đăng đang chờ duyệt");
+                }
+            }
+            
+            return baiDangService.getByStatus(trangThai);
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Trạng thái không hợp lệ: " + status);
+        }
     }
 
 
