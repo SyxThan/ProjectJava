@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tài khoản của tôi - Phòng Trọ 24/7</title>
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/feather-icons"></script>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="Rent_room/src/main/resources/static/src/styles/common.css">
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-sm">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <a href="index.html" class="flex items-center text-blue-600 hover:text-blue-700 transition">
+                <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                </svg>
+                <span class="text-xl font-bold">Phòng Trọ 24/7</span>
+            </a>
+            <div class="flex items-center space-x-4">
+                <a href="favorites.html" class="text-gray-600 hover:text-gray-800">
+                    <i data-feather="heart" class="w-5 h-5"></i>
+                </a>
+                <button onclick="handleLogout()" class="text-gray-600 hover:text-gray-800">
+                    <i data-feather="log-out" class="w-5 h-5"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8">
+        <div class="max-w-4xl mx-auto">
+            <!-- Page Title -->
+            <div class="mb-8">
+                <h1 class="text-3xl font-bold text-gray-800">Tài khoản của tôi</h1>
+                <p class="text-gray-600 mt-2">Quản lý thông tin cá nhân và cài đặt tài khoản</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Sidebar -->
+                <div class="md:col-span-1">
+                    <div class="bg-white rounded-xl shadow-sm p-6">
+                        <div class="text-center mb-6">
+                            <div class="w-24 h-24 bg-blue-100 rounded-full mx-auto mb-4 flex items-center justify-center">
+                                <i data-feather="user" class="w-12 h-12 text-blue-600"></i>
+                            </div>
+                            <h2 id="userName" class="text-xl font-semibold text-gray-800">...</h2>
+                            <p id="userRole" class="text-sm text-gray-500 mt-1">...</p>
+                        </div>
+                        
+                        <nav class="space-y-2">
+                            <a href="#info" class="flex items-center px-4 py-3 bg-blue-50 text-blue-700 rounded-lg font-medium">
+                                <i data-feather="user" class="w-5 h-5 mr-3"></i>
+                                Thông tin cá nhân
+                            </a>
+                            <a href="favorites.html" class="flex items-center px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-lg transition">
+                                <i data-feather="heart" class="w-5 h-5 mr-3"></i>
+                                Danh sách yêu thích
+                            </a>
+                            <a href="post.html" class="flex items-center px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-lg transition">
+                                <i data-feather="home" class="w-5 h-5 mr-3"></i>
+                                Tin đăng của tôi
+                            </a>
+                            <a href="#settings" class="flex items-center px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-lg transition">
+                                <i data-feather="settings" class="w-5 h-5 mr-3"></i>
+                                Cài đặt
+                            </a>
+                        </nav>
+                    </div>
+                </div>
+
+                <!-- Main Panel -->
+                <div class="md:col-span-2 space-y-6">
+                    <!-- Thông tin cá nhân -->
+                    <div class="bg-white rounded-xl shadow-sm p-6" id="info">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="text-lg font-semibold text-gray-800">Thông tin cá nhân</h3>
+                            <button onclick="toggleEditMode()" id="editBtn" class="text-blue-600 hover:text-blue-700 font-medium text-sm">
+                                <i data-feather="edit-2" class="w-4 h-4 inline mr-1"></i>
+                                Chỉnh sửa
+                            </button>
+                        </div>
+
+                        <form id="profileForm" class="space-y-4">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Họ và tên</label>
+                                    <input type="text" id="fullName" name="fullName" disabled
+                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-800">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                                    <input type="email" id="email" name="email" disabled
+                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-800">
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Số điện thoại</label>
+                                    <input type="tel" id="phone" name="phone" disabled
+                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-800">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Vai trò</label>
+                                    <input type="text" id="role" name="role" disabled
+                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-800">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Ngày tham gia</label>
+                                <input type="text" id="joinDate" name="joinDate" disabled
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-800">
+                            </div>
+
+                            <!-- Edit mode buttons -->
+                            <div id="editButtons" class="hidden flex space-x-4 pt-4">
+                                <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                                    Lưu thay đổi
+                                </button>
+                                <button type="button" onclick="toggleEditMode()" class="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">
+                                    Hủy
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Đổi mật khẩu -->
+                    <div class="bg-white rounded-xl shadow-sm p-6" id="settings">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-6">Đổi mật khẩu</h3>
+                        
+                        <form id="passwordForm" class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Mật khẩu hiện tại</label>
+                                <input type="password" id="currentPassword" name="currentPassword" required
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Mật khẩu mới</label>
+                                <input type="password" id="newPassword" name="newPassword" required minlength="6"
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Xác nhận mật khẩu mới</label>
+                                <input type="password" id="confirmPassword" name="confirmPassword" required
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                                Đổi mật khẩu
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Thống kê -->
+                    <div class="bg-white rounded-xl shadow-sm p-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Thống kê</h3>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div class="text-center p-4 bg-gray-50 rounded-lg">
+                                <div id="statPosts" class="text-2xl font-bold text-blue-600">0</div>
+                                <div class="text-sm text-gray-500">Tin đã đăng</div>
+                            </div>
+                            <div class="text-center p-4 bg-gray-50 rounded-lg">
+                                <div id="statFavorites" class="text-2xl font-bold text-red-500">0</div>
+                                <div class="text-sm text-gray-500">Yêu thích</div>
+                            </div>
+                            <div class="text-center p-4 bg-gray-50 rounded-lg">
+                                <div id="statViews" class="text-2xl font-bold text-green-600">0</div>
+                                <div class="text-sm text-gray-500">Lượt xem</div>
+                            </div>
+                            <div class="text-center p-4 bg-gray-50 rounded-lg">
+                                <div id="statComments" class="text-2xl font-bold text-purple-600">0</div>
+                                <div class="text-sm text-gray-500">Bình luận</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg transform translate-y-20 opacity-0 transition-all duration-300 z-50">
+        <span id="toastMessage">Thông báo</span>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8080';
+        let isEditMode = false;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            feather.replace();
+            loadUserProfile();
+            loadStatistics();
+        });
+
+        // Load user profile from localStorage and API
+        async function loadUserProfile() {
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            const token = localStorage.getItem('token');
+
+            if (!token || !user.user_id) {
+                showToast('Vui lòng đăng nhập để xem thông tin tài khoản');
+                setTimeout(() => window.location.href = 'auth.html', 2000);
+                return;
+            }
+
+            // Fill basic info from localStorage
+            document.getElementById('userName').textContent = user.fullname || 'Người dùng';
+            document.getElementById('fullName').value = user.fullname || '';
+            document.getElementById('email').value = user.email || '';
+            
+            // Role display
+            const roleText = user.role === 'quan_tri_vien' ? 'Quản trị viên' : 
+                           user.role === 'chu_tro' ? 'Chủ trọ' : 'Người thuê';
+            document.getElementById('userRole').textContent = roleText;
+            document.getElementById('role').value = roleText;
+
+            // Load detailed info from API
+            try {
+                const response = await fetch(`${API_BASE}/api/user/me`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (response.ok) {
+                    const userData = await response.json();
+                    document.getElementById('fullName').value = userData.fullname || '';
+                    document.getElementById('email').value = userData.email || '';
+                    document.getElementById('phone').value = userData.so_dien_thoai || '';
+                    document.getElementById('joinDate').value = userData.ngay_tao ? 
+                        new Date(userData.ngay_tao).toLocaleDateString('vi-VN') : '';
+                    
+                    // Update sidebar info
+                    document.getElementById('userName').textContent = userData.fullname || 'Người dùng';
+                    const roleText = userData.role === 'quan_tri_vien' ? 'Quản trị viên' : 
+                                   userData.role === 'chu_tro' ? 'Chủ trọ' : 'Người thuê';
+                    document.getElementById('userRole').textContent = roleText;
+                    document.getElementById('role').value = roleText;
+                } else if (response.status === 401) {
+                    showToast('Phiên đăng nhập hết hạn');
+                    handleLogout();
+                }
+            } catch (e) {
+                console.error('Failed to load user details:', e);
+            }
+        }
+
+        // Load statistics
+        async function loadStatistics() {
+            const userId = JSON.parse(localStorage.getItem('user') || '{}').user_id;
+            if (!userId) return;
+
+            try {
+                // Load favorites count
+                const favResponse = await fetch(`${API_BASE}/api/usertracking/liked/${userId}?page=0&size=1`);
+                if (favResponse.ok) {
+                    const favData = await favResponse.json();
+                    if (favData.success && favData.pagination) {
+                        document.getElementById('statFavorites').textContent = favData.pagination.totalItems || 0;
+                    }
+                }
+            } catch (e) {
+                console.error('Failed to load statistics:', e);
+            }
+        }
+
+        // Toggle edit mode
+        function toggleEditMode() {
+            isEditMode = !isEditMode;
+            const inputs = document.querySelectorAll('#profileForm input:not(#role):not(#joinDate)');
+            const editButtons = document.getElementById('editButtons');
+            const editBtn = document.getElementById('editBtn');
+
+            inputs.forEach(input => {
+                input.disabled = !isEditMode;
+                input.classList.toggle('bg-gray-50', !isEditMode);
+                input.classList.toggle('bg-white', isEditMode);
+            });
+
+            editButtons.classList.toggle('hidden', !isEditMode);
+            editBtn.classList.toggle('hidden', isEditMode);
+        }
+
+        // Handle profile form submit
+        document.getElementById('profileForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const token = localStorage.getItem('token');
+            
+            const data = {
+                fullname: document.getElementById('fullName').value,
+                so_dien_thoai: document.getElementById('phone').value
+            };
+
+            try {
+                const response = await fetch(`${API_BASE}/api/user/me`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    showToast('Cập nhật thông tin thành công!');
+                    toggleEditMode();
+                    
+                    // Update localStorage
+                    const user = JSON.parse(localStorage.getItem('user') || '{}');
+                    user.fullname = data.fullname;
+                    localStorage.setItem('user', JSON.stringify(user));
+                    document.getElementById('userName').textContent = data.fullname;
+                } else if (response.status === 401) {
+                    showToast('Phiên đăng nhập hết hạn');
+                    handleLogout();
+                } else {
+                    const error = await response.json();
+                    showToast(error.error || 'Có lỗi xảy ra khi cập nhật');
+                }
+            } catch (e) {
+                showToast('Có lỗi xảy ra khi cập nhật');
+                console.error(e);
+            }
+        });
+
+        // Handle password change
+        document.getElementById('passwordForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            if (newPassword !== confirmPassword) {
+                showToast('Mật khẩu xác nhận không khớp');
+                return;
+            }
+
+            if (newPassword.length < 6) {
+                showToast('Mật khẩu mới phải có ít nhất 6 ký tự');
+                return;
+            }
+
+            const token = localStorage.getItem('token');
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/user/me/password`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        currentPassword: currentPassword,
+                        newPassword: newPassword
+                    })
+                });
+
+                if (response.ok) {
+                    showToast('Đổi mật khẩu thành công!');
+                    document.getElementById('passwordForm').reset();
+                } else if (response.status === 401) {
+                    showToast('Phiên đăng nhập hết hạn');
+                    handleLogout();
+                } else {
+                    const error = await response.json();
+                    showToast(error.error || 'Có lỗi xảy ra khi đổi mật khẩu');
+                }
+            } catch (e) {
+                showToast('Có lỗi xảy ra khi đổi mật khẩu');
+                console.error(e);
+            }
+        });
+
+        // Logout
+        function handleLogout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            localStorage.removeItem('user_id');
+            window.location.href = 'index.html';
+        }
+
+        // Toast notification
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMessage').textContent = message;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
