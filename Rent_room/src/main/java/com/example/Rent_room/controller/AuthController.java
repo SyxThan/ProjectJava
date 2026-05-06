@@ -33,6 +33,10 @@ public class AuthController {
             response.put("message", "Email đã tồn tại!");
             return response;
         }
+        if (userRepository.existsBySoDienThoai(dto.getSoDienThoai())) {
+            response.put("message", "Số điện thoại đã tồn tại!");
+            return response;
+        }
         if (!dto.getPassword().equals(dto.getConfirmPassword())) {
             response.put("message", "Mật khẩu và xác nhận mật khẩu không khớp!");
             return response;

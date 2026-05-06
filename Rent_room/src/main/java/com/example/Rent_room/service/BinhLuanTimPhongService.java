@@ -84,16 +84,9 @@ public class BinhLuanTimPhongService {
                 .findById(commentId)
                 .orElseThrow(() -> new RuntimeException("Bình luận không tồn tại với ID: " + commentId));
 
-<<<<<<< Updated upstream
-        binhLuanTimPhongRepository.delete(comment);
-=======
-<<<<<<< HEAD
         checkOwnership(comment);
 
         binhLuanTimPhongRepository.deleteById(commentId);
-=======
-        binhLuanTimPhongRepository.delete(comment);
->>>>>>> 51c922d34034c3cef761ca378a5ebbb8ff037b2a
     }
 
     private void checkOwnership(BinhLuanTimPhong comment) {
@@ -102,7 +95,6 @@ public class BinhLuanTimPhongService {
                 && !currentUser.getRole().equals(User.Role.quan_tri_vien)) {
             throw new AccessDeniedException("Bạn không có quyền thao tác bình luận này");
         }
->>>>>>> Stashed changes
     }
 
     @Transactional(readOnly = true)

@@ -47,31 +47,10 @@ public class BaiDangService {
             if (page < 0) page = 0;
             if (size < 1 || size > 100) size = 10;
 
-<<<<<<< HEAD
             // Phân trang tại DB bằng Pageable
             PageRequest pageable = PageRequest.of(page, size, Sort.by("ngay_dang").descending());
             Page<BaiDangChoThue> pageResult = baiDangRepository.findWithFilters(
                     tinhThanh, phuongXa, giaMin, giaMax, dienTichMin, dienTichMax, trangThai, pageable);
-=======
-            // Lấy tất cả dữ liệu đã filter từ database
-            TrangThaiBaiDang effectiveStatus = trangThai != null ? trangThai : TrangThaiBaiDang.APPROVED;
-
-            List<BaiDangChoThue> allData = baiDangRepository.findWithFilters(
-                    tinhThanh, phuongXa, giaMin, giaMax, dienTichMin, dienTichMax, effectiveStatus);
-
-            // Đếm tổng số items
-            long totalItems = baiDangRepository.countWithFilters(
-                    tinhThanh, phuongXa, giaMin, giaMax, dienTichMin, dienTichMax, effectiveStatus);
-
-            // Tính toán phân trang thủ công
-            int offset = page * size;
-            int toIndex = Math.min(offset + size, allData.size());
-
-            // Cắt list theo page và size
-            List<BaiDangChoThue> pageData = offset < allData.size()
-                    ? allData.subList(offset, toIndex)
-                    : List.of();
->>>>>>> 51c922d34034c3cef761ca378a5ebbb8ff037b2a
 
             // Chuyển Entity sang DTO và set ảnh bìa
             List<BaiDangOutputDTO> dtoList = pageResult.getContent().stream()
