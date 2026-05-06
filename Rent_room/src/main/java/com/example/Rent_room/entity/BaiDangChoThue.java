@@ -3,7 +3,7 @@ package com.example.Rent_room.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.time.LocalDateTime;
 
 @Entity
@@ -19,7 +19,7 @@ public class BaiDangChoThue {
     // Khóa ngoại trỏ đến bảng users
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_nguoi_dang", nullable = false)
-//    @JsonIgnore
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private User nguoiDang;
 
     private String tieu_de;
@@ -47,6 +47,7 @@ public class BaiDangChoThue {
     private LocalDateTime ngay_cap_nhat;
 
     @OneToMany(mappedBy = "baiDangChoThue", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "baiDangChoThue"})
     private java.util.List<HinhAnhPhongTro> hinhAnhPhongTro;
 
     public BaiDangChoThue() {}

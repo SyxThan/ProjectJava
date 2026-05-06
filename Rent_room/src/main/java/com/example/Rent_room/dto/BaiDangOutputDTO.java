@@ -47,6 +47,6 @@ public class BaiDangOutputDTO {
         this.giaThang = entity.getGia_thang();
         this.dienTichM2 = entity.getDien_tich_m2();
         this.trangThai = entity.getTrangThai() != null ? entity.getTrangThai().name() : null;
-        this.ngayDang = entity.getNgay_dang() != null ? entity.getNgay_dang().toLocalDateTime() : null;
+        this.ngayDang = entity.getNgay_dang();
     }
 }

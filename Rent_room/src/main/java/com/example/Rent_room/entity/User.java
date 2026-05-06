@@ -8,6 +8,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import java.util.Collection;
 import java.util.Collections;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "user")
@@ -22,6 +23,7 @@ public class User {
     private String fullname;
     private String email;
     private String so_dien_thoai;
+    @JsonIgnore
     private String hash_password;
     private String avatar;
 

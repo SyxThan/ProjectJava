@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phòng Trọ 24/7 - Tìm và đăng phòng trọ dễ dàng</title>
+    <!-- External Libraries -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script src="https://unpkg.com/feather-icons"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Project Styles -->
+    <link rel="stylesheet" href="/src/styles/common.css">
+    <link rel="stylesheet" href="/src/styles/index.css">
+</head>
+<body class="bg-gray-50">
+    <!-- Component Placeholders -->
+    <div id="header-placeholder"></div>
+
+    <!-- Hero Section -->
+    <section class="hero-bg text-white py-24">
+        <div class="container mx-auto px-4 text-center">
+            <h1 class="text-5xl md:text-6xl font-bold mb-6" data-aos="fade-up">
+                Phòng Trọ 24/7
+            </h1>
+            <p class="text-xl md:text-2xl mb-8 max-w-3xl mx-auto" data-aos="fade-up" data-aos-delay="100">
+                Nền tảng tìm kiếm và đăng tin phòng trọ hàng đầu Việt Nam
+            </p>
+
+            <!-- Search Form -->
+            <form id="search-form" class="max-w-4xl mx-auto bg-white rounded-lg shadow-lg p-4 flex flex-col md:flex-row gap-4" data-aos="fade-up" data-aos-delay="200">
+                <div class="flex-1 relative">
+                    <input type="text" id="location-input" placeholder="Nhập khu vực (VD: Cầu Giấy, Hà Nội...)"
+                           class="w-full px-4 py-3 rounded-md border border-gray-300 text-gray-800 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    <div id="location-dropdown" class="hidden absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-b-md shadow-lg z-50 max-h-60 overflow-y-auto"></div>
+                </div>
+                <select id="price-select" class="px-4 py-3 rounded-md border border-gray-300 text-gray-800 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    <option value="">Mức giá</option>
+                    <option value="0-2">Dưới 2 triệu</option>
+                    <option value="2-4">2 - 4 triệu</option>
+                    <option value="4-6">4 - 6 triệu</option>
+                    <option value="6+">Trên 6 triệu</option>
+                </select>
+                <select id="room-type-select" class="px-4 py-3 rounded-md border border-gray-300 text-gray-800 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    <option value="">Loại phòng</option>
+                    <option value="phong-tro">Phòng trọ</option>
+                    <option value="chung-cu-mini">Chung cư mini</option>
+                    <option value="nha-nguyen-can">Nhà nguyên căn</option>
+                </select>
+                <button type="submit" class="bg-blue-600 text-white px-8 py-3 rounded-md hover:bg-blue-700 transition font-semibold">
+                    <i data-feather="search" class="inline w-5 h-5 mr-1"></i> Tìm kiếm
+                </button>
+            </form>
+        </div>
+    </section>
+
+    <!-- Popular Areas -->
+    <section class="py-16">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center mb-12 text-gray-800" data-aos="fade-up">Khu vực phổ biến</h2>
+            <div id="popular-areas" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"></div>
+        </div>
+    </section>
+
+    <!-- Featured Rooms -->
+    <section class="py-16 bg-white">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center mb-12 text-gray-800" data-aos="fade-up">Phòng nổi bật</h2>
+            <div id="featured-rooms" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+        </div>
+    </section>
+
+    <div id="footer-placeholder"></div>
+    <div id="notification-placeholder"></div>
+
+    <!-- Project Scripts -->
+    <script src="/src/scripts/common.js"></script>
+    <script src="/src/scripts/components.js"></script>
+    <script src="/src/scripts/index.js"></script>
+</body>
+</html>

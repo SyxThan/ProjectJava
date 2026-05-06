@@ -42,6 +42,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/baidangtimphong/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/bai-dang-cho-thue/**/binh-luan").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/hinhanh/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/usertracking/**").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("QUAN_TRI_VIEN")
                         .anyRequest().authenticated()
                 )

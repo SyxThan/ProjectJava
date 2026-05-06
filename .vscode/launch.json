@@ -1,0 +1,24 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Rent_room (MySQL)",
+            "request": "launch",
+            "mainClass": "com.example.Rent_room.RentRoomApplication",
+            "projectName": "Rent_room",
+            "cwd": "${workspaceFolder}/Rent_room",
+            "console": "internalConsole"
+        },
+        {
+            "type": "java",
+            "name": "Rent_room (H2 Dev)",
+            "request": "launch",
+            "mainClass": "com.example.Rent_room.RentRoomApplication",
+            "projectName": "Rent_room",
+            "cwd": "${workspaceFolder}/Rent_room",
+            "vmArgs": "-Dspring.profiles.active=dev",
+            "console": "internalConsole"
+        }
+    ]
+}

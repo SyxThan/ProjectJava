@@ -1,16 +1,17 @@
 package com.example.Rent_room.service;
 
-import com.example.Rent_room.entity.UserTracking;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import com.example.Rent_room.dto.BaiDangOutputDTO;
 import com.example.Rent_room.dto.PaginationResponseDTO;
 import com.example.Rent_room.entity.BaiDangChoThue;
-import com.example.Rent_room.repository.UserTrackingRepository;
+import com.example.Rent_room.entity.UserTracking;
 import com.example.Rent_room.repository.HinhAnhPhongTroRepository;
-import org.springframework.stereotype.Service;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import java.util.List;
-import java.util.stream.Collectors;
+import com.example.Rent_room.repository.UserTrackingRepository;
 
 @Service
 public class UserTrackingService {
@@ -36,6 +37,7 @@ public class UserTrackingService {
     
     // Lấy danh sách bài đăng đã thích với phân trang
     public PaginationResponseDTO<BaiDangOutputDTO> getLikedPosts(Integer userId, int page, int size) {
+        System.out.println("[DEBUG SERVICE] getLikedPosts started for userId=" + userId);
         try {
             // Validate input
             if (page < 0) page = 0;
@@ -43,6 +45,7 @@ public class UserTrackingService {
             
             // Lấy tất cả bài đăng đã thích từ repository
             List<BaiDangChoThue> allLikedPosts = userTrackingRepository.listLike(userId);
+            System.out.println("[DEBUG SERVICE] Found " + allLikedPosts.size() + " liked posts");
             
             // Tính toán phân trang
             long totalItems = allLikedPosts.size();

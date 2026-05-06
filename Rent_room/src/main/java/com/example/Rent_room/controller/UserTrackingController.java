@@ -1,16 +1,23 @@
 package com.example.Rent_room.controller;
 
-import com.example.Rent_room.dto.BaiDangOutputDTO;
-import com.example.Rent_room.dto.PaginationResponseDTO;
-import com.example.Rent_room.entity.UserTracking;
-import com.example.Rent_room.service.UserTrackingService;
+import java.util.HashMap;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.HashMap;
+import com.example.Rent_room.dto.BaiDangOutputDTO;
+import com.example.Rent_room.dto.PaginationResponseDTO;
+import com.example.Rent_room.entity.UserTracking;
+import com.example.Rent_room.service.UserTrackingService;
 
 
 @RestController
@@ -54,6 +61,10 @@ public class UserTrackingController {
             @PathVariable Integer user_id,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        return userTrackingService.getLikedPosts(user_id, page, size);
+        try {
+            return userTrackingService.getLikedPosts(user_id, page, size);
+        } catch (Exception e) {
+            throw e;
+        }
     }
 }
