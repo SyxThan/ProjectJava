@@ -936,8 +936,8 @@ async function sendComment() {
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
-                    'Authorization': `Bearer ${token}`,
-                    'userId': userId.toString()
+                    'Authorization': `Bearer ${token}`
+                    // Note: backend reads userId from JWT principal, not from a custom header.
                 },
                 body: JSON.stringify(requestBody)
             });
@@ -954,8 +954,7 @@ async function sendComment() {
                         headers: {
                             'Content-Type': 'application/json',
                             'Accept': 'application/json',
-                            'Authorization': `Bearer ${token}`,
-                            'userId': userId.toString()
+                            'Authorization': `Bearer ${token}`
                         },
                         body: JSON.stringify(requestBody)
                     });
@@ -1148,8 +1147,8 @@ async function submitReply(commentIndex) {
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
-                    'Authorization': `Bearer ${token}`,
-                    'userId': userId.toString()
+                    'Authorization': `Bearer ${token}`
+                    // Note: backend reads userId from JWT principal, not from a custom header.
                 },
                 body: JSON.stringify(requestBody)
             });

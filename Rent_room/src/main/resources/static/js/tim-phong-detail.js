@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
   loadPostDetail(id);
   // Restore comments + auth
   loadComments(id,0).catch(()=>{});
-  getCurrentUser().then(u=>{currentUser=u;updateAuthUI();}).catch(()=>{});
+  fetchCurrentUserAsync().then(u=>{currentUser=u;updateAuthUI();}).catch(()=>{});
   setupEventListeners();
 });
 
@@ -49,17 +49,15 @@ document.addEventListener('DOMContentLoaded', async () => { if(window.SKIP_OLD_I
     }
     // Load post + comments sequentially
     await loadPostDetails();
-<<<<<<< HEAD
     if (currentBaiDangId) {
         loadComments(currentBaiDangId, 0).catch(()=>{});
     }
     // Auth/UI (non-blocking)
-    getCurrentUser().then(u=>{currentUser=u;updateAuthUI();}).catch(()=>{});
+    fetchCurrentUserAsync().then(u=>{currentUser=u;updateAuthUI();}).catch(()=>{});
     setupEventListeners();
-=======
-    await loadComments();
-    setupCommentForm();
->>>>>>> 51c922d34034c3cef761ca378a5ebbb8ff037b2a
+    if (typeof setupCommentForm === 'function') {
+        try { setupCommentForm(); } catch(_) {}
+    }
 });
 
 // Load post details from API
@@ -360,29 +358,49 @@ function showError(message){
 // AUTHENTICATION FUNCTIONS
 // ================================
 
-// Get current user from token
-async function getCurrentUser() {
-    const token = localStorage.getItem('authToken') || localStorage.getItem('token') || sessionStorage.getItem('token');
-    console.log('[AUTH] getCurrentUser - Token exists:', !!token);
-    if (!token) return null;
+// Get current user from token (page-local helper).
+// IMPORTANT: do NOT override the global synchronous getCurrentUser() from api.js,
+// otherwise navbar.js (which expects the sync version) will break and show the
+// "Đăng nhập" button even when the user is logged in.
+async function fetchCurrentUserAsync() {
+    const token = localStorage.getItem('token') || localStorage.getItem('authToken') || sessionStorage.getItem('token');
+    console.log('[AUTH] fetchCurrentUserAsync - Token exists:', !!token);
+    if (!token) {
+        // Fallback: read cached user object so UI stays consistent with navbar.
+        try {
+            const cached = JSON.parse(localStorage.getItem('user') || sessionStorage.getItem('user') || 'null');
+            if (cached && !cached.id) cached.id = cached.userId || cached.user_id;
+            return cached;
+        } catch (_) { return null; }
+    }
     try {
-        const response = await fetch(`${API_BASE}/api/auth/me`, { headers: getAuthHeaders() });
-        console.log('[AUTH] /api/auth/me status:', response.status);
+        // Backend exposes /api/user/me (not /api/auth/me)
+        const response = await fetch(`${API_BASE}/api/user/me`, { headers: getAuthHeaders() });
+        console.log('[AUTH] /api/user/me status:', response.status);
         if (response.ok) {
             const user = await response.json();
-            // normalize user id field names
-            if (user && user.userId && !user.id) user.id = user.userId;
+            if (user && !user.id) user.id = user.userId || user.user_id;
             try { localStorage.setItem('user', JSON.stringify(user)); } catch(_){}
             return user;
         }
         if (response.status === 401) {
-            localStorage.removeItem('authToken');
             localStorage.removeItem('token');
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('user');
         }
-        return null;
+        // On any non-OK response, fallback to cached user so UI doesn't flip to logged-out state.
+        try {
+            const cached = JSON.parse(localStorage.getItem('user') || sessionStorage.getItem('user') || 'null');
+            if (cached && !cached.id) cached.id = cached.userId || cached.user_id;
+            return cached;
+        } catch (_) { return null; }
     } catch (e) {
-        console.error('[AUTH] error /api/auth/me', e);
-        return null;
+        console.error('[AUTH] error /api/user/me', e);
+        try {
+            const cached = JSON.parse(localStorage.getItem('user') || sessionStorage.getItem('user') || 'null');
+            if (cached && !cached.id) cached.id = cached.userId || cached.user_id;
+            return cached;
+        } catch (_) { return null; }
     }
 }
 
@@ -512,12 +530,10 @@ async function addComment(baiDangId, noiDung) {
         submitBtn.disabled = true;
         submitBtn.textContent = 'Đang gửi...';
         
+        // Backend reads userId from JWT principal, not from a custom header.
         const response = await fetch(`${API_COMMENT_BASE}/${baiDangId}/binh-luan`, {
             method: 'POST',
-            headers: {
-                ...getAuthHeaders(),
-                'userId': currentUser.id.toString()
-            },
+            headers: getAuthHeaders(),
             body: JSON.stringify({ noiDung })
         });
         
@@ -624,12 +640,10 @@ async function replyToComment(parentId, noiDung) {
     if (!validateComment(noiDung)) return;
     
     try {
+        // Backend reads userId from JWT principal, not from a custom header.
         const response = await fetch(`${API_COMMENT_BASE}/${currentBaiDangId}/binh-luan`, {
             method: 'POST',
-            headers: {
-                ...getAuthHeaders(),
-                'userId': currentUser.id.toString()
-            },
+            headers: getAuthHeaders(),
             body: JSON.stringify({ 
                 noiDung,
                 idBinhLuanCha: parentId
@@ -1543,11 +1557,22 @@ function showCommentsLoading() {
     if (loadingState) loadingState.style.display = 'block';
     if (commentsList) commentsList.innerHTML = '';
     if (emptyState) emptyState.style.display = 'none';
+
+    // Also show the kebab-case loader used by the new comment block
+    const loadingKebab = document.getElementById('comments-loading');
+    if (loadingKebab) loadingKebab.classList.remove('hidden');
+    const listKebab = document.getElementById('comments-list');
+    if (listKebab) listKebab.classList.add('hidden');
+    const emptyKebab = document.getElementById('comments-empty');
+    if (emptyKebab) emptyKebab.classList.add('hidden');
 }
 
 function hideCommentsLoading() {
     const loadingState = document.getElementById('commentsLoading');
     if (loadingState) loadingState.style.display = 'none';
+    // Also hide the kebab-case loader used by the new comment block
+    const loadingKebab = document.getElementById('comments-loading');
+    if (loadingKebab) loadingKebab.classList.add('hidden');
 }
 
 function showCommentsEmpty() {
